@@ -175,18 +175,22 @@ a:hover {
 }
 
 .contact-link {
-  border: 1.4px solid var(--primary);
-  padding: 0.56rem 0.98rem;
+    text-decoration: none;
+  border: 1.2px solid var(--primary);
+  padding: 0.38rem 0.7rem;
   color: var(--primary);
-  font-weight: 800;
-  border-radius: 8px;
+  font-weight: 600;
+  border-radius: 6px;
   transition: all 0.3s ease;
-  background: rgba(7, 113, 149, 0.07);
+  background: rgba(7, 113, 149, 0.03);
+  opacity: 0.75;
+  font-size: 0.85rem;
 }
 
 .contact-link:hover {
-  background: var(--primary);
-  color: white;
+  background: rgba(7, 113, 149, 0.12);
+  color: var(--primary);
+  opacity: 1;
 }
 
 .landing-page {
@@ -218,17 +222,17 @@ a:hover {
   background:
     linear-gradient(
       180deg,
-      rgba(0, 111, 145, 0.96) 10%,
-      rgba(120, 198, 220, 0.22) 36%,
-      rgba(220, 238, 245, 0.42) 62%,
-      rgba(246, 249, 251, 0.9) 84%,
-      rgba(247, 248, 250, 1) 100%
+      rgba(0, 111, 145, 0.65) 10%,
+      rgba(120, 198, 220, 0.12) 36%,
+      rgba(220, 238, 245, 0.22) 62%,
+      rgba(246, 249, 251, 0.5) 84%,
+      rgba(247, 248, 250, 0.7) 100%
     ),
     linear-gradient(
       90deg,
-      rgba(246, 250, 252, 0.72) 0%,
-      rgba(246, 250, 252, 0.58) 34%,
-      rgba(246, 250, 252, 0.24) 58%,
+      rgba(246, 250, 252, 0.32) 0%,
+      rgba(246, 250, 252, 0.18) 34%,
+      rgba(246, 250, 252, 0.12) 58%,
       rgba(246, 250, 252, 0) 78%
     );
   pointer-events: none;
@@ -736,8 +740,11 @@ button:hover {
   align-items: center;
   padding-top: 5.8rem;
   padding-bottom: 6.2rem;
-  max-width: 1080px;
-  margin-inline: auto;
+  width: 100vw;
+  max-width: 100vw;
+  min-width: 100vw;
+  margin-inline: 0;
+  overflow-x: hidden;
   background: linear-gradient(160deg, rgba(242, 248, 252, 0.95), rgba(232, 241, 247, 0.92));
   border: 1px solid #d4e2ed;
   border-radius: 18px;
