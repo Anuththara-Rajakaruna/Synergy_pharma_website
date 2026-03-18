@@ -423,6 +423,7 @@ button:hover {
   border: 1px solid #d9e5ee;
   box-shadow: 0 16px 30px rgba(16, 45, 67, 0.1);
   padding: 1.35rem 1.4rem 1.45rem;
+  border-radius: 18px;
 }
 
 .scope-label {
