@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 :root {
   color-scheme: light;
@@ -378,12 +378,15 @@ button:hover {
 
 .showcase-media {
   position: relative;
-  min-height: 520px;
+  padding-bottom: 3.75rem;
 }
 
 .showcase-image {
   position: relative;
-  min-height: 500px;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  border: 1px solid rgba(207, 219, 230, 0.95);
+  background: rgba(245, 250, 253, 0.92);
   overflow: hidden;
 }
 
@@ -396,6 +399,8 @@ button:hover {
   content: "";
   position: absolute;
   inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
   background: linear-gradient(180deg, rgba(20, 24, 28, 0.08), rgba(255, 255, 255, 0.02) 22%, rgba(255, 255, 255, 0) 100%);
 }
 
@@ -404,6 +409,8 @@ button:hover {
   position: absolute;
   inset: auto 0 0 0;
   height: 18%;
+  border-radius: inherit;
+  pointer-events: none;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(250, 250, 248, 0.22) 100%);
 }
 
@@ -835,7 +842,7 @@ button:hover {
 }
 
 .map-placeholder::after {
-  content: "📍";
+  content: "ðŸ“";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -997,11 +1004,11 @@ button:hover {
   }
 
   .showcase-media {
-    min-height: 360px;
+    padding-bottom: 3.25rem;
   }
 
   .showcase-image {
-    min-height: 360px;
+    border-radius: 14px;
   }
 
   .scope-card {
@@ -1163,11 +1170,11 @@ button:hover {
   }
 
   .showcase-media {
-    min-height: auto;
+    padding-bottom: 0;
   }
 
   .showcase-image {
-    min-height: 280px;
+    border-radius: 12px;
   }
 
   .scope-card {
@@ -1221,3 +1228,4 @@ button:hover {
     margin-top: 2.2rem;
   }
 }
+
