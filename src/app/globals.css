@@ -419,7 +419,7 @@ button:hover {
   right: -1.6rem;
   bottom: -1.4rem;
   width: min(220px, 52%);
-  background: rgba(245, 250, 253, 0.95);
+  background: rgba(245, 250, 253, 0.85);
   border: 1px solid #d9e5ee;
   box-shadow: 0 16px 30px rgba(16, 45, 67, 0.1);
   padding: 1.35rem 1.4rem 1.45rem;
