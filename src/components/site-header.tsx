@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -23,6 +23,17 @@ const navItems: NavItem[] = [
 export function SiteHeader() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const updateScrollState = () => {
+      setIsScrolled(window.scrollY > 16);
+    };
+
+    updateScrollState();
+    window.addEventListener("scroll", updateScrollState, { passive: true });
+    return () => window.removeEventListener("scroll", updateScrollState);
+  }, []);
 
   useEffect(() => {
     const onResize = () => {
@@ -45,7 +56,7 @@ export function SiteHeader() {
   const currentPath = useMemo(() => pathname ?? "/", [pathname]);
 
   return (
-    <header className="topbar">
+    <header className={`topbar ${isScrolled ? "topbar-scrolled" : ""} ${isMenuOpen ? "topbar-menu-open" : ""}`}>
       <div className="topbar-inner container">
         <Link href="/" className="brand" aria-label="Synergy home">
           <Image src="/logo.png" alt="Synergy Pharmaceuticals" width={180} height={50} priority />

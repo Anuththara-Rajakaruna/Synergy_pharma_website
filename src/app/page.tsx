@@ -1,11 +1,57 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 
 export default function Home() {
   const [isVisionOpen, setIsVisionOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const heroRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const hero = heroRef.current;
+
+    let rafId = 0;
+    const updateHeroSize = () => {
+      rafId = 0;
+      const scrollY = window.scrollY || 0;
+      setIsScrolled(scrollY > 40);
+
+      if (!hero) {
+        return;
+      }
+
+      const progress = Math.min(scrollY / 180, 1);
+      const width = window.innerWidth || 0;
+      const startRatio = width <= 640 ? 0.72 : width <= 900 ? 0.78 : 0.9;
+      const endRatio = width <= 640 ? 0.42 : width <= 900 ? 0.48 : 0.52;
+      const startMinHeight = window.innerHeight * startRatio;
+      const endMinHeight = window.innerHeight * endRatio;
+      const minHeight = startMinHeight - (startMinHeight - endMinHeight) * progress;
+      hero.style.setProperty("--hero-min-h", `${minHeight.toFixed(2)}px`);
+    };
+
+    const onScroll = () => {
+      if (rafId) {
+        return;
+      }
+
+      rafId = window.requestAnimationFrame(updateHeroSize);
+    };
+
+    updateHeroSize();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (rafId) {
+        window.cancelAnimationFrame(rafId);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const elements = document.querySelectorAll(".reveal-on-scroll");
@@ -46,7 +92,7 @@ export default function Home() {
     <main className="landing-page">
       <SiteHeader />
 
-      <section className="hero" id="about">
+      <section ref={heroRef} className={`hero ${isScrolled ? "hero-compact" : ""}`} id="about">
         <div className="hero-frame" aria-hidden>
           <span className="hero-light" />
         </div>
@@ -119,12 +165,16 @@ export default function Home() {
               <p>Deliver high-quality affordable medicine to global markets.</p>
             </article>
             <article className="mission-item">
-              <h3>Sustainability</h3>
-              <p>Adhere to strict environmental sustainability protocols.</p>
+              <h3>Quality</h3>
+              <p>Maintain rigorous GMP compliance and transparent processes.</p>
             </article>
             <article className="mission-item">
-              <h3>Expertise</h3>
-              <p>Foster local manufacturing and scientific expertise.</p>
+              <h3>Innovation</h3>
+              <p>Invest in advanced manufacturing and research partnerships.</p>
+            </article>
+            <article className="mission-item">
+              <h3>Responsibility</h3>
+              <p>Build sustainable operations that uplift communities and care delivery.</p>
             </article>
           </div>
         </div>
@@ -132,55 +182,23 @@ export default function Home() {
 
       <section className="container section split reveal-on-scroll" id="locations">
         <div>
-          <p className="eyebrow">Global Network</p>
-          <h2>Our Presence Worldwide.</h2>
+          <p className="eyebrow">Contact</p>
+          <h2>Global standards, local commitment.</h2>
           <p>
-            Corporate headquarters in Colombo, Sri Lanka, with integrated operations and partnerships
-            supporting multi-region product delivery and healthcare excellence globally.
+            From our production campus in Sri Lanka, we support healthcare institutions across the
+            region with dependable manufacturing and distribution capabilities.
           </p>
-          <p className="muted">📍 Factory Road, Colombo 05, Sri Lanka</p>
         </div>
-        <div className="map-placeholder" />
+        <div>
+          <p className="eyebrow">Head Office</p>
+          <h3>Synergy Pharmaceuticals</h3>
+          <p>
+            10.5-acre pharma campus, Sri Lanka<br />
+            Mon - Fri: 8:30 AM - 5:30 PM<br />
+            info@synergypharma.lk
+          </p>
+        </div>
       </section>
-
-      <footer className="container footer">
-        <div className="brand footer-logo">
-          <Image
-            src="/logo.png"
-            alt="Synergy Pharmaceuticals"
-            width={140}
-            height={40}
-          />
-        </div>
-        <span>© {new Date().getFullYear()} Synergy Pharmaceuticals Corporation. All rights reserved.</span>
-      </footer>
-
-      {isVisionOpen ? (
-        <div className="vision-modal-backdrop" onClick={() => setIsVisionOpen(false)} role="presentation">
-          <div
-            className="vision-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Synergy Vision"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <p className="eyebrow">Our Vision</p>
-            <h2>Advancing Human Health Through Precision</h2>
-            <p>
-              We are committed to delivering globally trusted pharmaceutical solutions built on
-              quality, sustainability, and scientific excellence.
-            </p>
-            <ul>
-              <li>Quality-first manufacturing standards</li>
-              <li>Affordable medicine accessibility across regions</li>
-              <li>Sustainable and innovation-led growth model</li>
-            </ul>
-            <button type="button" onClick={() => setIsVisionOpen(false)}>
-              Close
-            </button>
-          </div>
-        </div>
-      ) : null}
     </main>
   );
 }
