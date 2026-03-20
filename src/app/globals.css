@@ -249,7 +249,7 @@ a:hover {
   display: grid;
   align-items: flex-end;
   padding-top: 4.5rem;
-  background: url("/banner1.png") center top / cover no-repeat;
+  background: url("/banner3.png") center top / cover no-repeat;
   overflow: hidden;
   transition: min-height 0.45s cubic-bezier(0.22, 1, 0.36, 1), padding-top 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
