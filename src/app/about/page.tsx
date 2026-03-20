@@ -1,7 +1,7 @@
-import { SiteHeader } from "@/components/site-header";
+﻿import { SiteHeader } from "@/components/site-header";
 
 const leaders = [
-  "Ravi Wickrama",
+  "MR.RAVI WIJERATNE",
   "Dr. Ruwan Sen",
   "Board of Directors",
   "Senior Management",

@@ -162,6 +162,62 @@ a:hover {
   transform: scaleX(1);
 }
 
+.home-icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid rgba(5, 95, 124, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.68);
+  color: var(--primary-dark);
+  transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.home-icon-link svg {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+}
+
+.home-icon-link::after {
+  display: none;
+}
+
+.home-icon-link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(5, 95, 124, 0.32);
+  background: rgba(5, 95, 124, 0.1);
+  color: var(--primary);
+  box-shadow: 0 10px 24px rgba(16, 49, 73, 0.1);
+}
+
+.home-icon-link[data-active="true"] {
+  border-color: rgba(5, 95, 124, 0.36);
+  background: rgba(5, 95, 124, 0.12);
+  color: var(--primary);
+}
+
+.mobile-home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  justify-content: flex-start;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mobile-home-link svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
 .nav-toggle {
   display: none;
   width: 42px;
@@ -502,6 +558,7 @@ button:hover {
   border-radius: 18px;
 }
 
+
 .scope-label {
   margin: 0 0 0.7rem;
   font-size: 0.66rem;
@@ -672,6 +729,72 @@ button:hover {
 .reveal-on-scroll.is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+.mission-animate {
+  --mission-progress: 0;
+}
+
+.mission-animate .vision-panel,
+.mission-animate .mission-panel {
+  opacity: 0;
+  transform: translateX(calc(-56px + (var(--mission-progress) * 56px)));
+  transition:
+    opacity 0.72s ease,
+    transform 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
+}
+
+.mission-animate .vision-panel {
+  transition-delay: 0.02s;
+}
+
+.mission-animate .mission-panel {
+  transition-delay: 0.12s;
+}
+
+.mission-animate .mission-grid {
+  transform: translateX(calc(-22px + (var(--mission-progress) * 22px)));
+  transition: transform 0.35s ease, column-gap 0.35s ease, row-gap 0.35s ease;
+}
+
+.mission-animate .mission-item {
+  opacity: 0;
+  transform: translateX(calc(-30px + (var(--mission-progress) * 30px)));
+  transition:
+    opacity 0.55s ease,
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mission-animate .mission-item:nth-child(1) { transition-delay: 0.16s; }
+.mission-animate .mission-item:nth-child(2) { transition-delay: 0.22s; }
+.mission-animate .mission-item:nth-child(3) { transition-delay: 0.28s; }
+.mission-animate .mission-item:nth-child(4) { transition-delay: 0.34s; }
+
+.mission-animate.is-visible .vision-panel,
+.mission-animate.is-visible .mission-panel,
+.mission-animate.is-visible .mission-item {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.mission-animate.is-visible .mission-grid {
+  transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mission-animate .vision-panel,
+  .mission-animate .mission-panel,
+  .mission-animate .mission-grid,
+  .mission-animate .mission-item {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .mission-animate {
+    --mission-progress: 0;
+  }
 }
 
 .corporation-shrink {

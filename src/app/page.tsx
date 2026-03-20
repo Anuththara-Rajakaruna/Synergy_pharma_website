@@ -9,6 +9,7 @@ export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false);
   const heroRef = useRef<HTMLElement | null>(null);
   const corporationRef = useRef<HTMLElement | null>(null);
+  const missionRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const hero = heroRef.current;
@@ -98,6 +99,48 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const section = missionRef.current;
+
+    if (!section) {
+      return;
+    }
+
+    let rafId = 0;
+
+    const updateMissionSize = () => {
+      rafId = 0;
+      const rect = section.getBoundingClientRect();
+      const viewportHeight = window.innerHeight || 1;
+      const startLine = viewportHeight * 0.86;
+      const endLine = viewportHeight * 0.2;
+      const rawProgress = (startLine - rect.top) / (startLine - endLine);
+      const progress = Math.min(Math.max(rawProgress, 0), 1);
+
+      section.style.setProperty("--mission-progress", progress.toFixed(4));
+    };
+
+    const onScroll = () => {
+      if (rafId) {
+        return;
+      }
+
+      rafId = window.requestAnimationFrame(updateMissionSize);
+    };
+
+    updateMissionSize();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (rafId) {
+        window.cancelAnimationFrame(rafId);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     const elements = document.querySelectorAll(".reveal-on-scroll");
 
     const observer = new IntersectionObserver(
@@ -137,9 +180,6 @@ export default function Home() {
       <SiteHeader />
 
       <section ref={heroRef} className={`hero ${isScrolled ? "hero-compact" : ""}`} id="about">
-        <div className="hero-frame" aria-hidden>
-          <span className="hero-light" />
-        </div>
         <div className="hero-overlay" />
         <div className="hero-content hero-shell reveal-on-scroll is-visible">
           <p className="eyebrow">Precision Healthcare Manufacturing</p>
@@ -194,7 +234,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="container section mission-band reveal-on-scroll" id="quality">
+      <section ref={missionRef} className="container section mission-band reveal-on-scroll mission-animate" id="quality">
         <div className="vision-panel">
           <p className="eyebrow">Vision</p>
           <blockquote>
