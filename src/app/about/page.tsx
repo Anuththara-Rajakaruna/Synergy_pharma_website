@@ -1,10 +1,10 @@
 ﻿import { SiteHeader } from "@/components/site-header";
 
 const leaders = [
-  "MR.RAVI WIJERATNE",
-  "Dr. Ruwan Sen",
-  "Board of Directors",
-  "Senior Management",
+  { role: "Chairman", name: "Mr.Ravi Wijeratne" },
+  { role: "Managing Director", name: "Dr.Rohan Lalith Wijesundara" },
+  { role: "Director", name: "Mr.Rihi Wijeratne" },
+  { role: "Director", name: "Mr.Rahul Wijeratne" },
 ];
 
 export default function AboutPage() {
@@ -22,9 +22,10 @@ export default function AboutPage() {
 
         <div className="leaders">
           {leaders.map((leader) => (
-            <article className="leader" key={leader}>
+            <article className="leader" key={`${leader.role}-${leader.name}`}>
               <div className="avatar" />
-              <h3>{leader}</h3>
+              <p className="leader-role">{leader.role}</p>
+              <h3>{leader.name}</h3>
             </article>
           ))}
         </div>

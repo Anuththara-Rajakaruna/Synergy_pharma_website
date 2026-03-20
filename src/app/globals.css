@@ -1138,9 +1138,19 @@ button:hover {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
+.leader-role {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #2c7ca0;
+}
+
 .leader h3 {
   font-size: 1.1rem;
-  margin-bottom: 0.4rem;
+  margin: 0;
+  line-height: 1.4;
 }
 
 .map-placeholder {
