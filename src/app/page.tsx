@@ -8,6 +8,7 @@ export default function Home() {
   const [isVisionOpen, setIsVisionOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const heroRef = useRef<HTMLElement | null>(null);
+  const corporationRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const hero = heroRef.current;
@@ -16,16 +17,17 @@ export default function Home() {
     const updateHeroSize = () => {
       rafId = 0;
       const scrollY = window.scrollY || 0;
-      setIsScrolled(scrollY > 40);
+      setIsScrolled(scrollY > 24);
 
       if (!hero) {
         return;
       }
 
-      const progress = Math.min(scrollY / 180, 1);
+      const rawProgress = Math.min(scrollY / 240, 1);
+      const progress = 1 - Math.pow(1 - rawProgress, 2.8);
       const width = window.innerWidth || 0;
-      const startRatio = width <= 640 ? 0.72 : width <= 900 ? 0.78 : 0.9;
-      const endRatio = width <= 640 ? 0.42 : width <= 900 ? 0.48 : 0.52;
+      const startRatio = width <= 640 ? 0.74 : width <= 900 ? 0.82 : 0.92;
+      const endRatio = width <= 640 ? 0.34 : width <= 900 ? 0.42 : 0.46;
       const startMinHeight = window.innerHeight * startRatio;
       const endMinHeight = window.innerHeight * endRatio;
       const minHeight = startMinHeight - (startMinHeight - endMinHeight) * progress;
@@ -41,6 +43,48 @@ export default function Home() {
     };
 
     updateHeroSize();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (rafId) {
+        window.cancelAnimationFrame(rafId);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const section = corporationRef.current;
+
+    if (!section) {
+      return;
+    }
+
+    let rafId = 0;
+
+    const updateCorporationSize = () => {
+      rafId = 0;
+      const rect = section.getBoundingClientRect();
+      const viewportHeight = window.innerHeight || 1;
+      const startLine = viewportHeight * 0.8;
+      const endLine = viewportHeight * 0.18;
+      const rawProgress = (startLine - rect.top) / (startLine - endLine);
+      const progress = Math.min(Math.max(rawProgress, 0), 1);
+
+      section.style.setProperty("--corporation-progress", progress.toFixed(4));
+    };
+
+    const onScroll = () => {
+      if (rafId) {
+        return;
+      }
+
+      rafId = window.requestAnimationFrame(updateCorporationSize);
+    };
+
+    updateCorporationSize();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
 
@@ -111,7 +155,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="container section manufacture-showcase reveal-on-scroll" id="corporation">
+      <section ref={corporationRef} className="container section manufacture-showcase reveal-on-scroll corporation-shrink" id="corporation">
         <div className="showcase-media">
           <div className="showcase-image">
             <Image
