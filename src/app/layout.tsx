@@ -1,6 +1,7 @@
 ﻿import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
+import { SiteFooter } from "@/components/site-footer";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -34,7 +35,10 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/logo.png" />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className={manrope.className}>{children}</body>
+      <body className={manrope.className}>
+  {children}
+  <SiteFooter />
+</body>
     </html>
   );
 }

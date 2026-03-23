@@ -264,25 +264,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="container section split reveal-on-scroll" id="locations">
-        <div>
-          <p className="eyebrow">Contact</p>
-          <h2>Global standards, local commitment.</h2>
-          <p>
-            From our production campus in Sri Lanka, we support healthcare institutions across the
-            region with dependable manufacturing and distribution capabilities.
-          </p>
-        </div>
-        <div>
-          <p className="eyebrow">Head Office</p>
-          <h3>Synergy Pharmaceuticals</h3>
-          <p>
-            10.5-acre pharma campus, Sri Lanka<br />
-            Mon - Fri: 8:30 AM - 5:30 PM<br />
-            info@synergypharma.lk
-          </p>
-        </div>
-      </section>
     </main>
   );
 }
