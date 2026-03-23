@@ -3,7 +3,7 @@
 const leaders = [
   { role: "Chairman", name: "Mr.Ravi Wijeratne" },
   { role: "Managing Director", name: "Dr.Rohan Lalith Wijesundara" },
-  { role: "Director", name: "Mr.Rihi Wijeratne" },
+  { role: "Director", name: "Mr.Rishi Wijeratne" },
   { role: "Director", name: "Mr.Rahul Wijeratne" },
 ];
 

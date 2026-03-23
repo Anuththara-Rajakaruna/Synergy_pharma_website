@@ -15,6 +15,21 @@
   --bg-card: #f7fbfd;
 }
 
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --primary: #7fcae3;
+  --primary-light: #a8def1;
+  --primary-dark: #effaff;
+  --accent: #7faeff;
+  --accent-light: #9bc0ff;
+  --text-dark: #e8f2f8;
+  --text-muted: #b1c1cd;
+  --text-light: #88a0b2;
+  --border-light: #304453;
+  --bg-light: #08131d;
+  --bg-card: #10202b;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -28,6 +43,7 @@ body {
   color: var(--text-dark);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 html {
@@ -216,6 +232,67 @@ a:hover {
 .mobile-home-link svg {
   width: 1.05rem;
   height: 1.05rem;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid rgba(5, 95, 124, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--primary-dark);
+  padding: 0.62rem 0.9rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.theme-toggle svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  fill: currentColor;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-1px);
+  border-color: rgba(5, 95, 124, 0.34);
+  background: rgba(5, 95, 124, 0.1);
+  color: var(--primary);
+  box-shadow: 0 10px 24px rgba(16, 49, 73, 0.1);
+}
+
+.theme-toggle[aria-pressed="true"] {
+  background: rgba(5, 95, 124, 0.14);
+  border-color: rgba(5, 95, 124, 0.38);
+  color: var(--primary);
+}
+
+.desktop-theme-toggle {
+  width: 2.5rem;
+  height: 2.5rem;
+  justify-content: center;
+  padding: 0;
+  gap: 0;
+}
+
+.desktop-theme-toggle svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.desktop-theme-toggle span {
+  display: none;
+}
+
+.mobile-theme-toggle {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
 }
 
 .nav-toggle {
@@ -1022,6 +1099,105 @@ button:hover {
 
 .manufacturing-capabilities-page {
   padding-top: 4.8rem;
+}
+
+html[data-theme="dark"] body {
+  background: linear-gradient(180deg, #08131d 0%, #0b1a26 52%, #102130 100%);
+}
+
+html[data-theme="dark"] .landing-page,
+html[data-theme="dark"] .about-page,
+html[data-theme="dark"] .manufacturing-page,
+html[data-theme="dark"] .manufacturing-capabilities-page {
+  background: linear-gradient(180deg, #08131d 0%, #0c1b28 46%, #102130 100%);
+}
+
+html[data-theme="dark"] .topbar {
+  background: rgba(8, 18, 28, 0.9);
+  border-bottom-color: #263847;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+}
+
+html[data-theme="dark"] .topbar-scrolled {
+  background: rgba(8, 18, 28, 0.96);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+}
+
+html[data-theme="dark"] .desktop-nav a,
+html[data-theme="dark"] .brand,
+html[data-theme="dark"] .mobile-nav nav a {
+  color: var(--text-muted);
+}
+
+html[data-theme="dark"] .nav-toggle {
+  background: rgba(16, 31, 44, 0.92);
+  border-color: #35506a;
+}
+
+html[data-theme="dark"] .nav-toggle span {
+  background: #dbeef8;
+}
+
+html[data-theme="dark"] .mobile-nav nav {
+  background: linear-gradient(170deg, #10202b 0%, #152938 100%);
+  border-color: #314859;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+}
+
+html[data-theme="dark"] .mobile-nav nav a:hover,
+html[data-theme="dark"] .mobile-nav nav .contact-link,
+html[data-theme="dark"] .theme-toggle,
+html[data-theme="dark"] .home-icon-link {
+  background: rgba(127, 202, 227, 0.08);
+}
+
+html[data-theme="dark"] .contact-link,
+html[data-theme="dark"] .theme-toggle,
+html[data-theme="dark"] .home-icon-link,
+html[data-theme="dark"] .nav-toggle,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .mission-band,
+html[data-theme="dark"] .manufacture-showcase,
+html[data-theme="dark"] .scope-card,
+html[data-theme="dark"] .image-block,
+html[data-theme="dark"] .map-placeholder,
+html[data-theme="dark"] .vision-modal,
+html[data-theme="dark"] .avatar {
+  border-color: #304453;
+}
+
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .mission-band,
+html[data-theme="dark"] .manufacture-showcase,
+html[data-theme="dark"] .scope-card,
+html[data-theme="dark"] .image-block,
+html[data-theme="dark"] .map-placeholder,
+html[data-theme="dark"] .vision-modal {
+  background: linear-gradient(165deg, rgba(17, 31, 42, 0.98), rgba(12, 24, 34, 0.96));
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+}
+
+html[data-theme="dark"] .section:nth-child(odd) {
+  background: rgba(14, 28, 39, 0.52);
+}
+
+html[data-theme="dark"] .showcase-content h2,
+html[data-theme="dark"] .vision-panel blockquote,
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] strong {
+  color: var(--text-dark);
+}
+
+html[data-theme="dark"] p,
+html[data-theme="dark"] .showcase-copy,
+html[data-theme="dark"] .scope-copy,
+html[data-theme="dark"] .hero-copy,
+html[data-theme="dark"] .mission-item p,
+html[data-theme="dark"] .leader-role,
+html[data-theme="dark"] .showcase-metrics span {
+  color: var(--text-muted);
 }
 
 .leadership-page-section {
