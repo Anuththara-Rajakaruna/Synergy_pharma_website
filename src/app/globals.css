@@ -446,6 +446,41 @@ a:hover {
   color: #fff;
 }
 
+.about-hero-content {
+  padding-top: 2.6rem;
+  padding-bottom: 8.4rem;
+}
+.about-hero-kicker,
+.about-hero-title,
+.about-hero-copy-line {
+  opacity: 0;
+  transform: translateY(22px);
+  animation: aboutHeroTextIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.about-hero-kicker {
+  animation-delay: 0.08s;
+}
+
+.about-hero-title {
+  animation-delay: 0.18s;
+}
+
+.about-hero-copy {
+  overflow: hidden;
+}
+
+.about-hero-copy-line {
+  display: block;
+}
+
+.about-hero-copy-line-1 {
+  animation-delay: 0.3s;
+}
+
+.about-hero-copy-line-2 {
+  animation-delay: 0.42s;
+}
 .hero-content h1,
 .hero-content p,
 .hero-content .eyebrow,
@@ -1048,6 +1083,17 @@ button:hover {
   }
 }
 
+@keyframes aboutHeroTextIn {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -1071,6 +1117,9 @@ button:hover {
 @media (prefers-reduced-motion: reduce) {
   .hero-light,
   .reveal-on-scroll,
+  .about-hero-kicker,
+  .about-hero-title,
+  .about-hero-copy-line,
   .vision-modal-backdrop,
   .vision-modal {
     animation: none !important;
@@ -1241,6 +1290,10 @@ html[data-theme="dark"] .showcase-metrics span {
 
 .landing-page .mission-band:last-of-type {
   padding-bottom: 3.2rem;
+}
+
+.about-vision-panel {
+  gap: 1.5rem;
 }
 
 .vision-panel,
@@ -1822,8 +1875,7 @@ html[data-theme="dark"] .footer-col address {
   .leadership-page-section {
     padding-top: 3.2rem;
   }
-
-  .vision-panel blockquote {
+.vision-panel blockquote {
     max-width: none;
     font-size: clamp(1.45rem, 6vw, 2rem);
   }
