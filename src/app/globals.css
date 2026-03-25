@@ -468,8 +468,14 @@ a:hover {
 }
 
 .about-hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
   padding-top: 2.6rem;
   padding-bottom: 8.4rem;
+  transform: translateY(calc(var(--about-hero-content-shift, 0px) * -1.15));
+  opacity: var(--about-hero-content-opacity, 1);
+  will-change: transform, opacity;
 }
 .about-hero-kicker,
 .about-hero-title,
@@ -481,10 +487,12 @@ a:hover {
 
 .about-hero-kicker {
   animation-delay: 0.08s;
+  transform: translateY(calc(var(--about-hero-content-shift, 0px) * -0.4));
 }
 
 .about-hero-title {
   animation-delay: 0.18s;
+  transform: translateY(calc(var(--about-hero-content-shift, 0px) * -0.2));
 }
 
 .about-hero-copy {

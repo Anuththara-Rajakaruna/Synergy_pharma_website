@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef } from "react";
 
 import { SiteHeader } from "@/components/site-header";
+import { RevealOnScroll } from "@/components/reveal-on-scroll";
 
 const leaders = [
   { role: "Chairman", name: "Mr.Ravi Wijeratne" },
@@ -45,6 +46,7 @@ const aboutCards = [
 
 export default function AboutPage() {
   const heroRef = useRef<HTMLElement | null>(null);
+  const missionRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const hero = heroRef.current;
@@ -68,8 +70,8 @@ export default function AboutPage() {
       const minHeight = startMinHeight - (startMinHeight - endMinHeight) * progress;
       hero.style.setProperty("--hero-min-h", `${minHeight.toFixed(2)}px`);
       hero.style.setProperty("--about-hero-hide", progress.toFixed(4));
-      hero.style.setProperty("--about-hero-content-shift", `${(progress * 34).toFixed(2)}px`);
-      hero.style.setProperty("--about-hero-content-opacity", `${(1 - progress * 0.24).toFixed(4)}`);
+      hero.style.setProperty("--about-hero-content-shift", `${(progress * 48).toFixed(2)}px`);
+      hero.style.setProperty("--about-hero-content-opacity", `${(1 - progress * 0.45).toFixed(4)}`);
       hero.style.backgroundPosition = `center ${(100 - progress * 20).toFixed(2)}%`;
       hero.style.backgroundSize = `${(135 + progress * 10).toFixed(2)}%`;
     };
@@ -95,9 +97,52 @@ export default function AboutPage() {
     };
   }, []);
 
+  useEffect(() => {
+    const section = missionRef.current;
+
+    if (!section) {
+      return;
+    }
+
+    let rafId = 0;
+
+    const updateMissionSize = () => {
+      rafId = 0;
+      const rect = section.getBoundingClientRect();
+      const viewportHeight = window.innerHeight || 1;
+      const startLine = viewportHeight * 0.86;
+      const endLine = viewportHeight * 0.2;
+      const rawProgress = (startLine - rect.top) / (startLine - endLine);
+      const progress = Math.min(Math.max(rawProgress, 0), 1);
+
+      section.style.setProperty("--mission-progress", progress.toFixed(4));
+    };
+
+    const onScroll = () => {
+      if (rafId) {
+        return;
+      }
+
+      rafId = window.requestAnimationFrame(updateMissionSize);
+    };
+
+    updateMissionSize();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (rafId) {
+        window.cancelAnimationFrame(rafId);
+      }
+    };
+  }, []);
+
   return (
     <main className="about-page">
       <SiteHeader />
+      <RevealOnScroll />
 
       <section
         ref={heroRef}
@@ -110,7 +155,7 @@ export default function AboutPage() {
         }}
       >
         <div className="hero-overlay" />
-        <div className="hero-content hero-shell about-hero-content">
+        <div className="hero-content hero-shell about-hero-content reveal-on-scroll is-visible">
           <p className="eyebrow about-hero-kicker">About Synergy</p>
           <h1 className="about-hero-title">
             Built on trust,
@@ -128,17 +173,17 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="container section leadership-page-section" id="leadership">
+      <section className="container section leadership-page-section reveal-on-scroll" id="leadership">
         <p className="eyebrow">Organization</p>
         <h1>Leadership &amp; Vision</h1>
-        <p className="showcase-copy capabilities-intro">
+        <p className="showcase-copy capabilities-intro"><br></br>
           Our strategic leadership team drives long-term innovation, governance, and sustainable
           growth across all pharmaceutical operations.
         </p>
 
         <div className="leaders">
           {leaders.map((leader) => (
-            <article className="leader" key={`${leader.role}-${leader.name}`}>
+            <article className="leader reveal-on-scroll" key={`${leader.role}-${leader.name}`}>
               <div className="avatar" />
               <p className="leader-role">{leader.role}</p>
               <h3>{leader.name}</h3>
@@ -147,7 +192,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="container section" id="about-businesses">
+      <section className="container section reveal-on-scroll" id="about-businesses">
         <p className="eyebrow">Our Ecosystem</p>
         <h2>Connected businesses shaping the Synergy story.</h2>
         <div className="about-cards">
@@ -157,7 +202,7 @@ export default function AboutPage() {
 
             return (
               <article
-                className={`card about-card ${isImageLeft ? "about-card-reverse" : ""}`.trim()}
+                className={`card about-card reveal-on-scroll ${isImageLeft ? "about-card-reverse" : ""}`.trim()}
                 key={card.title}
               >
                 <div className="about-card-body">
@@ -185,7 +230,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="container section mission-band" id="about-vision-mission">
+      <section ref={missionRef} className="container section mission-band reveal-on-scroll mission-animate" id="about-vision-mission">
         <div className="vision-panel about-vision-panel">
           <p className="eyebrow">Vision</p>
           <blockquote>
