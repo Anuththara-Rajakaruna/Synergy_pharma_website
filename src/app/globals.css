@@ -2396,6 +2396,113 @@ html[data-theme="dark"] .footer-social-link:hover {
 
 
 
+.ecosystem-pattern-section {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+}
+
+.ecosystem-pattern-section::before,
+.ecosystem-pattern-section::after {
+  content: "";
+  position: absolute;
+  top: 2.5rem;
+  bottom: 2rem;
+  width: min(46vw, 560px);
+  pointer-events: none;
+  opacity: 0.82;
+  z-index: 0;
+  background-repeat: no-repeat;
+  background-size:
+    126px 146px,
+    126px 146px,
+    126px 146px,
+    126px 146px,
+    126px 146px,
+    126px 146px,
+    126px 146px;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%2360d5c5' stroke-opacity='0.92' stroke-width='1.5'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%2360d5c5' stroke-opacity='0.92' stroke-width='1.5'/%3E%3Cpath d='M60 109c0-15 18-16 18-31 0-14-18-16-18-31' fill='none' stroke='%2360d5c5' stroke-opacity='0.92' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%2360d5c5' stroke-opacity='0.92' stroke-width='1.5'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%2360d5c5' stroke-opacity='0.92' stroke-width='1.5'/%3E%3Cpath d='M60 109c0-15 18-16 18-31 0-14-18-16-18-31' fill='none' stroke='%2360d5c5' stroke-opacity='0.92' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%2360d5c5' stroke-opacity='0.92' stroke-width='1.5'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%2360d5c5' stroke-opacity='0.92' stroke-width='1.5'/%3E%3Cpath d='M60 109c0-15 18-16 18-31 0-14-18-16-18-31' fill='none' stroke='%2360d5c5' stroke-opacity='0.92' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%2360d5c5' stroke-opacity='0.92' stroke-width='1.5'/%3E%3C/svg%3E");
+}
+
+.ecosystem-pattern-section::before {
+  left: -7rem;
+  background-position:
+    left 34px top 34px,
+    left 172px top 128px,
+    left 18px top 248px,
+    left 176px top 364px,
+    left 42px top 484px,
+    left 198px top 592px,
+    left 88px top 706px;
+}
+
+.ecosystem-pattern-section::after {
+  right: -6rem;
+  background-position:
+    right 44px top 6px,
+    right 176px top 92px,
+    right 24px top 214px,
+    right 176px top 332px,
+    right 38px top 450px,
+    right 204px top 554px,
+    right 90px top 672px;
+}
+
+.ecosystem-pattern-section > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 900px) {
+  .ecosystem-pattern-section::before,
+  .ecosystem-pattern-section::after {
+    top: 3.5rem;
+    right: -5.5rem;
+    bottom: auto;
+    width: min(62vw, 330px);
+    opacity: 0.52;
+    background-size:
+      92px 106px,
+      92px 106px,
+      92px 106px,
+      92px 106px,
+      92px 106px,
+      92px 106px,
+      92px 106px;
+    background-position:
+      right 24px top 8px,
+      right 116px top 76px,
+      right 8px top 164px,
+      right 116px top 252px,
+      right 22px top 340px,
+      right 136px top 416px,
+      right 60px top 500px;
+  }
+
+  .ecosystem-pattern-section::before {
+    left: -6.5rem;
+    right: auto;
+    background-position:
+      left 20px top 22px,
+      left 108px top 98px,
+      left 4px top 186px,
+      left 110px top 274px,
+      left 20px top 362px,
+      left 132px top 438px,
+      left 56px top 520px;
+  }
+
+  .ecosystem-pattern-section::after {
+    left: auto;
+  }
+}
 .about-cards {
   margin-top: 3rem;
   gap: 2.2rem;

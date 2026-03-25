@@ -192,7 +192,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="container section reveal-on-scroll" id="about-businesses">
+      <section className="container section ecosystem-pattern-section reveal-on-scroll" id="about-businesses">
         <p className="eyebrow">Our Ecosystem</p>
         <h2>Connected businesses shaping the Synergy story.</h2>
         <div className="about-cards">
