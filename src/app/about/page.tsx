@@ -12,6 +12,37 @@ const leaders = [
   { role: "Director", name: "Mr.Rahul Wijeratne" },
 ];
 
+const aboutCards = [
+  {
+    title: "Mother Company Rank Holdings",
+    description:
+      "The parent group that provides strategic direction, long-term investment confidence, and diversified business strength across the Synergy ecosystem.",
+    cta: "Explore the group",
+    image: "/rank1.png",
+  },
+  {
+    title: "Synergy Pharmaceuticals",
+    description:
+      "Our pharmaceutical arm focused on high-quality manufacturing, trusted compliance, and scalable healthcare solutions for regional markets.",
+    cta: "View operations",
+    image: "/company.png",
+  },
+  {
+    title: "Our Business",
+    description:
+      "A connected healthcare business model spanning manufacturing, diagnostics, and enterprise support to create dependable long-term value.",
+    cta: "See our model",
+    image: "/lab.png",
+  },
+  {
+    title: "Synergy Diagnostics",
+    description:
+      "A diagnostics-focused extension of the group, supporting faster insights, stronger care pathways, and a broader healthcare footprint.",
+    cta: "Discover diagnostics",
+    image: "/diagonastic.png",
+  },
+];
+
 export default function AboutPage() {
   const heroRef = useRef<HTMLElement | null>(null);
 
@@ -36,6 +67,11 @@ export default function AboutPage() {
       const endMinHeight = window.innerHeight * endRatio;
       const minHeight = startMinHeight - (startMinHeight - endMinHeight) * progress;
       hero.style.setProperty("--hero-min-h", `${minHeight.toFixed(2)}px`);
+      hero.style.setProperty("--about-hero-hide", progress.toFixed(4));
+      hero.style.setProperty("--about-hero-content-shift", `${(progress * 34).toFixed(2)}px`);
+      hero.style.setProperty("--about-hero-content-opacity", `${(1 - progress * 0.24).toFixed(4)}`);
+      hero.style.backgroundPosition = `center ${(100 - progress * 20).toFixed(2)}%`;
+      hero.style.backgroundSize = `${(135 + progress * 10).toFixed(2)}%`;
     };
 
     const onScroll = () => {
@@ -65,12 +101,12 @@ export default function AboutPage() {
 
       <section
         ref={heroRef}
-        className="hero"
+        className="hero about-hero"
         id="about"
         style={{
           backgroundImage: 'url("/manufacturing-showcase-v2.jpg")',
-          backgroundPosition: 'center 100%',
-          backgroundSize: '135%',
+          backgroundPosition: "center 100%",
+          backgroundSize: "135%",
         }}
       >
         <div className="hero-overlay" />
@@ -94,7 +130,7 @@ export default function AboutPage() {
 
       <section className="container section leadership-page-section" id="leadership">
         <p className="eyebrow">Organization</p>
-        <h1>Leadership & Vision</h1>
+        <h1>Leadership &amp; Vision</h1>
         <p className="showcase-copy capabilities-intro">
           Our strategic leadership team drives long-term innovation, governance, and sustainable
           growth across all pharmaceutical operations.
@@ -108,6 +144,44 @@ export default function AboutPage() {
               <h3>{leader.name}</h3>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className="container section" id="about-businesses">
+        <p className="eyebrow">Our Ecosystem</p>
+        <h2>Connected businesses shaping the Synergy story.</h2>
+        <div className="about-cards">
+          {aboutCards.map((card, index) => {
+            const isImageLeft = index === 0 || index === 2;
+            const isRankCard = card.title === "Mother Company Rank Holdings";
+
+            return (
+              <article
+                className={`card about-card ${isImageLeft ? "about-card-reverse" : ""}`.trim()}
+                key={card.title}
+              >
+                <div className="about-card-body">
+                  <div className="about-card-copy">
+                    <h3>{card.title}</h3>
+                    <p>{card.description}</p>
+                    <span className="about-card-link">
+                      {card.cta}
+                      <span aria-hidden="true">→</span>
+                    </span>
+                  </div>
+                  <div className={`about-card-image ${isRankCard ? "about-card-image-rank" : ""}`.trim()}>
+                    <Image
+                      src={card.image}
+                      alt={card.title}
+                      fill
+                      className={`showcase-photo ${isRankCard ? "about-card-image-rank-photo" : ""}`.trim()}
+                      sizes="(max-width: 900px) 100vw, 34vw"
+                    />
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
@@ -143,3 +217,8 @@ export default function AboutPage() {
     </main>
   );
 }
+
+
+
+
+

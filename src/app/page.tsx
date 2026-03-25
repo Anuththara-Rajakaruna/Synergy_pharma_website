@@ -183,7 +183,7 @@ export default function Home() {
         <div className="hero-overlay" />
         <div className="hero-content hero-shell reveal-on-scroll is-visible">
           <p className="eyebrow">Precision Healthcare Manufacturing</p>
-          <h1>Advancing <br></br>
+          <h1>Advancing 
             human health through precision.</h1>
           <p className="hero-copy">
             Delivering high-quality, affordable medicines manufactured in Sri Lanka for the global
