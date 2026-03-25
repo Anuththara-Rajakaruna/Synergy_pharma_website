@@ -1366,6 +1366,11 @@ html[data-theme="dark"] .about-card-copy p {
 
 html[data-theme="dark"] .about-card-link {
   color: var(--primary-light);
+  text-decoration: none;
+}
+
+.about-card:hover .about-card-link {
+  text-decoration: none;
 }
 
 html[data-theme="dark"] .about-card-image-rank {
@@ -2400,14 +2405,8 @@ html[data-theme="dark"] .footer-social-link:hover {
   transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
 }
 
-.about-card-body::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #0a6f98 0%, #3ba5d0 45%, #85d0eb 100%);
+.about-card::before {
+  display: none;
 }
 
 .about-card:hover .about-card-body {
@@ -2443,6 +2442,11 @@ html[data-theme="dark"] .footer-social-link:hover {
   margin-top: 0.35rem;
   font-size: 0.98rem;
   font-weight: 800;
+  text-decoration: none;
+}
+
+.about-card:hover .about-card-link {
+  text-decoration: none;
 }
 
 .about-card-link span {
@@ -2496,6 +2500,11 @@ html[data-theme="dark"] .about-card-copy p {
 
 html[data-theme="dark"] .about-card-link {
   color: var(--primary-light);
+  text-decoration: none;
+}
+
+.about-card:hover .about-card-link {
+  text-decoration: none;
 }
 
 html[data-theme="dark"] .about-card-link span {
