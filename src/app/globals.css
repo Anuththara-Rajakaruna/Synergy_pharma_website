@@ -1293,8 +1293,65 @@ button:hover {
 
 .about-page {
   min-height: 100vh;
-  padding-top: 5.6rem;
+  padding-top: 0;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   background: linear-gradient(180deg, #eef5f9 0%, #edf4f8 46%, #e5eef4 100%);
+}
+
+.about-page::before,
+.about-page::after {
+  content: "";
+  position: absolute;
+  top: clamp(30rem, 48vw, 38rem);
+  width: min(30vw, 360px);
+  height: min(92rem, calc(100% - 34rem));
+  pointer-events: none;
+  opacity: 0.34;
+  z-index: 0;
+  background-repeat: no-repeat;
+  background-size:
+    108px 126px,
+    108px 126px,
+    108px 126px,
+    108px 126px,
+    108px 126px,
+    108px 126px;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%2360d5c5' stroke-opacity='0.88' stroke-width='1.4'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%2360d5c5' stroke-opacity='0.88' stroke-width='1.4'/%3E%3Cpath d='M60 109c0-15 18-16 18-31 0-14-18-16-18-31' fill='none' stroke='%2360d5c5' stroke-opacity='0.88' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%2360d5c5' stroke-opacity='0.88' stroke-width='1.4'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%2360d5c5' stroke-opacity='0.88' stroke-width='1.4'/%3E%3Cpath d='M60 109c0-15 18-16 18-31 0-14-18-16-18-31' fill='none' stroke='%2360d5c5' stroke-opacity='0.88' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%2360d5c5' stroke-opacity='0.88' stroke-width='1.4'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%2360d5c5' stroke-opacity='0.88' stroke-width='1.4'/%3E%3C/svg%3E");
+}
+
+.about-page::before {
+  left: -6.5rem;
+  background-position:
+    left 24px top 20px,
+    left 128px top 104px,
+    left 18px top 222px,
+    left 136px top 336px,
+    left 34px top 452px,
+    left 150px top 564px;
+}
+
+.about-page::after {
+  right: -6rem;
+  background-position:
+    right 30px top 24px,
+    right 136px top 112px,
+    right 16px top 230px,
+    right 142px top 344px,
+    right 28px top 460px,
+    right 148px top 574px;
+}
+
+.about-page > * {
+  position: relative;
+  z-index: 1;
 }
 
 .manufacturing-capabilities-page {
@@ -1312,6 +1369,17 @@ html[data-theme="dark"] .manufacturing-capabilities-page {
   background: linear-gradient(180deg, #08131d 0%, #0c1b28 46%, #102130 100%);
 }
 
+html[data-theme="dark"] .about-page::before,
+html[data-theme="dark"] .about-page::after {
+  opacity: 0.22;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%237fcae3' stroke-opacity='0.7' stroke-width='1.4'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%237fcae3' stroke-opacity='0.7' stroke-width='1.4'/%3E%3Cpath d='M60 109c0-15 18-16 18-31 0-14-18-16-18-31' fill='none' stroke='%237fcae3' stroke-opacity='0.7' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%237fcae3' stroke-opacity='0.7' stroke-width='1.4'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%237fcae3' stroke-opacity='0.7' stroke-width='1.4'/%3E%3Cpath d='M60 109c0-15 18-16 18-31 0-14-18-16-18-31' fill='none' stroke='%237fcae3' stroke-opacity='0.7' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%237fcae3' stroke-opacity='0.7' stroke-width='1.4'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%237fcae3' stroke-opacity='0.7' stroke-width='1.4'/%3E%3C/svg%3E");
+}
 html[data-theme="dark"] .topbar {
   background: rgba(8, 18, 28, 0.9);
   border-bottom-color: #263847;
@@ -2062,46 +2130,62 @@ html[data-theme="dark"] .footer-col address {
   }
 
   .about-page {
-    padding-top: 5.2rem;
+    padding-top: 0;
   }
 
-  .manufacturing-capabilities-page {
-    padding-top: 3.2rem;
-  }
 
-  .leadership-page-section {
-    padding-top: 3.2rem;
-  }
-.vision-panel blockquote {
-    max-width: none;
-    font-size: clamp(1.45rem, 6vw, 2rem);
-  }
+.about-page::before,
+.about-page::after {
+  content: "";
+  position: absolute;
+  top: clamp(30rem, 48vw, 38rem);
+  width: min(30vw, 360px);
+  height: min(92rem, calc(100% - 34rem));
+  pointer-events: none;
+  opacity: 0.34;
+  z-index: 0;
+  background-repeat: no-repeat;
+  background-size:
+    108px 126px,
+    108px 126px,
+    108px 126px,
+    108px 126px,
+    108px 126px,
+    108px 126px;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%2360d5c5' stroke-opacity='0.88' stroke-width='1.4'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%2360d5c5' stroke-opacity='0.88' stroke-width='1.4'/%3E%3Cpath d='M60 109c0-15 18-16 18-31 0-14-18-16-18-31' fill='none' stroke='%2360d5c5' stroke-opacity='0.88' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%2360d5c5' stroke-opacity='0.88' stroke-width='1.4'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%2360d5c5' stroke-opacity='0.88' stroke-width='1.4'/%3E%3Cpath d='M60 109c0-15 18-16 18-31 0-14-18-16-18-31' fill='none' stroke='%2360d5c5' stroke-opacity='0.88' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%2360d5c5' stroke-opacity='0.88' stroke-width='1.4'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 140'%3E%3Cpath d='M60 8 104 34v50l-44 26L16 84V34L60 8Z' fill='none' stroke='%2360d5c5' stroke-opacity='0.88' stroke-width='1.4'/%3E%3C/svg%3E");
+}
 
-  .mission-grid {
-    grid-template-columns: 1fr;
-    gap: 1.1rem;
-  }
+.about-page::before {
+  left: -6.5rem;
+  background-position:
+    left 24px top 20px,
+    left 128px top 104px,
+    left 18px top 222px,
+    left 136px top 336px,
+    left 34px top 452px,
+    left 150px top 564px;
+}
 
-  .mission-item:last-child {
-    grid-column: auto;
-  }
+.about-page::after {
+  right: -6rem;
+  background-position:
+    right 30px top 24px,
+    right 136px top 112px,
+    right 16px top 230px,
+    right 142px top 344px,
+    right 28px top 460px,
+    right 148px top 574px;
+}
 
-  .mission-item p {
-    max-width: none;
-  }
-
-  .image-block {
-    min-height: 280px;
-  }
-
-  .metrics {
-    gap: 1.5rem;
-  }
-
-  .card {
-    padding: 1.5rem;
-    min-height: auto;
-  }
+.about-page > * {
+  position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 640px) {
@@ -2636,3 +2720,5 @@ html[data-theme="dark"] .about-card-image-rank {
   background: linear-gradient(180deg, rgba(17, 31, 42, 0.82), rgba(12, 24, 34, 0.92));
 }
 
+
+}
