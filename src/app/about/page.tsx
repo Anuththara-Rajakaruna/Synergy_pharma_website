@@ -62,11 +62,8 @@ export default function AboutPage() {
 
       const rawProgress = Math.min(scrollY / 240, 1);
       const progress = 1 - Math.pow(1 - rawProgress, 2.8);
-      const width = window.innerWidth || 0;
-      const startRatio = width <= 640 ? 0.74 : width <= 900 ? 0.82 : 0.92;
-      const endRatio = width <= 640 ? 0.34 : width <= 900 ? 0.42 : 0.46;
-      const startMinHeight = window.innerHeight * startRatio;
-      const endMinHeight = window.innerHeight * endRatio;
+      const startMinHeight = 600;
+      const endMinHeight = 300;
       const minHeight = startMinHeight - (startMinHeight - endMinHeight) * progress;
       hero.style.setProperty("--hero-min-h", `${minHeight.toFixed(2)}px`);
       hero.style.setProperty("--about-hero-hide", progress.toFixed(4));
@@ -144,89 +141,85 @@ export default function AboutPage() {
       <SiteHeader />
       <RevealOnScroll />
 
-      <section
-        ref={heroRef}
-        className="hero about-hero"
-        id="about"
-        style={{
-          backgroundImage: 'url("/manufacturing-showcase-v2.jpg")',
-          backgroundPosition: "center 100%",
-          backgroundSize: "135%",
-        }}
-      >
-        <div className="hero-overlay" />
-        <div className="hero-content hero-shell about-hero-content reveal-on-scroll is-visible">
-          <p className="eyebrow about-hero-kicker">About Synergy</p>
-          <h1 className="about-hero-title">
-            Built on trust,
-            <br />
-            driven by precision.
-          </h1>
-          <p className="hero-copy about-hero-copy">
-            <span className="about-hero-copy-line about-hero-copy-line-1">
-              Synergy Pharmaceutical combines visionary leadership, responsible manufacturing, and
-            </span>
-            <span className="about-hero-copy-line about-hero-copy-line-2">
-              quality-first operations to deliver healthcare solutions that matter across the region.
-            </span>
+      <section className="about-hero-section" id="about">
+        <img src="/left-grad.svg" alt="" className="gradient-decorator gradient-decorator-left" />
+        <img src="/right-grad.svg" alt="" className="gradient-decorator gradient-decorator-right" />
+        <div className="container about-hero-content">
+          <p className="hero-eyebrow">About Synergy</p>
+          <h1>Built on trust, driven by precision.</h1>
+          <p>
+            Synergy Pharmaceutical combines visionary leadership, responsible manufacturing, and
+            quality-first operations to deliver healthcare solutions that matter across the region.
           </p>
         </div>
       </section>
 
-      <section className="container section leadership-page-section reveal-on-scroll" id="leadership">
-        <p className="eyebrow">Organization</p>
-        <h1>Leadership &amp; Vision</h1>
-        <p className="showcase-copy capabilities-intro"><br></br>
-          Our strategic leadership team drives long-term innovation, governance, and sustainable
-          growth across all pharmaceutical operations.
-        </p>
+      <section className="leadership-section reveal-on-scroll" id="leadership">
+        <div className="leadership-container">
+          <div className="leadership-header">
+            <p className="leadership-eyebrow">Organization</p>
+            <h2>Leadership &amp; Vision</h2>
+            <p className="leadership-subtitle">
+              Our strategic leadership team drives long-term innovation, governance, and sustainable
+              growth across all pharmaceutical operations.
+            </p>
+          </div>
 
-        <div className="leaders">
-          {leaders.map((leader) => (
-            <article className="leader reveal-on-scroll" key={`${leader.role}-${leader.name}`}>
-              <div className="avatar" />
-              <p className="leader-role">{leader.role}</p>
-              <h3>{leader.name}</h3>
-            </article>
-          ))}
+          <div className="leaders">
+            {leaders.map((leader) => (
+              <article className="leader reveal-on-scroll" key={`${leader.role}-${leader.name}`}>
+                <div className="avatar" />
+                <p className="leader-role">{leader.role}</p>
+                <h3>{leader.name}</h3>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="container section ecosystem-pattern-section reveal-on-scroll" id="about-businesses">
-        <p className="eyebrow">Our Ecosystem</p>
-        <h2>Connected businesses shaping the Synergy story.</h2>
-        <div className="about-cards">
-          {aboutCards.map((card, index) => {
-            const isImageLeft = index === 0 || index === 2;
-            const isRankCard = card.title === "Mother Company Rank Holdings";
+      <section className="ecosystem-section reveal-on-scroll" id="about-businesses">
+        <div className="ecosystem-container">
+          <div className="ecosystem-header">
+            <p className="ecosystem-eyebrow">Our Ecosystem</p>
+            <h2>Connected businesses shaping the Synergy story.</h2>
+            <p className="ecosystem-subtitle">
+              A diversified portfolio of healthcare and pharmaceutical operations driving innovation and accessibility across the region.
+            </p>
+          </div>
 
-            return (
-              <article
-                className={`card about-card reveal-on-scroll ${isImageLeft ? "about-card-reverse" : ""}`.trim()}
-                key={card.title}
-              >
-                <div className="about-card-body">
-                  <div className="about-card-copy">
-                    <h3>{card.title}</h3>
-                    <p>{card.description}</p>
-                    <span className="about-card-link">
-                      {card.cta}
-                      <span aria-hidden="true">→</span>
-                    </span>
+          <div className="about-cards">
+            {aboutCards.map((card, index) => {
+              const isImageLeft = index === 0 || index === 2;
+              const isRankCard = card.title === "Mother Company Rank Holdings";
+
+              return (
+                <article
+                  className={`card about-card reveal-on-scroll ${isImageLeft ? "about-card-reverse" : ""}`.trim()}
+                  key={card.title}
+                >
+                  <div className="about-card-body">
+                    <div className="about-card-copy">
+                      <h3>{card.title}</h3>
+                      <p>{card.description}</p>
+                      <span className="about-card-link">
+                        {card.cta}
+                        <span aria-hidden="true">→</span>
+                      </span>
+                    </div>
+                    <div className={`about-card-image ${isRankCard ? "about-card-image-rank" : ""}`.trim()}>
+                      <Image
+                        src={card.image}
+                        alt={card.title}
+                        fill
+                        className={`showcase-photo ${isRankCard ? "about-card-image-rank-photo" : ""}`.trim()}
+                        sizes="(max-width: 900px) 100vw, 34vw"
+                      />
+                    </div>
                   </div>
-                  <div className={`about-card-image ${isRankCard ? "about-card-image-rank" : ""}`.trim()}>
-                    <Image
-                      src={card.image}
-                      alt={card.title}
-                      fill
-                      className={`showcase-photo ${isRankCard ? "about-card-image-rank-photo" : ""}`.trim()}
-                      sizes="(max-width: 900px) 100vw, 34vw"
-                    />
-                  </div>
-                </div>
-              </article>
-            );
-          })}
+                </article>
+              );
+            })}
+          </div>
         </div>
       </section>
 

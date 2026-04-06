@@ -1,9 +1,9 @@
 ﻿import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { SiteFooter } from "@/components/site-footer";
 
-const manrope = Manrope({
+const inter = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
   display: "swap",
@@ -35,10 +35,10 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/logo.png" />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className={manrope.className}>
-  {children}
-  <SiteFooter />
-</body>
+      <body className={inter.className} suppressHydrationWarning>
+        {children}
+        <SiteFooter />
+      </body>
     </html>
   );
 }

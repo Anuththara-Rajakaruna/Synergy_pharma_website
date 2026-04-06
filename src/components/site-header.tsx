@@ -13,10 +13,9 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { href: "/about", label: "About" },
-  { href: "/#corporation", label: "Activity" },
-  { href: "/manufacturing", label: "Manufacturing" },
-  { href: "/#quality", label: "Quality" },
-  { href: "/manufacturing#pharmaceutical-solutions", label: "Products" },
+  { href: "/facility", label: "Facility" },
+  { href: "/quality", label: "Quality" },
+  { href: "/products", label: "Products" },
   { href: "/#locations", label: "Contact", isContact: true },
 ];
 
@@ -93,7 +92,9 @@ export function SiteHeader() {
           {navItems.map((item) => {
             const active =
               (item.href === "/about" && currentPath === "/about") ||
-              (item.href === "/manufacturing" && currentPath === "/manufacturing");
+              (item.href === "/facility" && currentPath === "/facility") ||
+              (item.href === "/quality" && currentPath === "/quality") ||
+              (item.href === "/products" && currentPath === "/products");
 
             return (
               <Link
