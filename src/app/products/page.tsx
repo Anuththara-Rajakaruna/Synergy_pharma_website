@@ -1,6 +1,7 @@
 "use client";
 
 import { SiteHeader } from "@/components/site-header";
+import { Hero } from "@/components/hero";
 import Image from "next/image";
 import { CapabilityCard } from "@/components/capability-card";
 import { useEffect, useRef } from "react";
@@ -75,18 +76,12 @@ export default function ProductsPage() {
     <main className="product-page">
       <SiteHeader />
 
-      <section className="product-hero">
-        <img src="/left-grad.svg" alt="" className="gradient-decorator gradient-decorator-left" />
-        <img src="/right-grad.svg" alt="" className="gradient-decorator gradient-decorator-right" />
-        <div className="container product-hero-content">
-          <p className="hero-eyebrow">Our Products</p>
-          <h1>Pharmaceutical Products Designed for Quality, Safety, and Accessibility</h1>
-          <p>
-            We deliver a portfolio of APIs and finished-dose medicines built to global standards,
-            with stringent GMP compliance and heir-to-market supply reliability.
-          </p>
-        </div>
-      </section>
+      <Hero
+        eyebrow="Our Products"
+        heading="Pharmaceutical Products Designed for Quality, Safety, and Accessibility"
+        description="We deliver a portfolio of APIs and finished-dose medicines built to global standards, with stringent GMP compliance and heir-to-market supply reliability."
+        className="product-hero"
+      />
 
       <br></br>
 

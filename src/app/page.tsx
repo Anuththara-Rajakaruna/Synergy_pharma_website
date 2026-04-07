@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
+import { Hero } from "@/components/hero";
 
 export default function Home() {
   const [isVisionOpen, setIsVisionOpen] = useState(false);
@@ -176,18 +177,12 @@ export default function Home() {
     <main className="landing-page">
       <SiteHeader />
 
-      <section className="home-hero">
-        <img src="/left-grad.svg" alt="" className="gradient-decorator gradient-decorator-left" />
-        <img src="/right-grad.svg" alt="" className="gradient-decorator gradient-decorator-right" />
-        <div className="container home-hero-content">
-          <p className="hero-eyebrow">Precision Healthcare Manufacturing</p>
-          <h1>Advancing human health through precision.</h1>
-          <p>
-            Delivering high-quality, affordable medicines manufactured in Sri Lanka for the global
-            healthcare economy.
-          </p>
-        </div>
-      </section>
+      <Hero
+        eyebrow="Precision Healthcare Manufacturing"
+        heading="Advancing human health through precision."
+        description="Delivering high-quality, affordable medicines manufactured in Sri Lanka for the global healthcare economy."
+        className="home-hero"
+      />
 
       <section ref={corporationRef} className="corporation-section reveal-on-scroll corporation-shrink" id="corporation">
         <div className="corporation-container">

@@ -1,0 +1,68 @@
+/* Button Component Styles */
+
+button {
+  margin-top: var(--space-lg);
+  border: 0;
+  background: var(--accent);
+  color: var(--text-white);
+  padding: var(--space-md) var(--space-lg);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-primary);
+}
+
+button:hover {
+  background: var(--accent-light);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Button Link Variant */
+.button-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1.4rem;
+  border: 0;
+  background: var(--accent);
+  color: #fff;
+  padding: 0.88rem 1.2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(5, 92, 190, 0.2);
+}
+
+.button-link:hover {
+  background: #044a9d;
+  box-shadow: 0 6px 16px rgba(5, 92, 190, 0.3);
+  transform: translateY(-1px);
+  color: #fff;
+}
+
+.button-link.button-link-secondary {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: none;
+}
+
+.button-link.button-link-secondary:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow: none;
+}

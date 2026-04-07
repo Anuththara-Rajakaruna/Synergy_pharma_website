@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { SiteHeader } from "@/components/site-header";
+import { Hero } from "@/components/hero";
 import { SiteFooter } from "@/components/site-footer";
 
 const facilities = [
@@ -73,18 +74,12 @@ export default function FacilityPage() {
     <main className="facility-page">
       <SiteHeader />
 
-      <section className="facility-hero-section">
-        <img src="/left-grad.svg" alt="" className="gradient-decorator gradient-decorator-left" />
-        <img src="/right-grad.svg" alt="" className="gradient-decorator gradient-decorator-right" />
-        <div className="container facility-hero-content">
-          <p className="hero-eyebrow">Manufacturing Excellence</p>
-          <h1>World-Class Manufacturing & Research Facilities</h1>
-          <p>
-            GMP-compliant pharmaceutical manufacturing with advanced technology, rigorous quality systems,
-            and global regulatory compliance.
-          </p>
-        </div>
-      </section>
+      <Hero
+        eyebrow="Manufacturing Excellence"
+        heading="World-Class Manufacturing & Research Facilities"
+        description="GMP-compliant pharmaceutical manufacturing with advanced technology, rigorous quality systems, and global regulatory compliance."
+        className="facility-hero-section"
+      />
 
       <motion.section className="facility-capabilitiesSection" id="facility-intro">
         <div className="facility-capabilitiesContainer">

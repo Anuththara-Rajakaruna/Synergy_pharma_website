@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef } from "react";
 
 import { SiteHeader } from "@/components/site-header";
+import { Hero } from "@/components/hero";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
 
 const leaders = [
@@ -141,18 +142,12 @@ export default function AboutPage() {
       <SiteHeader />
       <RevealOnScroll />
 
-      <section className="about-hero-section" id="about">
-        <img src="/left-grad.svg" alt="" className="gradient-decorator gradient-decorator-left" />
-        <img src="/right-grad.svg" alt="" className="gradient-decorator gradient-decorator-right" />
-        <div className="container about-hero-content">
-          <p className="hero-eyebrow">About Synergy</p>
-          <h1>Built on trust, driven by precision.</h1>
-          <p>
-            Synergy Pharmaceutical combines visionary leadership, responsible manufacturing, and
-            quality-first operations to deliver healthcare solutions that matter across the region.
-          </p>
-        </div>
-      </section>
+      <Hero
+        eyebrow="About Synergy"
+        heading="Built on trust, driven by precision."
+        description="Synergy Pharmaceutical combines visionary leadership, responsible manufacturing, and quality-first operations to deliver healthcare solutions that matter across the region."
+        className="about-hero-section"
+      />
 
       <section className="leadership-section reveal-on-scroll" id="leadership">
         <div className="leadership-container">

@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { SiteHeader } from "@/components/site-header";
+import { Hero } from "@/components/hero";
+import { Button } from "@/components/button";
 import { CapabilityCard } from "@/components/capability-card";
 import {
   ChartNoAxesColumn,
@@ -188,18 +190,12 @@ export default function QualityPage() {
     <main className="qualityPage">
       <SiteHeader />
 
-      <section className="quality-hero">
-        <img src="/left-grad.svg" alt="" className="gradient-decorator gradient-decorator-left" />
-        <img src="/right-grad.svg" alt="" className="gradient-decorator gradient-decorator-right" />
-        <div className="container quality-hero-content">
-          <p className="hero-eyebrow">Global Standards</p>
-          <h1>Quality Without Compromise</h1>
-          <p>
-            Setting the gold standard in pharmaceutical safety and regulatory excellence through
-            unwavering precision and clinical integrity.
-          </p>
-        </div>
-      </section>
+      <Hero
+        eyebrow="Global Standards"
+        heading="Quality Without Compromise"
+        description="Setting the gold standard in pharmaceutical safety and regulatory excellence through unwavering precision and clinical integrity."
+        className="quality-hero"
+      />
 
       <section ref={showcaseRef} className="showcaseSection qualityZoomSection">
         <div className="showcaseContainer qualityZoomSurface">
@@ -229,7 +225,7 @@ export default function QualityPage() {
               just inspect for quality; we engineer it into every phase of the pharmaceutical
               lifecycle.
             </p>
-            <button className="showcase-button">Explore Quality Framework</button>
+            <Button>Explore Quality Framework</Button>
           </div>
         </div>
       </section>
