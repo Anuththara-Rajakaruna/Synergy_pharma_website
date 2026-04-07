@@ -1,58 +1,144 @@
-/* Hero Component Styles */
+/* ========================================
+   HERO COMPONENT - CLEAN BACKGROUND APPROACH
+   ======================================== */
 
-.hero {
+/* Base Hero Styles - All Variants */
+.hero,
+.home-hero,
+.about-hero-section,
+.facility-hero-section,
+.quality-hero,
+.product-hero {
   position: relative;
-  z-index: 0;
-  isolation: isolate;
-  min-height: auto;
-  display: grid;
+  margin-top: 0;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
   align-items: center;
-  padding-top: var(--space-3xl);
-  background: url("/banner3.png") center / 100% auto no-repeat;
-  overflow: visible;
-  transition: min-height 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    padding-top 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  justify-content: center;
+  overflow: hidden;
+  width: 100%;
+  color: white;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #0a1f33;
 }
 
-.hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.38);
-  pointer-events: none;
-  z-index: -1;
+/* Background Images - Set directly on containers */
+.hero {
+  background-image: linear-gradient(rgba(1, 27, 49, 0.48), rgba(3, 43, 78, 0.48)), url("/banner3.png");
 }
 
-.hero-content {
+.home-hero {
+  background-image: linear-gradient(rgba(1, 27, 49, 0.48), rgba(3, 43, 78, 0.48)), url("/banner3.png");
+}
+
+.about-hero-section {
+  background-image: linear-gradient(rgba(1, 27, 49, 0.48), rgba(3, 43, 78, 0.48)), url("/manufacturing-showcase-v2.jpg");
+}
+
+.facility-hero-section {
+  background-image: linear-gradient(rgba(1, 27, 49, 0.48), rgba(3, 43, 78, 0.48)), url("/facilities/manufacturing.jpg");
+}
+
+.quality-hero {
+  background-image: linear-gradient(rgba(1, 27, 49, 0.48), rgba(3, 43, 78, 0.48)), url("/Quality_Hero.png");
+}
+
+.product-hero {
+  background-image: linear-gradient(rgba(1, 27, 49, 0.48), rgba(3, 43, 78, 0.48)), url("/lab.jpeg");
+}
+
+/* ========================================
+   CONTENT CONTAINERS
+   ======================================== */
+
+.hero-content,
+.home-hero-content,
+.about-hero-content,
+.facility-hero-content,
+.quality-hero-content,
+.product-hero-content {
   position: relative;
   z-index: 1;
-  max-width: 640px;
-  padding: var(--space-4xl) 0 var(--space-5xl);
+  max-width: 900px;
+  padding: clamp(3rem, 8vw, 12rem) var(--space-lg) clamp(2rem, 5vw, 4rem);
   text-align: center;
-  color: var(--text-white);
-  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
 }
 
-.hero-content h1 {
-  color: var(--text-white);
-  text-align: center;
+/* ========================================
+   TYPOGRAPHY
+   ======================================== */
+
+.hero h1,
+.home-hero h1,
+.about-hero-content h1,
+.facility-hero-content h1,
+.quality-hero-content h1,
+.product-hero h1 {
   margin: 0;
-}
-
-.hero-content p {
-  color: var(--text-white);
-  text-align: center;
-  margin: 0 0 var(--space-md) 0;
-}
-
-.hero-content .eyebrow {
-  color: var(--text-white);
-  margin: 0 0 1rem 0;
-  font-size: 0.82rem;
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  line-height: 1.1;
   font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  color: white;
+  text-align: center;
 }
+
+.hero p,
+.home-hero p,
+.about-hero-content p,
+.facility-hero-content p,
+.quality-hero-content p,
+.product-hero p {
+  margin: 0;
+  max-width: 760px;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: clamp(1rem, 2.5vw, 1.1rem);
+  text-align: center;
+}
+
+.hero .eyebrow,
+.hero-content .eyebrow,
+.home-hero .eyebrow,
+.product-hero .eyebrow {
+  margin: 0;
+  font-size: clamp(0.8rem, 1.5vw, 0.95rem);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.88);
+  text-align: center;
+}
+
+/* ========================================
+   COMPACT VARIANT
+   ======================================== */
+
+.hero.hero-compact {
+  height: auto;
+  min-height: 60vh;
+  padding-top: var(--space-sm);
+}
+
+.hero.hero-compact .hero-content {
+  padding: var(--space-lg) 0 var(--space-2xl);
+}
+
+.hero.hero-compact h1 {
+  font-size: clamp(1.72rem, 4.9vw, 2.8rem);
+  line-height: 1.02;
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
 
 .hero-copy {
   color: rgba(255, 255, 255, 0.95);
@@ -62,6 +148,12 @@
   line-height: 1.65;
   font-weight: var(--font-weight-regular);
   text-align: left;
+}
+
+.hero-shell {
+  width: min(1140px, 90vw);
+  margin-left: clamp(3.5rem, 10vw, 8.5rem);
+  margin-right: auto;
 }
 
 .hero-light {
@@ -77,255 +169,206 @@
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35),
     0 0 30px rgba(180, 245, 255, 0.5);
   animation: pulseGlow 3s ease-in-out infinite;
+  z-index: 0;
+  pointer-events: none;
 }
 
-.hero-shell {
-  width: min(1140px, 90vw);
-  margin-left: clamp(3.5rem, 10vw, 8.5rem);
-  margin-right: auto;
-}
+/* ========================================
+   RESPONSIVE DESIGN - TABLET (900px)
+   ======================================== */
 
-/* Hero Variants */
-
-.hero.hero-compact {
-  padding-top: var(--space-sm);
-}
-
-.hero.hero-compact .hero-content {
-  padding: var(--space-lg) 0 var(--space-2xl);
-}
-
-.hero.hero-compact .hero-light {
-  top: 2.2rem;
-  width: min(240px, 34vw);
-  height: 10px;
-}
-
-.hero.hero-compact h1 {
-  font-size: clamp(1.72rem, 4.9vw, 2.8rem);
-  line-height: 1.02;
-}
-
-.hero.hero-compact .hero-copy {
-  font-size: 0.9rem;
-}
-
-/* Home Hero */
-.home-hero {
-  margin-top: 94px;
-  min-height: calc(100svh - 94px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  width: 100vw;
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(rgba(1, 27, 49, 0.48), rgba(3, 43, 78, 0.48)),
-    url("/banner3.png") center/cover no-repeat;
-}
-
-.home-hero-content {
-  padding: 12rem 0 4rem;
-  text-align: center;
-}
-
-.home-hero h1 {
-  margin: 1rem auto 1.25rem;
-  max-width: 900px;
-  font-size: clamp(2.2rem, 5vw, 3.8rem);
-  line-height: 1.1;
-  font-weight: 800;
-  color: white;
-}
-
-.home-hero p {
-  margin: 0 auto;
-  max-width: 760px;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 1.1rem;
-}
-
-/* About Hero */
-.about-hero-section {
-  margin-top: 94px;
-  min-height: calc(100svh - 94px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  width: 100vw;
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(rgba(1, 27, 49, 0.48), rgba(3, 43, 78, 0.48)),
-    url("/manufacturing-showcase-v2.jpg") center/cover no-repeat;
-}
-
-.about-hero-content {
-  padding: 12rem 0 4rem;
-  text-align: center;
-}
-
-.about-hero-content h1 {
-  margin: 1rem auto 1.25rem;
-  max-width: 900px;
-  font-size: clamp(2.2rem, 5vw, 3.8rem);
-  line-height: 1.1;
-  font-weight: 800;
-  color: white;
-}
-
-.about-hero-content p {
-  margin: 0 auto;
-  max-width: 760px;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 1.1rem;
-}
-
-/* Facility Hero */
-.facility-hero-section {
-  margin-top: 94px;
-  min-height: calc(100svh - 94px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  width: 100vw;
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(rgba(1, 27, 49, 0.48), rgba(3, 43, 78, 0.48)),
-    url("/facilities/hero-bg.jpg") center/cover no-repeat;
-}
-
-.facility-hero-content {
-  padding: 12rem 0 4rem;
-  text-align: center;
-}
-
-.facility-hero-content h1 {
-  margin: 1rem auto 1.25rem;
-  max-width: 900px;
-  font-size: clamp(2.2rem, 5vw, 3.8rem);
-  line-height: 1.1;
-  font-weight: 800;
-  color: white;
-}
-
-.facility-hero-content p {
-  margin: 0 auto;
-  max-width: 760px;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 1.1rem;
-}
-
-/* Quality Hero */
-.quality-hero {
-  margin-top: 94px;
-  min-height: calc(100svh - 94px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  width: 100vw;
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(rgba(1, 27, 49, 0.48), rgba(3, 43, 78, 0.48)),
-    url("/Quality_Hero.png") center/cover no-repeat;
-}
-
-.quality-hero-content {
-  padding: 12rem 0 4rem;
-  text-align: center;
-}
-
-.quality-hero-content h1 {
-  margin: 1rem auto 1.25rem;
-  max-width: 900px;
-  font-size: clamp(2.2rem, 5vw, 3.8rem);
-  line-height: 1.1;
-  font-weight: 800;
-  color: white;
-}
-
-.quality-hero-content p {
-  margin: 0 auto;
-  max-width: 760px;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 1.1rem;
-}
-
-/* Product Hero */
-.product-hero {
-  margin-top: 94px;
-  min-height: calc(100svh - 94px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  width: 100vw;
-  background: linear-gradient(rgba(1, 27, 49, 0.48), rgba(3, 43, 78, 0.48)),
-    url("/lab.jpeg") center/cover no-repeat;
-}
-
-.product-hero-content {
-  padding: 12rem 0 4rem;
-  text-align: center;
-}
-
-.product-hero .eyebrow {
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.88);
-}
-
-.product-hero h1 {
-  margin: 1rem auto 1.25rem;
-  max-width: 900px;
-  font-size: clamp(2.2rem, 5vw, 3.8rem);
-  line-height: 1.1;
-  font-weight: 800;
-  color: white;
-}
-
-.product-hero p {
-  margin: 0 auto;
-  max-width: 760px;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 1.1rem;
-}
-
-/* Animations */
-@keyframes pulseGlow {
-  0%,
-  100% {
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3),
-      0 0 26px rgba(180, 245, 255, 0.45);
-  }
-  50% {
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.45),
-      0 0 34px rgba(180, 245, 255, 0.7);
-  }
-}
-
-/* Responsive */
 @media (max-width: 900px) {
-  .hero {
-    min-height: var(--hero-min-h, 100vh);
-    padding-top: 0;
+  .hero h1,
+  .home-hero h1,
+  .about-hero-content h1,
+  .facility-hero-content h1,
+  .quality-hero-content h1,
+  .product-hero h1 {
+    font-size: clamp(1.75rem, 4.5vw, 3rem);
+    margin: 0.75rem auto 1rem;
+  }
+
+  .hero p,
+  .home-hero p,
+  .about-hero-content p,
+  .facility-hero-content p,
+  .quality-hero-content p,
+  .product-hero p {
+    font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+    max-width: calc(100% - var(--space-lg));
+    padding: 0 var(--space-md);
+  }
+
+  .hero-light {
+    top: var(--space-2xl);
+    width: min(280px, 40vw);
+    height: 12px;
   }
 }
+
+/* ========================================
+   RESPONSIVE DESIGN - MOBILE (640px)
+   ======================================== */
 
 @media (max-width: 640px) {
-  .hero-content {
-    padding: var(--space-lg) 0 var(--space-2xl);
+  .hero,
+  .home-hero,
+  .about-hero-section,
+  .facility-hero-section,
+  .quality-hero,
+  .product-hero {
+    height: 100dvh;
+    min-height: 600px;
   }
 
-  .hero-shell {
-    width: calc(100% - var(--space-lg));
-    margin-left: var(--space-lg);
-    margin-right: var(--space-lg);
+  .hero-content,
+  .home-hero-content,
+  .about-hero-content,
+  .facility-hero-content,
+  .quality-hero-content,
+  .product-hero-content {
+    padding: clamp(2rem, 6vw, 4rem) var(--space-md) clamp(1.5rem, 4vw, 2.5rem);
+    max-width: calc(100% - var(--space-md));
+  }
+
+  .hero h1,
+  .home-hero h1,
+  .about-hero-content h1,
+  .facility-hero-content h1,
+  .quality-hero-content h1,
+  .product-hero h1 {
+    font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+    margin: 0.5rem auto 0.75rem;
+    line-height: 1.2;
+  }
+
+  .hero p,
+  .home-hero p,
+  .about-hero-content p,
+  .facility-hero-content p,
+  .quality-hero-content p,
+  .product-hero p {
+    font-size: clamp(0.85rem, 2vw, 0.95rem);
+    max-width: calc(100% - var(--space-md));
+    padding: 0 var(--space-sm);
+  }
+
+  .hero .eyebrow,
+  .hero-content .eyebrow,
+  .home-hero .eyebrow,
+  .product-hero .eyebrow {
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    margin: 0 0 0.75rem 0;
+  }
+
+  .hero-light {
+    top: var(--space-lg);
+    width: min(180px, 35vw);
+    height: 8px;
+  }
+
+  .hero-copy {
+    font-size: clamp(0.85rem, 2vw, 0.95rem);
+    max-width: calc(100% - var(--space-md));
+    margin-top: var(--space-md);
+  }
+
+  .hero.hero-compact {
+    padding-top: var(--space-md);
+  }
+
+  .hero.hero-compact .hero-content {
+    padding: var(--space-md) var(--space-sm) var(--space-lg);
+  }
+
+  .hero.hero-compact h1 {
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+  }
+
+  .hero.hero-compact .hero-copy {
+    font-size: 0.85rem;
+  }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN - SMALL MOBILE (480px)
+   ======================================== */
+
+@media (max-width: 480px) {
+  .hero,
+  .home-hero,
+  .about-hero-section,
+  .facility-hero-section,
+  .quality-hero,
+  .product-hero {
+    height: 100dvh;
+    min-height: 550px;
+  }
+
+  .hero-content,
+  .home-hero-content,
+  .about-hero-content,
+  .facility-hero-content,
+  .quality-hero-content,
+  .product-hero-content {
+    padding: clamp(1.5rem, 4vw, 3rem) var(--space-sm) clamp(1rem, 3vw, 2rem);
+    max-width: 100%;
+  }
+
+  .hero h1,
+  .home-hero h1,
+  .about-hero-content h1,
+  .facility-hero-content h1,
+  .quality-hero-content h1,
+  .product-hero h1 {
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    margin: 0.5rem auto 0.5rem;
+    line-height: 1.2;
+  }
+
+  .hero p,
+  .home-hero p,
+  .about-hero-content p,
+  .facility-hero-content p,
+  .quality-hero-content p,
+  .product-hero p {
+    font-size: clamp(0.8rem, 1.8vw, 0.9rem);
+    padding: 0;
+  }
+
+  .hero .eyebrow,
+  .hero-content .eyebrow,
+  .home-hero .eyebrow,
+  .product-hero .eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+  }
+
+  .hero-light {
+    top: var(--space-md);
+    width: min(120px, 30vw);
+    height: 6px;
+  }
+
+  .hero-copy {
+    font-size: clamp(0.8rem, 1.8vw, 0.9rem);
+  }
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35),
+                0 0 30px rgba(180, 245, 255, 0.5);
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25),
+                0 0 20px rgba(180, 245, 255, 0.3);
   }
 }

@@ -1,0 +1,383 @@
+<!-- Typography System - Implementation Examples -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typography System Examples</title>
+  <link rel="stylesheet" href="src/app/globals.css">
+</head>
+<body>
+
+<!-- ========================================
+     HERO SECTION EXAMPLE
+     ======================================== -->
+<header class="hero-section">
+  <p class="eyebrow">Welcome to Our Platform</p>
+  <h1 class="display-lg">Manufacturing Excellence</h1>
+  <p class="intro">
+    Leading pharmaceutical innovation with world-class facilities and rigorous quality standards.
+  </p>
+</header>
+
+
+<!-- ========================================
+     FEATURE CARDS SECTION
+     ======================================== -->
+<section class="features">
+  <h2 class="heading-lg">Our Key Capabilities</h2>
+  
+  <div class="feature-card">
+    <h3 class="heading-md">WHO-GMP Certified</h3>
+    <p class="text-body-sm">Every facility engineered to exceed WHO-GMP standards with precision automation.</p>
+  </div>
+  
+  <div class="feature-card">
+    <h3 class="heading-md">Quality Assurance</h3>
+    <p class="text-body-sm">Advanced quality assurance systems and controls for product excellence.</p>
+  </div>
+  
+  <div class="feature-card">
+    <h3 class="heading-md">Research Ready</h3>
+    <p class="text-body-sm">Advanced research capabilities and development labs for innovation.</p>
+  </div>
+</section>
+
+
+<!-- ========================================
+     CONTENT SECTION WITH SIDEBAR
+     ======================================== -->
+<section class="content-grid">
+  <!-- Main content -->
+  <article class="prose">
+    <h1>Product Overview</h1>
+    
+    <p>
+      Our pharmaceutical manufacturing platform represents the pinnacle of production technology,
+      incorporating automation, real-time quality monitoring, and predictive maintenance systems.
+    </p>
+    
+    <h2>Manufacturing Capabilities</h2>
+    
+    <p>
+      Synergy Pharmaceuticals operates a comprehensive manufacturing ecosystem with specialized
+      facilities for different product types. Our integrated approach ensures consistency and
+      quality across all operations.
+    </p>
+    
+    <h3>Oral Solid Dosage (OSD) Unit</h3>
+    
+    <p>
+      High-capacity manufacturing with tablet and capsule capabilities for global markets.
+      State-of-the-art production lines ensure consistent quality and efficiency.
+    </p>
+    
+    <h3>Injectable Facility</h3>
+    
+    <p>
+      Sterile fill-finish operations for small volume parenteral (SVP) and large volume
+      parenteral (LVP) products with enhanced containment protocols.
+    </p>
+    
+    <h2>Quality Standards</h2>
+    
+    <ul>
+      <li>ISO Class 6-8 Clean Rooms</li>
+      <li>Automated material handling systems</li>
+      <li>Real-time environmental monitoring</li>
+      <li>Advanced water purification systems</li>
+      <li>Redundant utility infrastructure</li>
+    </ul>
+    
+    <blockquote>
+      "Quality is not just a goal—it's our foundation. Every product reflects our commitment
+      to excellence and regulatory compliance."
+    </blockquote>
+    
+    <p>
+      Our commitment to quality extends beyond manufacturing.
+      We invest continuously in equipment, training, and process optimization.
+    </p>
+    
+    <h3>Supporting Systems</h3>
+    
+    <p>
+      Advanced analytical testing centers with state-of-the-art instruments for quality
+      verification and stability testing ensuring regulatory compliance.
+    </p>
+  </article>
+  
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-widget">
+      <p class="label">Quick Facts</p>
+      <h4 class="heading-sm">Manufacturing Scale</h4>
+      <p class="text-body-sm">10.5-acre integrated campus</p>
+      
+      <h4 class="heading-sm">Certifications</h4>
+      <p class="text-body-sm">WHO-GMP, ISO 9001, FDA approved</p>
+      
+      <h4 class="heading-sm">Production Lines</h4>
+      <p class="text-body-sm">12+ dedicated production lines</p>
+    </div>
+    
+    <div class="sidebar-widget">
+      <p class="label">Related Resources</p>
+      <ul class="resources-list">
+        <li><a href="#" class="text-link">Quality Standards Document</a></li>
+        <li><a href="#" class="text-link">Manufacturing Process Guide</a></li>
+        <li><a href="#" class="text-link">Facility Tour Video</a></li>
+      </ul>
+    </div>
+  </aside>
+</section>
+
+
+<!-- ========================================
+     TESTIMONIAL SECTION
+     ======================================== -->
+<section class="testimonials">
+  <h2 class="heading-lg">What Our Partners Say</h2>
+  
+  <div class="testimonial">
+    <blockquote class="text-body-lg">
+      "Synergy Pharmaceuticals has consistently delivered high-quality products with exceptional
+      reliability and customer service. Their manufacturing excellence is unparalleled in the industry."
+    </blockquote>
+    <p class="meta">Dr. Sarah Johnson • Chief Scientific Officer • Global Pharma Inc.</p>
+  </div>
+  
+  <div class="testimonial">
+    <blockquote class="text-body-lg">
+      "Working with Synergy has transformed our product development timeline. Their facilities
+      and expertise enable us to bring innovative solutions to market faster."
+    </blockquote>
+    <p class="meta">Michael Chen • VP Product Development • Innovation Labs</p>
+  </div>
+</section>
+
+
+<!-- ========================================
+     TEXT UTILITIES SHOWCASE
+     ======================================== -->
+<section class="utilities-showcase">
+  <h2 class="heading-lg">Typography Utilities</h2>
+  
+  <div class="utility-grid">
+    <div>
+      <p class="eyebrow">Eyebrow / Label</p>
+      <p><code>.eyebrow</code> or <code>.label</code></p>
+    </div>
+    
+    <div>
+      <p class="text-bold">Bold Text</p>
+      <p class="text-small"><code>.text-bold</code></p>
+    </div>
+    
+    <div>
+      <p class="text-uppercase">Uppercase Text</p>
+      <p class="text-small"><code>.text-uppercase</code></p>
+    </div>
+    
+    <div>
+      <p class="text-muted">Muted Secondary Text</p>
+      <p class="text-small"><code>.text-muted</code></p>
+    </div>
+    
+    <div>
+      <p class="text-capitalize">Capitalize Text</p>
+      <p class="text-small"><code>.text-capitalize</code></p>
+    </div>
+    
+    <div>
+      <a href="#" class="text-link">Accessible Link</a>
+      <p class="text-small"><code>.text-link</code></p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================
+     DARK BACKGROUND SECTION
+     ======================================== -->
+<section class="dark-section">
+  <h2 class="text-on-dark">Light Text on Dark Background</h2>
+  <p class="text-on-dark-secondary">This uses the high-contrast text color for dark backgrounds.</p>
+  <p class="text-on-dark-muted">Secondary text with 65% opacity.</p>
+  
+  <a href="#" class="text-link">Links work on dark too</a>
+</section>
+
+
+<!-- ========================================
+     FOOTER
+     ======================================== -->
+<footer>
+  <p class="text-small">&copy; 2024 Synergy Pharmaceuticals. All rights reserved.</p>
+  <p class="text-caption">Contact us for more information about our services.</p>
+</footer>
+
+
+<!-- ========================================
+     CSS EXAMPLES (in external stylesheet)
+     ======================================== -->
+<style>
+/* Example 1: Hero Section */
+.hero-section {
+  padding: var(--space-5xl) var(--space-2xl);
+  text-align: center;
+  background: linear-gradient(135deg, rgba(5, 95, 124, 0.05), rgba(16, 117, 189, 0.05));
+}
+
+/* Example 2: Feature Cards */
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-2xl);
+  padding: var(--space-4xl) var(--space-2xl);
+}
+
+.feature-card {
+  padding: var(--space-2xl);
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+}
+
+.feature-card h3 {
+  margin-bottom: var(--space-md);
+}
+
+/* Example 3: Content Grid */
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: var(--space-3xl);
+  padding: var(--space-4xl) var(--space-2xl);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-2xl);
+  }
+}
+
+/* Example 4: Sidebar Widget */
+.sidebar-widget {
+  padding: var(--space-2xl);
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2xl);
+}
+
+.sidebar-widget .label {
+  margin-bottom: var(--space-md);
+}
+
+.resources-list {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-lg) 0 0;
+}
+
+.resources-list li {
+  margin: var(--space-sm) 0;
+}
+
+/* Example 5: Testimonials */
+.testimonials {
+  padding: var(--space-4xl) var(--space-2xl);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(233, 241, 246, 0.95));
+}
+
+.testimonial {
+  padding: var(--space-2xl);
+  margin-bottom: var(--space-2xl);
+  background: white;
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius-md);
+}
+
+/* Example 6: Dark Section */
+.dark-section {
+  padding: var(--space-4xl) var(--space-2xl);
+  background: linear-gradient(135deg, #0f3d5c, #1a5a7a);
+  color: var(--text-white);
+}
+
+/* Example 7: Utilities Grid */
+.utilities-showcase {
+  padding: var(--space-4xl) var(--space-2xl);
+}
+
+.utility-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-2xl);
+  margin-top: var(--space-3xl);
+}
+
+.utility-grid > div {
+  padding: var(--space-2xl);
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.utility-grid code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+/* Footer */
+footer {
+  padding: var(--space-2xl);
+  text-align: center;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-light);
+}
+
+/* Responsive Typography Adjustments */
+@media (max-width: 640px) {
+  .hero-section {
+    padding: var(--space-3xl) var(--space-lg);
+  }
+  
+  .features {
+    padding: var(--space-3xl) var(--space-lg);
+  }
+  
+  .content-grid {
+    padding: var(--space-3xl) var(--space-lg);
+  }
+}
+</style>
+
+</body>
+</html>
+
+<!--
+TYPOGRAPHY SYSTEM REFERENCE:
+
+Display Classes: .display-xl, .display-lg, .display-md
+Heading Classes: .heading-xl/.heading-lg/.heading-md/.heading-sm/.heading-xs
+Body Classes: .text-body-lg, .text-body, .text-body-sm, .text-body-xs
+Semantic: .eyebrow, .intro, .subheading, .meta
+Utilities: .text-bold, .text-uppercase, .text-muted, .text-link, .text-no-wrap
+Dark BG: .text-on-dark, .text-on-dark-secondary, .text-on-dark-muted
+Accessibility: .text-high-contrast, .text-link (with focus states)
+
+All classes automatically scale responsive via :root CSS variables.
+No media queries needed in components—handle in :root!
+
+CSS Variables (use in custom components):
+--font-size-* : heading/body sizes
+--font-weight-* : 300-850
+--line-height-* : 1.1-2
+--letter-spacing-* : -0.02em to 0.15em
+--text-* : color variables
+-->
