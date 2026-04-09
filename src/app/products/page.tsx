@@ -140,8 +140,8 @@ export default function ProductsPage() {
             </ScrollReveal> */}
 
             <ScrollRevealContainer staggerDelay={0.1} className="capabilities-grid">
-              <ScrollRevealItem>
-                <div className="capability-card">
+              <ScrollRevealItem className="h-full">
+                <div className="capability-card h-full">
                   <div className="capability-icon">
                     <FlaskConical size={24} />
                   </div>
@@ -152,8 +152,8 @@ export default function ProductsPage() {
                   </p>
                 </div>
               </ScrollRevealItem>
-              <ScrollRevealItem>
-                <div className="capability-card">
+              <ScrollRevealItem className="h-full">
+                <div className="capability-card h-full">
                   <div className="capability-icon">
                     <Pill size={24} />
                   </div>
@@ -169,8 +169,8 @@ export default function ProductsPage() {
                   </ul>
                 </div>
               </ScrollRevealItem>
-              <ScrollRevealItem>
-                <div className="capability-card">
+              <ScrollRevealItem className="h-full">
+                <div className="capability-card h-full">
                   <div className="capability-icon">
                     <Microscope size={24} />
                   </div>

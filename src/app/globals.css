@@ -238,6 +238,20 @@ html[data-theme="dark"] {
     --font-size-caption: 0.75rem;     /* 12px */
     --font-size-tiny: 0.6875rem;      /* 11px */
   }
+
+  .showcaseContent h2 {
+    font-size: 1.75rem;
+  }
+
+  .quality-left h2 {
+    font-size: 1.75rem;
+  }
+
+  .highlight-image-frame {
+    width: 100%;
+    max-width: 240px;
+    height: 240px;
+  }
 }
 
 /* ========================================
@@ -1794,6 +1808,7 @@ button:active {
   overflow: hidden;
   transition: all 0.3s ease;
   position: relative;
+  border-radius: 16px;
 }
 
 .ecosystem-card.featured {
@@ -1806,6 +1821,7 @@ button:active {
   justify-content: space-between;
   min-height: 320px;
   animation: slideInLeft 0.6s ease-out;
+  border-radius: 16px;
 }
 
 .ecosystem-card.featured h3 {
@@ -1836,6 +1852,7 @@ button:active {
   background: linear-gradient(135deg, rgba(96, 229, 216, 0.08), rgba(45, 212, 180, 0.08));
   border: 1px solid rgba(96, 229, 216, 0.2);
   animation: slideInUp 0.6s ease-out;
+  border-radius: 16px;
 }
 
 .ecosystem-card.secondary:nth-child(2) {
@@ -4539,6 +4556,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   padding: 8rem 1.5rem;
   position: relative;
   overflow: hidden;
+  border-radius: 24px;
 }
 
 /* ABOUT PAGE - ECOSYSTEM SECTION */
@@ -4546,6 +4564,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   padding: 8rem 1.5rem;
   position: relative;
   overflow: hidden;
+  border-radius: 24px;
 }
 
 /* PRODUCTS PAGE - HIGHLIGHT SECTION */
@@ -4639,11 +4658,42 @@ html[data-theme="dark"] .manufacturing-process-step {
   .ecosystem-section::after {
     display: none;
   }
+
+  .highlight-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .highlight-image-frame {
+    width: 100%;
+    max-width: 280px;
+    height: 280px;
+    margin: 0 auto;
+  }
+
+  .quality-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .quality-details {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .portfolio-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .future-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .capabilities-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-auto-rows: 1fr;
   gap: 2rem;
   margin-top: 2rem;
 }
@@ -5177,6 +5227,32 @@ html[data-theme="dark"] .manufacturing-process-step {
 
   .portfolio-cta {
     align-self: flex-start;
+  }
+
+  .highlight-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .highlight-image-frame {
+    width: 100%;
+    max-width: 350px;
+    height: 350px;
+    margin: 0 auto;
+  }
+
+  .quality-grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .quality-details {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .portfolio-grid {
+    grid-template-columns: 1fr;
   }
 }
 
