@@ -83,7 +83,6 @@
   width: clamp(1.8rem, 4vw, 2.2rem);
   height: clamp(1.8rem, 4vw, 2.2rem);
   border: 1px solid #a8c8d8;
-  border-radius: 50%;
   background: rgba(255, 255, 255, 0.6);
   transition: all 0.25s ease;
   flex-shrink: 0;

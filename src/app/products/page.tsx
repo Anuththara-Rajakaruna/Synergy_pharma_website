@@ -129,7 +129,7 @@ export default function ProductsPage() {
       <section ref={overviewRef} className="product-overview product-section-zoom">
         <div className="product-section-surface">
           <div className="overview-container">
-            <ScrollReveal>
+            {/* <ScrollReveal>
               <div className="capabilities-header">
                 <p className="capabilities-eyebrow">Manufacturing Capabilities</p>
                 <h2>Capabilities & Formulations</h2>
@@ -137,7 +137,7 @@ export default function ProductsPage() {
                   Our manufacturing platform supports precision pharmaceutical production designed for stability, efficacy, and patient compliance.
                 </p>
               </div>
-            </ScrollReveal>
+            </ScrollReveal> */}
 
             <ScrollRevealContainer staggerDelay={0.1} className="capabilities-grid">
               <ScrollRevealItem>

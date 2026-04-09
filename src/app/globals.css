@@ -599,13 +599,11 @@ p {
   font-size: 0.9em;
   background: rgba(15, 20, 25, 0.05);
   padding: 0.2em 0.4em;
-  border-radius: var(--radius-sm);
 }
 
 .prose pre {
   background: rgba(15, 20, 25, 0.03);
   border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
   padding: var(--space-lg);
   overflow-x: auto;
   line-height: 1.5;
@@ -614,7 +612,6 @@ p {
 .prose pre code {
   background: none;
   padding: 0;
-  border-radius: 0;
 }
 
 /* ========================================
@@ -644,7 +641,6 @@ p {
 .text-link:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
-  border-radius: 2px;
 }
 
 /* ========================================
@@ -863,7 +859,6 @@ a:hover {
   width: 2.5rem;
   height: 2.5rem;
   border: 1px solid rgba(5, 95, 124, 0.18);
-  border-radius: var(--radius-full);
   background: rgba(255, 255, 255, 0.68);
   color: var(--primary-dark);
   transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
@@ -900,7 +895,6 @@ a:hover {
   width: 100%;
   justify-content: flex-start;
   padding: 0.9rem 1rem;
-  border-radius: var(--radius-md);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -917,7 +911,6 @@ a:hover {
   align-items: center;
   gap: var(--space-sm);
   border: 1px solid rgba(5, 95, 124, 0.18);
-  border-radius: var(--radius-full);
   background: rgba(255, 255, 255, 0.72);
   color: var(--primary-dark);
   padding: var(--space-sm) var(--space-md);
@@ -970,7 +963,7 @@ a:hover {
   width: 100%;
   justify-content: flex-start;
   padding: 0.9rem 1rem;
-  border-radius: var(--radius-md);
+
 }
 
 .nav-toggle {
@@ -978,7 +971,6 @@ a:hover {
   width: 42px;
   height: 42px;
   border: 1px solid #c8d8e5;
-  border-radius: 10px;
   background: rgba(255, 255, 255, 0.75);
   padding: 10px 8px;
   cursor: pointer;
@@ -1000,7 +992,6 @@ a:hover {
   display: block;
   width: 18px;
   height: 2px;
-  border-radius: var(--radius-full);
   background: #2c4258;
   transform-origin: center;
   transition:
@@ -1035,7 +1026,6 @@ a:hover {
   padding: 0.38rem 0.7rem;
   color: var(--primary);
   font-weight: 600;
-  border-radius: 6px;
   transition: all 0.3s ease;
   background: rgba(7, 113, 149, 0.03);
   opacity: 0.75;
@@ -1133,7 +1123,6 @@ button {
   font-size: 0.75rem;
   letter-spacing: 0.12em;
   cursor: pointer;
-  border-radius: var(--radius-md);
   transition: all var(--transition-base);
   box-shadow: var(--shadow-md);
   font-family: var(--font-primary);
@@ -1173,7 +1162,6 @@ button:active {
   padding-top: 6.5rem;
   background: linear-gradient(140deg, rgba(241, 248, 252, 0.92), rgba(231, 241, 247, 0.9));
   border: 1px solid #d2e0eb;
-  border-radius: var(--radius-lg);
   padding-inline: clamp(1.1rem, 2vw, 2.1rem);
   box-shadow: 0 10px 24px rgba(30, 70, 97, 0.06);
   overflow-x: hidden;
@@ -1187,7 +1175,6 @@ button:active {
 .showcase-image {
   position: relative;
   aspect-ratio: 16 / 9;
-  border-radius: var(--radius-md);
   border: 1px solid rgba(207, 219, 230, 0.95);
   background: transparent;
   overflow: hidden;
@@ -1203,7 +1190,6 @@ button:active {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: inherit;
   pointer-events: none;
   background: linear-gradient(180deg, rgba(20, 24, 28, 0.08), rgba(255, 255, 255, 0.02) 22%, rgba(255, 255, 255, 0) 100%);
 }
@@ -1213,7 +1199,6 @@ button:active {
   position: absolute;
   inset: auto 0 0 0;
   height: 18%;
-  border-radius: inherit;
   pointer-events: none;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(250, 250, 248, 0.22) 100%);
 }
@@ -1227,7 +1212,6 @@ button:active {
   border: 1px solid #d9e5ee;
   box-shadow: 0 16px 30px rgba(16, 45, 67, 0.1);
   padding: 1.35rem 1.4rem 1.45rem;
-  border-radius: var(--radius-lg);
 }
 
 
@@ -1304,7 +1288,6 @@ button:active {
   min-height: 360px;
   background: linear-gradient(135deg, #e8eff5 0%, #dae8f1 50%, #cee2eb 100%);
   border: 1px solid var(--border-light);
-  border-radius: var(--radius-sm);
   box-shadow: var(--shadow-md);
   position: relative;
   overflow: hidden;
@@ -1360,7 +1343,6 @@ button:active {
 
 .card {
   overflow: hidden;
-  border-radius: var(--radius-xl);
   background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -1581,7 +1563,6 @@ button:active {
   width: min(560px, 92vw);
   background: linear-gradient(160deg, #f6fbfe 0%, #ecf5fa 100%);
   border: 1px solid #cde0ec;
-  border-radius: var(--radius-md);
   box-shadow: 0 20px 50px rgba(10, 34, 52, 0.22);
   padding: clamp(var(--space-lg), 2.5vw, var(--space-xl));
   animation: slideUpIn 0.28s ease;
@@ -1705,7 +1686,6 @@ button:active {
   background: transparent;
   border: none;
   box-shadow: none;
-  border-radius: 0;
 }
 
 .about-card-body {
@@ -1713,7 +1693,7 @@ button:active {
   gap: clamp(1.1rem, 2vw, 1.8rem);
   padding: clamp(1rem, 1.8vw, 1.35rem);
   border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 1.75rem;
+
   background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -1736,7 +1716,6 @@ button:active {
   width: 100%;
   min-height: 260px;
   overflow: hidden;
-  border-radius: var(--radius-lg);
   border: none;
   background: transparent;
 }
@@ -1777,7 +1756,6 @@ button:active {
   width: 100%;
   min-height: 260px;
   overflow: hidden;
-  border-radius: var(--radius-lg);
   border: none;
   background: transparent;
 }
@@ -1813,7 +1791,6 @@ button:active {
 
 .ecosystem-card {
   padding: clamp(2rem, 4vw, 2.5rem);
-  border-radius: var(--radius-lg);
   overflow: hidden;
   transition: all 0.3s ease;
   position: relative;
@@ -1961,7 +1938,6 @@ button:active {
   min-width: 0;
   margin-inline: 0;
   overflow-x: hidden;
-  border-radius: var(--radius-lg);
   padding-inline: clamp(var(--space-lg), 2.5vw, var(--space-2xl));
 }
 
@@ -2057,7 +2033,7 @@ button:active {
   margin: 0 auto 1.5rem;
   background: linear-gradient(135deg, #4a99b3 0%, #055f7c 50%, #033d52 100%);
   border: 3px solid var(--primary-light);
-  border-radius: 50%;
+
   box-shadow: 0 12px 32px rgba(5, 95, 124, 0.15);
   transition: all var(--transition-base);
   position: relative;
@@ -2083,15 +2059,14 @@ button:active {
   min-height: 300px;
   background: linear-gradient(135deg, #edf4f8 0%, #ddeaf2 50%, #d1e1ec 100%);
   border: 1px solid #cfdbe6;
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-md);
   position: relative;
   overflow: hidden;
   transition: min-height 0.45s cubic-bezier(0.22, 1, 0.36, 1), padding-top 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: var(--shadow-md);
 }
 
 .map-placeholder::after {
-  content: "ðŸ“";
+  content: "📍";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -2130,7 +2105,6 @@ button:active {
   height: 44px;
   display: grid;
   place-items: center;
-  border-radius: var(--radius-md);
   border: 1px solid rgba(5, 95, 124, 0.22);
   background: rgba(255, 255, 255, 0.55);
   color: var(--primary-dark);
@@ -2225,7 +2199,6 @@ button:active {
   justify-content: center;
   width: 2.5rem;
   height: 2.5rem;
-  border-radius: 999px;
   border: 1px solid rgba(5, 95, 124, 0.18);
   background: rgba(255, 255, 255, 0.62);
   color: var(--primary-dark);
@@ -2360,7 +2333,6 @@ html[data-theme="dark"] .footer-col address {
   .mobile-nav nav {
     margin: 0 var(--space-md);
     padding: var(--space-md);
-    border-radius: var(--radius-md);
     background: linear-gradient(170deg, #f4fbff 0%, #e6f1f8 100%);
     border: 1px solid #ccdde9;
     box-shadow: 0 14px 34px rgba(14, 43, 63, 0.16);
@@ -2376,7 +2348,6 @@ html[data-theme="dark"] .footer-col address {
     font-weight: 800;
     color: #35516d;
     padding: var(--space-xs) var(--space-xs);
-    border-radius: var(--radius-sm);
   }
 
   .mobile-nav nav a:hover {
@@ -2407,16 +2378,11 @@ html[data-theme="dark"] .footer-col address {
   .manufacture-showcase {
     gap: var(--space-lg);
     padding-top: var(--space-3xl);
-    border-radius: var(--radius-md);
     padding-inline: var(--space-md);
   }
 
   .showcase-media {
     padding-bottom: var(--space-3xl);
-  }
-
-  .showcase-image {
-    border-radius: var(--radius-md);
   }
 
   .scope-card {
@@ -2458,7 +2424,6 @@ html[data-theme="dark"] .footer-col address {
     gap: var(--space-lg);
     padding-top: var(--space-2xl);
     padding-bottom: var(--space-3xl);
-    border-radius: var(--radius-md);
   }
 
   .manufacturing-page {
@@ -2548,16 +2513,11 @@ html[data-theme="dark"] .footer-col address {
   }
 
   .manufacture-showcase {
-    border-radius: var(--radius-md);
     padding-inline: 0.75rem;
   }
 
   .showcase-media {
     padding-bottom: 0;
-  }
-
-  .showcase-image {
-    border-radius: var(--radius-md);
   }
 
   .scope-card {
@@ -2584,7 +2544,6 @@ html[data-theme="dark"] .footer-col address {
 
   .mission-band {
     padding-inline: 0.9rem;
-    border-radius: var(--radius-md);
   }
 
   .vision-panel blockquote {
@@ -2662,7 +2621,6 @@ html[data-theme="dark"] .footer-col address {
   font-size: 0.64rem;
   letter-spacing: 0.14em;
   cursor: pointer;
-  border-radius: 3px;
   transition: all 0.3s ease;
   color: #fff;
 }
@@ -2729,7 +2687,7 @@ html[data-theme="dark"] .footer-col address {
   margin: 0 auto 1.5rem;
   background: linear-gradient(135deg, #4a99b3 0%, #055f7c 50%, #033d52 100%);
   border: 3px solid var(--primary-light);
-  border-radius: 50%;
+
   box-shadow: 0 12px 32px rgba(5, 95, 124, 0.15);
   transition: all var(--transition-base);
   position: relative;
@@ -2884,7 +2842,7 @@ html[data-theme="dark"] .footer-col address {
   gap: clamp(1.1rem, 2vw, 1.8rem);
   padding: clamp(1rem, 1.8vw, 1.35rem);
   border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 1.75rem;
+
   background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -2947,7 +2905,6 @@ html[data-theme="dark"] .footer-col address {
   justify-content: center;
   width: 1.8rem;
   height: 1.8rem;
-  border-radius: 999px;
   background: rgba(255, 106, 26, 0.12);
   font-size: 1.05rem;
   color: #ff6a1a;
@@ -2961,7 +2918,6 @@ html[data-theme="dark"] .footer-col address {
 
 .about-card-image {
   min-height: clamp(220px, 28vw, 300px);
-  border-radius: var(--radius-lg);
   border: 1px solid rgba(201, 220, 231, 0.95);
   background: linear-gradient(180deg, rgba(245, 250, 253, 0.96), rgba(231, 241, 247, 0.88));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
@@ -3035,7 +2991,7 @@ html[data-theme="dark"] .about-card-image-rank {
   inset: auto auto -2.4rem 1.4rem;
   width: min(14rem, 28vw);
   height: min(14rem, 28vw);
-  border-radius: 50%;
+
   background: radial-gradient(circle, rgba(95, 203, 209, 0.14), rgba(95, 203, 209, 0));
   pointer-events: none;
 }
@@ -3097,7 +3053,6 @@ html[data-theme="dark"] .about-card-image-rank {
   position: relative;
   padding: 1.6rem 1.4rem 1.5rem;
   border: 1px solid rgba(194, 214, 227, 0.92);
-  border-radius: var(--radius-lg);
   background: linear-gradient(165deg, rgba(248, 252, 254, 0.95), rgba(237, 246, 250, 0.92));
   box-shadow: 0 16px 34px rgba(18, 55, 82, 0.08);
 }
@@ -3108,7 +3063,6 @@ html[data-theme="dark"] .about-card-image-rank {
   justify-content: center;
   min-width: 3rem;
   padding: 0.4rem 0.7rem;
-  border-radius: 999px;
   background: rgba(5, 95, 124, 0.08);
   color: #1b789d;
   font-size: 0.7rem;
@@ -3141,7 +3095,6 @@ html[data-theme="dark"] .about-card-image-rank {
   position: relative;
   overflow: hidden;
   border: 1px solid rgba(194, 214, 227, 0.92);
-  border-radius: var(--radius-lg);
   background: linear-gradient(165deg, rgba(248, 252, 254, 0.96), rgba(236, 245, 250, 0.92));
   box-shadow: 0 16px 34px rgba(18, 55, 82, 0.06);
 }
@@ -3309,7 +3262,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   display: inline-block;
   padding: 0;
   background: transparent;
-  border-radius: 0;
+
   margin-bottom: 0.75rem;
 }
 
@@ -3349,7 +3302,6 @@ html[data-theme="dark"] .manufacturing-process-step {
   background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-radius: 1.25rem;
   padding: 2.5rem 2rem;
   box-shadow: 0 8px 32px rgba(15, 20, 25, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -3373,7 +3325,6 @@ html[data-theme="dark"] .manufacturing-process-step {
   width: 70px;
   height: 70px;
   background: transparent;
-  border-radius: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3451,7 +3402,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   height: 4px;
   width: 100%;
   background: linear-gradient(90deg, #1075bd 0%, #008a9a 100%);
-  border-radius: 2px 2px 0 0;
+
   transform: scaleY(0);
   transform-origin: bottom;
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -3529,7 +3480,6 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .facility-facilityCard {
   overflow: hidden;
-  border-radius: 24px;
   background: transparent;
   box-shadow: none;
   border: none;
@@ -3592,7 +3542,6 @@ html[data-theme="dark"] .manufacturing-process-step {
   -webkit-backdrop-filter: blur(10px);
   color: #ffffff;
   padding: 0.5rem 1rem;
-  border-radius: 2rem;
   font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -3637,7 +3586,6 @@ html[data-theme="dark"] .manufacturing-process-step {
   background: #ffffff;
   color: #081420;
   border: none;
-  border-radius: 0.85rem;
   font-size: 0.95rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -3730,7 +3678,6 @@ html[data-theme="dark"] .manufacturing-process-step {
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.35);
   box-shadow: 0 8px 32px rgba(15, 20, 25, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  border-radius: 0.75rem;
   transition: all 0.3s ease;
 }
 
@@ -3747,7 +3694,6 @@ html[data-theme="dark"] .manufacturing-process-step {
   left: 1.15rem;
   width: 2.55rem;
   height: 2.55rem;
-  border-radius: 0.95rem;
   border: 1px solid rgba(255, 255, 255, 0.42);
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.12)),
@@ -3769,7 +3715,6 @@ html[data-theme="dark"] .manufacturing-process-step {
   left: 1.83rem;
   width: 1.18rem;
   height: 1.18rem;
-  border-radius: 999px;
   background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.96), rgba(175, 244, 255, 0.92) 42%, rgba(111, 182, 255, 0.7) 100%);
   box-shadow:
     0 0 12px rgba(148, 227, 255, 0.65),
@@ -4117,7 +4062,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 /* ========================================
    UNIVERSAL SECTION HEADER PATTERN
-   Container → Header (Eyebrow, Title, Subtitle)
+   Container ? Header (Eyebrow, Title, Subtitle)
    ======================================== */
 
 /* CONTAINERS & SECTIONS */
@@ -4201,7 +4146,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   display: inline-block;
   padding: 0;
   background: transparent;
-  border-radius: 0;
+
   margin-bottom: 0.75rem;
 }
 
@@ -4311,7 +4256,6 @@ html[data-theme="dark"] .manufacturing-process-step {
   width: 100%;
   max-width: 600px;
   aspect-ratio: 4/5;
-  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -4361,7 +4305,6 @@ html[data-theme="dark"] .manufacturing-process-step {
   width: 56px;
   height: 56px;
   min-width: 56px;
-  border-radius: var(--radius-md);
   background: rgba(16, 117, 189, 0.08);
   display: flex;
   align-items: center;
@@ -4403,7 +4346,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   width: 4px;
   height: 70px;
   background: linear-gradient(180deg, #1075bd 0%, #055f7c 100%);
-  border-radius: 999px;
+
   flex-shrink: 0;
 }
 
@@ -4511,7 +4454,6 @@ html[data-theme="dark"] .manufacturing-process-step {
   padding: clamp(2rem, 5vw, 2.5rem);
   background: rgba(16, 117, 189, 0.04);
   border: 1px solid rgba(16, 117, 189, 0.1);
-  border-radius: var(--radius-lg);
   transition: all 0.3s ease;
   cursor: pointer;
   display: flex;
@@ -4708,7 +4650,6 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .capability-card {
   overflow: hidden;
-  border-radius: 1.75rem;
   background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -4787,7 +4728,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   background: var(--primary);
   color: white;
   border: none;
-  border-radius: 8px;
+
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
@@ -4811,7 +4752,6 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .product-card {
   overflow: hidden;
-  border-radius: var(--radius-xl);
   background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -4899,7 +4839,6 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .future-card {
   border: 1px solid rgba(5, 95, 124, 0.12);
-  border-radius: 14px;
   padding: 2rem;
   background-size: cover;
   background-position: center;
@@ -4925,7 +4864,6 @@ html[data-theme="dark"] .manufacturing-process-step {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
-  border-radius: 14px;
   z-index: 1;
 }
 
@@ -4999,7 +4937,6 @@ html[data-theme="dark"] .manufacturing-process-step {
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 1.25rem;
   padding: 1.8rem 1.6rem;
   box-shadow: 0 8px 32px rgba(15, 20, 25, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(0, 0, 0, 0.08);
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -5023,7 +4960,6 @@ html[data-theme="dark"] .manufacturing-process-step {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0.95rem;
   font-size: 28px;
   flex-shrink: 0;
 }
@@ -5112,7 +5048,6 @@ html[data-theme="dark"] .manufacturing-process-step {
   position: relative;
   width: 400px;
   height: 400px;
-  border-radius: 50%;
   overflow: hidden;
   box-shadow: 0 24px 48px rgba(5, 95, 124, 0.15);
   flex-shrink: 0;
@@ -5194,7 +5129,6 @@ html[data-theme="dark"] .manufacturing-process-step {
   padding: 0.85rem 1.8rem;
   font-size: 0.9rem;
   font-weight: 600;
-  border-radius: 8px;
   border: none;
   cursor: pointer;
   transition: all 0.25s ease;
@@ -5365,7 +5299,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 .secondaryAction {
   min-height: 48px;
   padding: 0.85rem 1.35rem;
-  border-radius: 10px;
+
   border: 1px solid transparent;
   font-size: 0.95rem;
   font-weight: 700;
@@ -5396,7 +5330,6 @@ html[data-theme="dark"] .manufacturing-process-step {
   gap: 1.5rem;
   padding: clamp(2rem, 4vw, 3rem);
   border: 1px solid #d5e3ec;
-  border-radius: var(--radius-xl);
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(236, 245, 249, 0.95));
   box-shadow: 0 24px 60px rgba(32, 74, 98, 0.12);
 }
@@ -5454,7 +5387,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   position: relative;
   width: 400px;
   height: 400px;
-  border-radius: 50%;
+
   overflow: hidden;
   box-shadow: 0 24px 48px rgba(5, 95, 124, 0.15);
   flex-shrink: 0;
@@ -5525,7 +5458,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   justify-content: center;
   padding: 0.85rem 2rem;
   border: none;
-  border-radius: 999px;
+
   background: linear-gradient(135deg, #60e5d8 0%, #2dd4b4 100%);
   color: #ffffff;
   font-size: 1rem;
@@ -5558,7 +5491,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .highlightStatCard {
   padding: 2rem 1.9rem 1.75rem 8.5rem;
-  border-radius: 0;
+
   border-top-left-radius: var(--radius-lg);
   border-bottom-right-radius: var(--radius-lg);
   background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 50%, #ffffff 100%);
@@ -5577,7 +5510,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   content: '';
   position: absolute;
   inset: -1px;
-  border-radius: inherit;
+
   padding: 3px;
   background: radial-gradient(circle at 30% 20%, rgba(191, 233, 255, 0.4), rgba(191, 233, 255, 0.1), transparent);
   pointer-events: none;
@@ -5601,7 +5534,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 80%;
+
   background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.96), rgba(175, 244, 255, 0.92) 42%, rgba(111, 182, 255, 0.7) 100%);
   backdrop-filter: blur(20px) saturate(150%);
   border: 2px solid rgba(148, 227, 255, 0.5);
@@ -5616,7 +5549,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   content: '';
   position: absolute;
   inset: -16px;
-  border-radius: 50%;
+
   background: radial-gradient(circle, rgba(148, 227, 255, 0.15) 0%, rgba(148, 227, 255, 0.05) 50%, transparent 70%);
   pointer-events: none;
 }
@@ -5758,7 +5691,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .ecosystemCard {
   padding: 2.35rem 2.5rem;
-  border-radius: 20px;
+
   background: transparent;
   border: none;
   box-shadow: none;
@@ -5803,7 +5736,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.35);
   box-shadow: 0 8px 32px rgba(15, 20, 25, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  border-radius: 0.75rem;
+
   transition: all 0.3s ease;
   display: block;
 }
@@ -5821,7 +5754,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   left: 1.15rem;
   width: 2.55rem;
   height: 2.55rem;
-  border-radius: 0.95rem;
+
   border: 1px solid rgba(255, 255, 255, 0.42);
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.12)),
@@ -5843,7 +5776,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   left: 1.83rem;
   width: 1.18rem;
   height: 1.18rem;
-  border-radius: 999px;
+
   background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.96), rgba(175, 244, 255, 0.92) 42%, rgba(111, 182, 255, 0.7) 100%);
   box-shadow:
     0 0 12px rgba(148, 227, 255, 0.65),
@@ -5919,7 +5852,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .laboratoryCard {
   overflow: hidden;
-  border-radius: 24px;
+
   background: transparent;
   box-shadow: none;
   border: none;
@@ -6029,7 +5962,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 .capabilityShowcaseCard {
   position: relative;
   overflow: hidden;
-  border-radius: 1.25rem;
+
   background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -6177,7 +6110,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .trainingCard {
   padding: 2.25rem 2.45rem;
-  border-radius: var(--radius-xl);
+
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(118, 177, 230, 0.2);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
@@ -6219,7 +6152,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.35);
   box-shadow: 0 8px 32px rgba(15, 20, 25, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  border-radius: 0.75rem;
+
   transition: all 0.3s ease;
 }
 
@@ -6236,7 +6169,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   left: 1.15rem;
   width: 2.55rem;
   height: 2.55rem;
-  border-radius: 0.95rem;
+
   border: 1px solid rgba(255, 255, 255, 0.42);
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.12)),
@@ -6258,7 +6191,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   left: 1.83rem;
   width: 1.18rem;
   height: 1.18rem;
-  border-radius: 999px;
+
   background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.96), rgba(175, 244, 255, 0.92) 42%, rgba(111, 182, 255, 0.7) 100%);
   box-shadow:
     0 0 12px rgba(148, 227, 255, 0.65),
@@ -6302,7 +6235,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 .sectionCard,
 .sidebarCard {
   padding: clamp(1.5rem, 3vw, 2rem);
-  border-radius: var(--radius-lg);
+
   border: 1px solid #d5e3ec;
   background: rgba(255, 255, 255, 0.86);
   box-shadow: 0 18px 40px rgba(32, 74, 98, 0.08);
@@ -6335,7 +6268,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 .checklistItem {
   padding: 1rem 1.1rem;
   border-left: 4px solid #2c7ca0;
-  border-radius: 14px;
+
   background: #f3f8fb;
 }
 
@@ -6443,7 +6376,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 
   .trainingCard {
     padding: 1.7rem 1.35rem;
-    border-radius: 22px;
+
   }
 }
 
