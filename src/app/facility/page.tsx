@@ -243,7 +243,7 @@ export default function FacilityPage() {
         </div>
       </section>
 
-      <motion.section className="container section split" id="advanced-manufacturing" {...fadeInUpVariants}>
+      {/* <motion.section className="container section split" id="advanced-manufacturing" {...fadeInUpVariants}>
         <motion.div
           className="facility-operationsContent"
           initial={{ opacity: 0, x: -50 }}
@@ -368,9 +368,9 @@ export default function FacilityPage() {
             </div>
           </div>
         </motion.div>
-      </motion.section>
+      </motion.section> */}
 
-      <motion.section className="container section split" id="specialty-units" {...fadeInUpVariants}>
+      {/* <motion.section className="container section split" id="specialty-units" {...fadeInUpVariants}>
         <motion.div
           className="facility-manufacturingAnimation"
           initial={{ opacity: 0, x: -50 }}
@@ -477,12 +477,12 @@ export default function FacilityPage() {
             viewport={{ once: true, amount: 0.3 }}
           >
             {[
-              "Contained manufacturing environment",
-              "Enhanced ventilation systems",
-              "Specialized operator training",
+              "Isolation Containment",
+              "Dedicated Ventilation",
+              // "Specialized operator training",
               "Dedicated quality assurance",
-              "Isolated waste management",
-              "Regulatory compliance documentation",
+              // "Isolated waste management",
+              // "Regulatory compliance documentation",
             ].map((item, index) => (
               <motion.li
                 className="facility-operationsListItem"
@@ -495,9 +495,9 @@ export default function FacilityPage() {
             ))}
           </motion.ul>
         </motion.div>
-      </motion.section>
+      </motion.section> */}
 
-      <motion.section className="container section split" id="research-center" {...fadeInUpVariants}>
+      {/* <motion.section className="container section split" id="research-center" {...fadeInUpVariants}>
         <motion.div
           className="facility-operationsContent"
           initial={{ opacity: 0, x: -50 }}
@@ -541,12 +541,12 @@ export default function FacilityPage() {
             viewport={{ once: true, amount: 0.3 }}
           >
             {[
-              "Formulation development labs",
-              "Advanced analytical instruments",
-              "Bioavailability testing chambers",
-              "Stability study facilities",
-              "Process optimization capabilities",
-              "Regulatory compliance support",
+              // "Formulation development labs",
+              // "Advanced analytical instruments",
+              // "Bioavailability testing chambers",
+              // "Stability study facilities",
+              // "Process optimization capabilities",
+              // "Regulatory compliance support",
             ].map((item, index) => (
               <motion.li
                 className="facility-operationsListItem"
@@ -622,6 +622,184 @@ export default function FacilityPage() {
             </div>
           </div>
         </motion.div>
+      </motion.section> */}
+
+      <motion.section className="facility-qualityComplianceSection" {...fadeInUpVariants}>
+        <div className="facility-qualityContainer">
+          <motion.div
+            className="facility-qualityImage"
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7 }}
+            viewport={{ once: true, amount: 0.3 }}
+          >
+            <Image
+              src="/quality-doctor.png"
+              alt="Quality specialist in pharmaceutical setting"
+              width={520}
+              height={640}
+              className="facility-qualityImageContent"
+            />
+          </motion.div>
+
+          <motion.div
+            className="facility-qualityContent"
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            viewport={{ once: true, amount: 0.3 }}
+          >
+            <motion.p
+              className="facility-qualityEyebrow"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              The Standard of Care
+            </motion.p>
+
+            <motion.h2
+              className="facility-qualityTitle"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              viewport={{ once: true }}
+            >
+              Quality & Compliance
+            </motion.h2>
+
+            <motion.div
+              className="facility-qualityPoints"
+              initial="initial"
+              whileInView="whileInView"
+              variants={staggerContainerVariants}
+              viewport={{ once: true, amount: 0.3 }}
+            >
+              {[
+                {
+                  title: "Strong Quality Management System (QMS)",
+                  description: "End-to-end oversight ensuring every batch meets the Synergy standard of excellence.",
+                  icon: "shield"
+                },
+                {
+                  title: "Independent QA & QC teams",
+                  description: "Separate Quality Assurance and Control divisions for unbiased analytical reporting.",
+                  icon: "users"
+                }
+              ].map((point, index) => (
+                <motion.div
+                  key={index}
+                  className="facility-qualityPoint"
+                  variants={staggerChildVariants}
+                  transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
+                >
+                  <div className="facility-qualityPointIcon">
+                    {point.icon === "shield" ? (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="facility-qualityPointContent">
+                    <h3>{point.title}</h3>
+                    <p>{point.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            <motion.div
+              className="facility-qualityCertifications"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <div className="facility-certificationsAccent" />
+              <div className="facility-certificationsContent">
+                <p className="facility-certificationsLabel">International Certifications</p>
+                <div className="facility-certificationsGrid">
+                  <span className="facility-certification">USFDA</span>
+                  <span className="facility-certification">EU-GMP</span>
+                  <span className="facility-certification">WHO-GMP</span>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
+      </motion.section>
+
+      <motion.section className="facility-futureExpansionSection" {...fadeInUpVariants}>
+        <div className="facility-futureContainer">
+          <motion.div
+            className="future-header"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true, amount: 0.3 }}
+          >
+            <motion.p
+              className="future-eyebrow"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+            >
+              Next Horizon
+            </motion.p>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              Future Expansion
+            </motion.h2>
+            <motion.p
+              className="future-subtitle"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              viewport={{ once: true }}
+            >
+              Expanding into Oncology, Injectables, and Hormonal manufacturing to meet global demand.
+            </motion.p>
+          </motion.div>
+
+          <motion.div
+            className="facility-expansionGrid"
+            initial="initial"
+            whileInView="whileInView"
+            variants={staggerContainerVariants}
+            viewport={{ once: true, amount: 0.2 }}
+          >
+            {[
+              { title: "Oncology", phase: "Phase I" },
+              { title: "Injectables", phase: "Phase II" },
+              { title: "Hormonal", phase: "Phase III" },
+            ].map((expansion, index) => (
+              <motion.div
+                key={index}
+                className="facility-expansionCard"
+                variants={staggerChildVariants}
+                transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
+              >
+                <div className="facility-expansionCardContent">
+                  <h3 className="facility-expansionCardTitle">{expansion.title}</h3>
+                  <p className="facility-expansionCardPhase">{expansion.phase}</p>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
       </motion.section>
       
     </main>

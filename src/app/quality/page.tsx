@@ -306,10 +306,10 @@ export default function QualityPage() {
 
       <section className="laboratoryServicesSection qualityZoomSection">
         <div className="laboratory-container qualityZoomSurface">
-          <div className="laboratory-header">
-            <p className="laboratory-eyebrow">Laboratory Services</p>
+          <div className="quality-header">
+            <p className="quality-eyebrow">Laboratory Services</p>
             <h2>Quality Capability Centers</h2>
-            <p className="laboratory-subtitle">
+            <p className="quality-subtitle">
               State-of-the-art laboratory facilities supporting comprehensive quality control and analytical testing.
             </p>
           </div>

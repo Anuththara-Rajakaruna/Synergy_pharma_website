@@ -43,6 +43,13 @@ const aboutCards = [
     cta: "Discover diagnostics",
     image: "/diagonastic.png",
   },
+  {
+    title: "Global Operations",
+    description:
+      "Strategic supply chain and logistics network ensuring reliable delivery of healthcare solutions across regional and international markets.",
+    cta: "Learn more",
+    image: "/operations.png",
+  },
 ];
 
 export default function AboutPage() {
@@ -182,35 +189,41 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="about-cards">
+          <div className="ecosystem-cards-grid">
             {aboutCards.map((card, index) => {
-              const isImageLeft = index === 0 || index === 2;
-              const isRankCard = card.title === "Mother Company Rank Holdings";
+              const isFeatured = index === 0;
+              const iconMap: { [key: string]: string } = {
+                "Mother Company Rank Holdings": "🏢",
+                "Synergy Pharmaceuticals": "💊",
+                "Our Business": "📊",
+                "Synergy Diagnostics": "🔬",
+                "Global Operations": "🌍",
+              };
 
               return (
                 <article
-                  className={`card about-card reveal-on-scroll ${isImageLeft ? "about-card-reverse" : ""}`.trim()}
+                  className={`ecosystem-card reveal-on-scroll ${isFeatured ? "featured" : "secondary"}`.trim()}
                   key={card.title}
                 >
-                  <div className="about-card-body">
-                    <div className="about-card-copy">
+                  {isFeatured && (
+                    <div>
                       <h3>{card.title}</h3>
                       <p>{card.description}</p>
-                      <span className="about-card-link">
+                      <span className="ecosystem-card-featured-cta">
                         {card.cta}
                         <span aria-hidden="true">→</span>
                       </span>
                     </div>
-                    <div className={`about-card-image ${isRankCard ? "about-card-image-rank" : ""}`.trim()}>
-                      <Image
-                        src={card.image}
-                        alt={card.title}
-                        fill
-                        className={`showcase-photo ${isRankCard ? "about-card-image-rank-photo" : ""}`.trim()}
-                        sizes="(max-width: 900px) 100vw, 34vw"
-                      />
-                    </div>
-                  </div>
+                  )}
+                  {!isFeatured && (
+                    <>
+                      <h3>
+                        <span className="ecosystem-card-icon">{iconMap[card.title] || "✓"}</span>
+                        {card.title}
+                      </h3>
+                      <p>{card.description}</p>
+                    </>
+                  )}
                 </article>
               );
             })}

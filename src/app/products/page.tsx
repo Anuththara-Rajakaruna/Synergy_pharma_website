@@ -87,7 +87,7 @@ export default function ProductsPage() {
 
       <section ref={highlightRef} className="product-highlight product-highlight-zoom">
         <div className="highlight-container">
-          <div className="highlight-header">
+          <div className="showcaseContent">
             <p className="highlight-eyebrow">Product Overview</p>
             <h2>Reliable Pharmaceutical Products for Safer Global Care</h2>
             <p className="highlight-subtitle">
@@ -98,31 +98,45 @@ export default function ProductsPage() {
 
           <div className="highlight-layout">
             <div className="highlight-image-card">
-              <Image
-                src="/facility_1.png"
-                alt="Certified pharmaceutical facility"
-                width={400}
-                height={500}
-                className="facility-image"
-              />
+              <div className="highlight-wave-background" aria-hidden="true" />
+              <div className="highlight-image-frame">
+                <Image
+                  src="/facility_1.png"
+                  alt="Certified pharmaceutical facility"
+                  width={400}
+                  height={500}
+                  className="facility-image"
+                />
+              </div>
               <p className="facility-label">CERTIFIED OPERATIONS</p>
             </div>
 
-            <div className="highlight-buttons">
-              <button className="btn-primary">Request Catalogue</button>
-              <button className="btn-secondary">Technical Specs</button>
+            <div className="highlight-content">
+              {/* <div className="highlight-buttons">
+                <button className="btn-primary">Request Catalogue</button>
+                <button className="btn-secondary">Technical Specs</button>
+              </div> */}
             </div>
           </div>
         </div>
+
+
+
+
+
+
+
+
+        
       </section>
 
       <section ref={overviewRef} className="product-overview product-section-zoom">
         <div className="product-section-surface">
           <div className="overview-container">
-            <div className="overview-header">
-              <p className="overview-eyebrow">Manufacturing Capabilities</p>
+            <div className="capabilities-header">
+              <p className="capabilities-eyebrow">Manufacturing Capabilities</p>
               <h2>Capabilities & Formulations</h2>
-              <p className="overview-subtitle">
+              <p className="capabilities-subtitle">
                 Our manufacturing platform supports precision pharmaceutical production designed for stability, efficacy, and patient compliance.
               </p>
             </div>
@@ -172,11 +186,11 @@ export default function ProductsPage() {
         <div className="product-section-surface">
           <div className="portfolio-container">
             <div className="portfolio-header">
-              <div className="portfolio-content">
-                <p className="portfolio-eyebrow">Product Lineup</p>
-                <h2>Current Portfolio</h2>
-                <p className="portfolio-subtitle">Commercialized pharmaceutical solutions across key therapeutic areas.</p>
-              </div>
+              <p className="portfolio-eyebrow">Product Lineup</p>
+              <h2>Current Portfolio</h2>
+              <p className="portfolio-subtitle">Commercialized pharmaceutical solutions across key therapeutic areas.</p>
+            </div>
+            <div className="portfolio-header-action">
               <button className="portfolio-cta">
                 View Full Directory
                 <ArrowRight size={16} />
