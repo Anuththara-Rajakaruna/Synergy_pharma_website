@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/hero";
+import { ScrollReveal, ScrollRevealContainer, ScrollRevealItem } from "@/components/scroll-reveal";
 
 export default function Home() {
   const [isVisionOpen, setIsVisionOpen] = useState(false);
@@ -186,7 +187,7 @@ export default function Home() {
 
       <section ref={corporationRef} className="corporation-section reveal-on-scroll corporation-shrink" id="corporation">
         <div className="corporation-container">
-          <div className="corporation-header">
+          <ScrollReveal className="corporation-header">
             <p className="corporation-eyebrow">About The Corporation</p>
             <h2>Excellence in Sri Lankan Manufacturing.</h2>
             <p className="corporation-subtitle">
@@ -194,9 +195,9 @@ export default function Home() {
               pharmaceutical products. Our expansive facility is built to exceed international quality
               standards, ensuring medicine accessibility for all.
             </p>
-          </div>
+          </ScrollReveal>
 
-          <div className="corporation-content">
+          <ScrollReveal className="corporation-content" delay={0.2}>
             <div className="showcase-media">
               <div className="showcase-image">
                 <Image
@@ -224,19 +225,19 @@ export default function Home() {
                 <span>Certifications</span>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 
       <section ref={missionRef} className="mission-section reveal-on-scroll mission-animate" id="quality">
         <div className="mission-container">
-          <div className="mission-header">
+          <ScrollReveal className="mission-header">
             <p className="mission-eyebrow">Strategic Direction</p>
             <h2>Vision & Mission</h2>
             <p className="mission-subtitle">
               Guided by our commitment to excellence and sustainable healthcare innovation.
             </p>
-          </div>
+          </ScrollReveal>
 
           <div className="mission-content">
             <div className="vision-panel">
@@ -247,24 +248,24 @@ export default function Home() {
             </div>
             <div className="mission-panel">
               <p className="eyebrow">Our Mission</p>
-              <div className="mission-grid">
-                <article className="mission-item">
+              <ScrollRevealContainer staggerDelay={0.1} className="mission-grid">
+              <ScrollRevealItem><article className="mission-item">
                   <h3>Accessibility</h3>
                   <p>Deliver high-quality affordable medicine to global markets.</p>
-                </article>
-                <article className="mission-item">
+                </article></ScrollRevealItem>
+                <ScrollRevealItem><article className="mission-item">
                   <h3>Quality</h3>
                   <p>Maintain rigorous GMP compliance and transparent processes.</p>
-                </article>
-                <article className="mission-item">
+                </article></ScrollRevealItem>
+                <ScrollRevealItem><article className="mission-item">
                   <h3>Innovation</h3>
                   <p>Invest in advanced manufacturing and research partnerships.</p>
-                </article>
-                <article className="mission-item">
+                </article></ScrollRevealItem>
+                <ScrollRevealItem><article className="mission-item">
                   <h3>Responsibility</h3>
                   <p>Build sustainable operations that uplift communities and care delivery.</p>
-                </article>
-              </div>
+                </article></ScrollRevealItem>
+              </ScrollRevealContainer>
             </div>
           </div>
         </div>

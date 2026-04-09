@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/hero";
 import { SiteFooter } from "@/components/site-footer";
+import { ScrollReveal, ScrollRevealContainer, ScrollRevealItem } from "@/components/scroll-reveal";
 
 const facilities = [
   {
@@ -83,13 +84,7 @@ export default function FacilityPage() {
 
       <motion.section className="facility-capabilitiesSection" id="facility-intro">
         <div className="facility-capabilitiesContainer">
-          <motion.div
-            className="facility-capabilitiesHeader"
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true, amount: 0.3 }}
-          >
+          <ScrollReveal className="facility-capabilitiesHeader">
             <motion.p
               className="facility-capabilitiesEyebrow"
               initial={{ opacity: 0 }}
@@ -119,15 +114,9 @@ export default function FacilityPage() {
               state-of-the-art facilities for solid dosage forms, injectables, oncology products, and hormone-based
               therapeutics.
             </motion.p>
-          </motion.div>
+          </ScrollReveal>
 
-          <motion.div
-            className="facility-capabilitiesGrid"
-            initial="initial"
-            whileInView="whileInView"
-            variants={staggerContainerVariants}
-            viewport={{ once: true, amount: 0.2 }}
-          >
+          <ScrollRevealContainer staggerDelay={0.12} className="facility-capabilitiesGrid">
             {[
               { 
                 title: "WHO-GMP Certified", 
@@ -171,11 +160,9 @@ export default function FacilityPage() {
                 )
               },
             ].map((capability, index) => (
-              <motion.div
+              <ScrollRevealItem
                 key={index}
                 className="facility-capabilityCard"
-                variants={staggerChildVariants}
-                transition={{ duration: 0.5, delay: 0.1 + index * 0.08 }}
               >
                 <div className="facility-capabilityCardInner">
                   <motion.div 
@@ -201,32 +188,28 @@ export default function FacilityPage() {
                   <p className="facility-capabilityCardDescription">{capability.description}</p>
                 </div>
                 <div className="facility-capabilityCardAccent" />
-              </motion.div>
+              </ScrollRevealItem>
             ))}
-          </motion.div>
+          </ScrollRevealContainer>
         </div>
       </motion.section>
 
       <section className="facility-facilitiesSection">
         <div className="facility-facilitiesSectionInner">
-          <div className="facility-facilitiesHeader">
+          <ScrollReveal className="facility-facilitiesHeader">
             <p className="facility-facilitiesHeaderEyebrow">Integrated Operations</p>
             <h2 className="facility-facilitiesTitle">Our Manufacturing Units</h2>
             <p className="facility-facilitiesDescription">
               Integrated pharmaceutical manufacturing facilities designed for precision, compliance, and global
               scalability.
             </p>
-          </div>
+          </ScrollReveal>
 
-          <div className="facility-facilitiesGrid">
+          <ScrollRevealContainer staggerDelay={0.12} className="facility-facilitiesGrid">
             {facilities.map((facility) => (
-              <motion.div
+              <ScrollRevealItem
                 key={facility.id}
                 className="facility-facilityCard"
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                viewport={{ once: true, amount: 0.3 }}
               >
                 <div className="facility-facilityCardImageWrap">
                   <Image src={facility.image} alt={facility.title} fill className="facility-facilityCardImage" />
@@ -237,9 +220,9 @@ export default function FacilityPage() {
                   <h3 className="facility-facilityCardTitle">{facility.title}</h3>
                   <p className="facility-facilityCardText">{facility.description}</p>
                 </div>
-              </motion.div>
+              </ScrollRevealItem>
             ))}
-          </div>
+          </ScrollRevealContainer>
         </div>
       </section>
 

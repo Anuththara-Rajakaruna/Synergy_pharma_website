@@ -110,7 +110,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="topbar-actions">
-          <button
+          {/* <button
             type="button"
             className="theme-toggle desktop-theme-toggle"
             aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
@@ -125,7 +125,7 @@ export function SiteHeader() {
               )}
             </svg>
             <span>{theme === "dark" ? "Light" : "Dark"}</span>
-          </button>
+          </button> */}
 
           <button
             type="button"

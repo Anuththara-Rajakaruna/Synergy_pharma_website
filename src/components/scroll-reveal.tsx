@@ -18,7 +18,7 @@ interface ScrollRevealProps extends Omit<MotionProps, "children"> {
 export function ScrollReveal({
   children,
   delay = 0,
-  duration = 0.6,
+  duration = 1.0,
   className = "",
   ...motionProps
 }: ScrollRevealProps) {
@@ -99,7 +99,7 @@ export function ScrollRevealItem({
           opacity: 1,
           scale: 1,
           transition: {
-            duration: 0.6,
+            duration: 1.0,
             ease: "easeOut",
           },
         },

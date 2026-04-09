@@ -16,6 +16,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { ScrollReveal, ScrollRevealContainer, ScrollRevealItem } from "@/components/scroll-reveal";
 
 const qualityHighlights = [
   {
@@ -213,7 +214,7 @@ export default function QualityPage() {
             </div>
           </div>
 
-          <div className="showcaseContent">
+          <ScrollReveal className="showcaseContent" delay={0.2}>
             <p className="showcase-eyebrow">Quality Philosophy</p>
             <h2>
               From Design to Delivery, Quality
@@ -226,26 +227,26 @@ export default function QualityPage() {
               lifecycle.
             </p>
             <Button>Explore Quality Framework</Button>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 
       <section ref={highlightsRef} className="highlightsSection qualityZoomSection">
         <div className="highlights-container qualityZoomSurface">
-          <div className="highlights-header">
+          <ScrollReveal className="highlights-header">
             <p className="highlights-eyebrow">Key Metrics</p>
             <h2>Quality Excellence Standards</h2>
             <p className="highlights-subtitle">
               Our commitment to quality is measured through rigorous metrics and continuous improvement initiatives.
             </p>
-          </div>
+          </ScrollReveal>
 
-          <div className="highlightsGrid">
+          <ScrollRevealContainer staggerDelay={0.1} className="highlightsGrid">
             {qualityHighlights.map((item) => {
               const Icon = item.icon;
 
               return (
-                <article
+                <ScrollRevealItem
                   key={item.title}
                   className={`highlightStatCard accent${item.accent[0].toUpperCase()}${item.accent.slice(1)}`}
                 >
@@ -255,30 +256,30 @@ export default function QualityPage() {
                   <h3>{item.title}</h3>
                   <p>{item.subtitle}</p>
                   <small>{item.detail}</small>
-                </article>
+                </ScrollRevealItem>
               );
             })}
-          </div>
+          </ScrollRevealContainer>
         </div>
       </section>
 
       <section ref={ecosystemRef} className="ecosystemSection qualityZoomSection">
         <div className="ecosystemContainer qualityZoomSurface">
-          <div className="ecosystem-header">
+          <ScrollReveal className="ecosystem-header">
             <p className="ecosystem-eyebrow">Management Framework</p>
             <h2>Quality Management Ecosystem</h2>
             <p className="ecosystem-subtitle">
               Our QMS is a living framework that evolves with global regulatory changes and
               scientific breakthroughs.
             </p>
-          </div>
+          </ScrollReveal>
 
-          <div className="ecosystemGrid">
+          <ScrollRevealContainer staggerDelay={0.1} className="ecosystemGrid">
             {ecosystemCards.map((card) => {
               const Icon = card.icon;
 
               return (
-                <article
+                <ScrollRevealItem
                   key={card.title}
                   className={`ecosystemCard accent${card.accent[0].toUpperCase()}${card.accent.slice(1)}`}
                 >
@@ -297,24 +298,24 @@ export default function QualityPage() {
                       </li>
                     ))}
                   </ul>
-                </article>
+                </ScrollRevealItem>
               );
             })}
-          </div>
+          </ScrollRevealContainer>
         </div>
       </section>
 
       <section className="laboratoryServicesSection qualityZoomSection">
         <div className="laboratory-container qualityZoomSurface">
-          <div className="quality-header">
+          <ScrollReveal className="quality-header">
             <p className="quality-eyebrow">Laboratory Services</p>
             <h2>Quality Capability Centers</h2>
             <p className="quality-subtitle">
               State-of-the-art laboratory facilities supporting comprehensive quality control and analytical testing.
             </p>
-          </div>
+          </ScrollReveal>
 
-          <div className="laboratoryCardsGrid">
+          <ScrollRevealContainer staggerDelay={0.12} className="laboratoryCardsGrid">
             {[
               {
                 title: "Chemistry Section",
@@ -341,17 +342,18 @@ export default function QualityPage() {
                 imageAlt: "Digital quality systems visualization",
               },
             ].map((card) => (
-              <CapabilityCard
-                key={card.title}
-                title={card.title}
-                description={card.description}
-                label={card.label}
-                image={card.image}
-                imageAlt={card.imageAlt}
-                accent={card.accent as "blue" | "teal"}
-              />
+              <ScrollRevealItem key={card.title}>
+                <CapabilityCard
+                  title={card.title}
+                  description={card.description}
+                  label={card.label}
+                  image={card.image}
+                  imageAlt={card.imageAlt}
+                  accent={card.accent as "blue" | "teal"}
+                />
+              </ScrollRevealItem>
             ))}
-          </div>
+          </ScrollRevealContainer>
         </div>
       </section>
 
@@ -404,17 +406,17 @@ export default function QualityPage() {
 
       <section ref={complianceRef} className="complianceFrameworkSection qualityZoomSection">
         <div className="compliance-container qualityZoomSurface">
-          <div className="compliance-header">
+          <ScrollReveal className="compliance-header">
             <p className="compliance-eyebrow">Regulatory Standards</p>
             <h2>Global Compliance Framework</h2>
             <p className="compliance-subtitle">
               We operate under a unified global compliance strategy that meets and exceeds the
               world&apos;s most rigorous health authority mandates.
             </p>
-          </div>
+          </ScrollReveal>
 
-          <div className="complianceFrameworkGrid">
-            <div className="complianceFrameworkContent">
+          <ScrollRevealContainer staggerDelay={0.12} className="complianceFrameworkGrid">
+            <ScrollRevealItem className="complianceFrameworkContent">
               <div className="compliancePrinciples">
                 {compliancePrinciples.map((item) => (
                   <article key={item.title} className="compliancePrinciple">
@@ -423,9 +425,9 @@ export default function QualityPage() {
                   </article>
                 ))}
               </div>
-            </div>
+            </ScrollRevealItem>
 
-            <aside className="trainingCard">
+            <ScrollRevealItem className="trainingCard">
               <div className="trainingHeader">
                 <div className="trainingIcon">
                   <ShieldCheck size={22} strokeWidth={2.1} />
@@ -441,8 +443,8 @@ export default function QualityPage() {
                   </div>
                 ))}
               </div>
-            </aside>
-          </div>
+            </ScrollRevealItem>
+          </ScrollRevealContainer>
         </div>
       </section>
     </main>

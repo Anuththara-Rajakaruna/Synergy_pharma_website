@@ -2,6 +2,7 @@
 
 import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/hero";
+import { ScrollReveal, ScrollRevealContainer, ScrollRevealItem } from "@/components/scroll-reveal";
 import Image from "next/image";
 import { CapabilityCard } from "@/components/capability-card";
 import { useEffect, useRef } from "react";
@@ -87,97 +88,100 @@ export default function ProductsPage() {
 
       <section ref={highlightRef} className="product-highlight product-highlight-zoom">
         <div className="highlight-container">
-          <div className="showcaseContent">
-            <p className="highlight-eyebrow">Product Overview</p>
-            <h2>Reliable Pharmaceutical Products for Safer Global Care</h2>
-            <p className="highlight-subtitle">
-              Leveraging advanced chemical engineering and rigorous stability protocols to deliver
-              clinical excellence to healthcare providers worldwide.
-            </p>
-          </div>
-
-          <div className="highlight-layout">
-            <div className="highlight-image-card">
-              <div className="highlight-wave-background" aria-hidden="true" />
-              <div className="highlight-image-frame">
-                <Image
-                  src="/facility_1.png"
-                  alt="Certified pharmaceutical facility"
-                  width={400}
-                  height={500}
-                  className="facility-image"
-                />
-              </div>
-              <p className="facility-label">CERTIFIED OPERATIONS</p>
+          <ScrollReveal>
+            <div className="showcaseContent">
+              <p className="highlight-eyebrow">Product Overview</p>
+              <h2>Reliable Pharmaceutical Products for Safer Global Care</h2>
+              <p className="highlight-subtitle">
+                Leveraging advanced chemical engineering and rigorous stability protocols to deliver
+                clinical excellence to healthcare providers worldwide.
+              </p>
             </div>
+          </ScrollReveal>
 
-            <div className="highlight-content">
-              {/* <div className="highlight-buttons">
+          <ScrollReveal delay={0.2}>
+            <div className="highlight-layout">
+              <div className="highlight-image-card">
+                <div className="highlight-wave-background" aria-hidden="true" />
+                <div className="highlight-image-frame">
+                  <Image
+                    src="/facility_1.png"
+                    alt="Certified pharmaceutical facility"
+                    width={400}
+                    height={500}
+                    className="facility-image"
+                  />
+                </div>
+                <p className="facility-label">CERTIFIED OPERATIONS</p>
+              </div>
+
+              <div className="highlight-content">
+                {/* <div className="highlight-buttons">
                 <button className="btn-primary">Request Catalogue</button>
                 <button className="btn-secondary">Technical Specs</button>
               </div> */}
+              </div>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
-
-
-
-
-
-
-
-
-        
       </section>
 
       <section ref={overviewRef} className="product-overview product-section-zoom">
         <div className="product-section-surface">
           <div className="overview-container">
-            <div className="capabilities-header">
-              <p className="capabilities-eyebrow">Manufacturing Capabilities</p>
-              <h2>Capabilities & Formulations</h2>
-              <p className="capabilities-subtitle">
-                Our manufacturing platform supports precision pharmaceutical production designed for stability, efficacy, and patient compliance.
-              </p>
-            </div>
+            <ScrollReveal>
+              <div className="capabilities-header">
+                <p className="capabilities-eyebrow">Manufacturing Capabilities</p>
+                <h2>Capabilities & Formulations</h2>
+                <p className="capabilities-subtitle">
+                  Our manufacturing platform supports precision pharmaceutical production designed for stability, efficacy, and patient compliance.
+                </p>
+              </div>
+            </ScrollReveal>
 
-            <div className="capabilities-grid">
-              <div className="capability-card">
-                <div className="capability-icon">
-                  <FlaskConical size={24} />
+            <ScrollRevealContainer staggerDelay={0.1} className="capabilities-grid">
+              <ScrollRevealItem>
+                <div className="capability-card">
+                  <div className="capability-icon">
+                    <FlaskConical size={24} />
+                  </div>
+                  <h3>R&amp;D Laboratory</h3>
+                  <p>
+                    Advancing pharmaceutical innovation through formulation research, process
+                    development, and product optimization.
+                  </p>
                 </div>
-                <h3>R&amp;D Laboratory</h3>
-                <p>
-                  Advancing pharmaceutical innovation through formulation research, process
-                  development, and product optimization.
-                </p>
-              </div>
-              <div className="capability-card">
-                <div className="capability-icon">
-                  <Pill size={24} />
+              </ScrollRevealItem>
+              <ScrollRevealItem>
+                <div className="capability-card">
+                  <div className="capability-icon">
+                    <Pill size={24} />
+                  </div>
+                  <h3>Oral Solid Dosage Forms</h3>
+                  <p>
+                    Specialized in tablet and capsule manufacturing under controlled pharmaceutical
+                    processing systems.
+                  </p>
+                  <ul className="capability-list">
+                    <li>Dry Granulation</li>
+                    <li>Aqueous Film Coating</li>
+                    <li>Direct Compression</li>
+                  </ul>
                 </div>
-                <h3>Oral Solid Dosage Forms</h3>
-                <p>
-                  Specialized in tablet and capsule manufacturing under controlled pharmaceutical
-                  processing systems.
-                </p>
-                <ul className="capability-list">
-                  <li>Dry Granulation</li>
-                  <li>Aqueous Film Coating</li>
-                  <li>Direct Compression</li>
-                </ul>
-              </div>
-              <div className="capability-card">
-                <div className="capability-icon">
-                  <Microscope size={24} />
+              </ScrollRevealItem>
+              <ScrollRevealItem>
+                <div className="capability-card">
+                  <div className="capability-icon">
+                    <Microscope size={24} />
+                  </div>
+                  <h3>Bio-Equivalent Engineering</h3>
+                  <p>
+                    Supporting therapeutic consistency through formulation precision and validated
+                    pharmaceutical technologies.
+                  </p>
                 </div>
-                <h3>Bio-Equivalent Engineering</h3>
-                <p>
-                  Supporting therapeutic consistency through formulation precision and validated
-                  pharmaceutical technologies.
-                </p>
-              </div>
-            </div>
+              </ScrollRevealItem>
+            </ScrollRevealContainer>
           </div>
         </div>
       </section>
@@ -185,19 +189,23 @@ export default function ProductsPage() {
       <section ref={portfolioRef} className="current-portfolio product-section-zoom">
         <div className="product-section-surface">
           <div className="portfolio-container">
-            <div className="portfolio-header">
-              <p className="portfolio-eyebrow">Product Lineup</p>
-              <h2>Current Portfolio</h2>
-              <p className="portfolio-subtitle">Commercialized pharmaceutical solutions across key therapeutic areas.</p>
-            </div>
-            <div className="portfolio-header-action">
-              <button className="portfolio-cta">
-                View Full Directory
-                <ArrowRight size={16} />
-              </button>
-            </div>
+            <ScrollReveal>
+              <div className="portfolio-header">
+                <p className="portfolio-eyebrow">Product Lineup</p>
+                <h2>Current Portfolio</h2>
+                <p className="portfolio-subtitle">Commercialized pharmaceutical solutions across key therapeutic areas.</p>
+              </div>
+            </ScrollReveal>
+            <ScrollReveal delay={0.15}>
+              <div className="portfolio-header-action">
+                <button className="portfolio-cta">
+                  View Full Directory
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+            </ScrollReveal>
 
-            <div className="portfolio-grid">
+            <ScrollRevealContainer staggerDelay={0.12} className="portfolio-grid">
               {[
                 {
                   title: "Cetirizine",
@@ -224,17 +232,18 @@ export default function ProductsPage() {
                   imageAlt: "Pregablin medication",
                 },
               ].map((product) => (
-                <CapabilityCard
-                  key={product.title}
-                  title={product.title}
-                  description={product.description}
-                  label={product.label}
-                  image={product.image}
-                  imageAlt={product.imageAlt}
-                  accent={product.accent as "blue" | "teal"}
-                />
+                <ScrollRevealItem key={product.title}>
+                  <CapabilityCard
+                    title={product.title}
+                    description={product.description}
+                    label={product.label}
+                    image={product.image}
+                    imageAlt={product.imageAlt}
+                    accent={product.accent as "blue" | "teal"}
+                  />
+                </ScrollRevealItem>
               ))}
-            </div>
+            </ScrollRevealContainer>
           </div>
         </div>
       </section>
@@ -245,55 +254,61 @@ export default function ProductsPage() {
       <section ref={qualityRef} className="quality-section product-section-zoom">
         <div className="product-section-surface">
           <div className="quality-container">
-            <div className="quality-header">
-              <p className="quality-eyebrow">Quality Assurance</p>
-              <h2>Our Quality Commitment</h2>
-              <p className="quality-subtitle">
-                Every batch undergoes rigorous stability studies under varying climatic zones to
-                ensure the final product exceeds GMP standards. We don&apos;t just follow
-                guidelines; we define the precision that healthcare providers rely on.
-              </p>
-            </div>
-
-            <div className="quality-grid">
-              <div className="quality-left">
-                <div className="quality-details">
-                  <div>
-                    <h4>Stability Studies</h4>
-                    <p>
-                      Conducted in ICH-compliant chambers for real-time and accelerated shelf-life
-                      verification.
-                    </p>
-                  </div>
-
-                  <div>
-                    <h4>In-Process QC</h4>
-                    <p>
-                      Multi-stage testing including content uniformity, dissolution rates, and
-                      microbial limits.
-                    </p>
-                  </div>
-                </div>
+            <ScrollReveal>
+              <div className="quality-header">
+                <p className="quality-eyebrow">Quality Assurance</p>
+                <h2>Our Quality Commitment</h2>
+                <p className="quality-subtitle">
+                  Every batch undergoes rigorous stability studies under varying climatic zones to
+                  ensure the final product exceeds GMP standards. We don&apos;t just follow
+                  guidelines; we define the precision that healthcare providers rely on.
+                </p>
               </div>
+            </ScrollReveal>
 
-              <div className="quality-right">
-                <div className="quality-card">
-                  <div className="icon-box">🛡️</div>
-                  <div>
-                    <small>CERTIFICATION</small>
-                    <h3>FDA & GMP Standard Compliance</h3>
+            <ScrollRevealContainer staggerDelay={0.1} className="quality-grid">
+              <ScrollRevealItem>
+                <div className="quality-left">
+                  <div className="quality-details">
+                    <div>
+                      <h4>Stability Studies</h4>
+                      <p>
+                        Conducted in ICH-compliant chambers for real-time and accelerated shelf-life
+                        verification.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4>In-Process QC</h4>
+                      <p>
+                        Multi-stage testing including content uniformity, dissolution rates, and
+                        microbial limits.
+                      </p>
+                    </div>
                   </div>
                 </div>
+              </ScrollRevealItem>
 
-                <div className="quality-card">
-                  <div className="icon-box">📦</div>
-                  <div>
-                    <small>SUPPLY CHAIN</small>
-                    <h3>Secured Cold-Chain Logistics</h3>
+              <ScrollRevealItem>
+                <div className="quality-right">
+                  <div className="quality-card">
+                    <div className="icon-box">🛡️</div>
+                    <div>
+                      <small>CERTIFICATION</small>
+                      <h3>FDA & GMP Standard Compliance</h3>
+                    </div>
+                  </div>
+
+                  <div className="quality-card">
+                    <div className="icon-box">📦</div>
+                    <div>
+                      <small>SUPPLY CHAIN</small>
+                      <h3>Secured Cold-Chain Logistics</h3>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </ScrollRevealItem>
+            </ScrollRevealContainer>
           </div>
         </div>
       </section>
@@ -301,35 +316,41 @@ export default function ProductsPage() {
       <section ref={futureRef} className="future-horizons product-section-zoom">
         <div className="product-section-surface">
           <div className="future-container">
-            <div className="future-header">
-              <p className="future-eyebrow">Strategic Growth</p>
-              <h2>Future Horizons</h2>
-              <p className="future-subtitle">
-                Expanding our therapeutic footprint with advanced biological and oncology solutions.
-              </p>
-            </div>
-
-            <div className="future-grid">
-              <div className="future-card">
-                <h3>Expansion 2026</h3>
-                <p>Oncology & Complex Generics</p>
-                <p>
-                  Developing highly potent active ingredients for targeted chemotherapy and
-                  immuno-modulators.
+            <ScrollReveal>
+              <div className="future-header">
+                <p className="future-eyebrow">Strategic Growth</p>
+                <h2>Future Horizons</h2>
+                <p className="future-subtitle">
+                  Expanding our therapeutic footprint with advanced biological and oncology solutions.
                 </p>
-                <small>Phase II Testing</small>
               </div>
+            </ScrollReveal>
 
-              <div className="future-card">
-                <h3>Technical Roadmap</h3>
-                <p>Injectables & Sterile Solutions</p>
-                <p>
-                  Inaugurating a state-of-the-art sterile fill-finish facility for lyophilized vials
-                  and pre-filled syringes.
-                </p>
-                <small>Construction Phase</small>
-              </div>
-            </div>
+            <ScrollRevealContainer staggerDelay={0.15} className="future-grid">
+              <ScrollRevealItem>
+                <div className="future-card">
+                  <h3>Expansion 2026</h3>
+                  <p>Oncology & Complex Generics</p>
+                  <p>
+                    Developing highly potent active ingredients for targeted chemotherapy and
+                    immuno-modulators.
+                  </p>
+                  <small>Phase II Testing</small>
+                </div>
+              </ScrollRevealItem>
+
+              <ScrollRevealItem>
+                <div className="future-card">
+                  <h3>Technical Roadmap</h3>
+                  <p>Injectables & Sterile Solutions</p>
+                  <p>
+                    Inaugurating a state-of-the-art sterile fill-finish facility for lyophilized vials
+                    and pre-filled syringes.
+                  </p>
+                  <small>Construction Phase</small>
+                </div>
+              </ScrollRevealItem>
+            </ScrollRevealContainer>
           </div>
         </div>
       </section>

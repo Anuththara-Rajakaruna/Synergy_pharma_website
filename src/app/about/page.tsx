@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef } from "react";
+import { ScrollReveal, ScrollRevealContainer, ScrollRevealItem } from "@/components/scroll-reveal";
 
 import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/hero";
@@ -158,38 +159,38 @@ export default function AboutPage() {
 
       <section className="leadership-section reveal-on-scroll" id="leadership">
         <div className="leadership-container">
-          <div className="leadership-header">
+          <ScrollReveal className="leadership-header">
             <p className="leadership-eyebrow">Organization</p>
             <h2>Leadership &amp; Vision</h2>
             <p className="leadership-subtitle">
               Our strategic leadership team drives long-term innovation, governance, and sustainable
               growth across all pharmaceutical operations.
             </p>
-          </div>
+          </ScrollReveal>
 
-          <div className="leaders">
+          <ScrollRevealContainer staggerDelay={0.12} className="leaders">
             {leaders.map((leader) => (
-              <article className="leader reveal-on-scroll" key={`${leader.role}-${leader.name}`}>
+              <ScrollRevealItem className="leader reveal-on-scroll" key={`${leader.role}-${leader.name}`}>
                 <div className="avatar" />
                 <p className="leader-role">{leader.role}</p>
                 <h3>{leader.name}</h3>
-              </article>
+              </ScrollRevealItem>
             ))}
-          </div>
+          </ScrollRevealContainer>
         </div>
       </section>
 
       <section className="ecosystem-section reveal-on-scroll" id="about-businesses">
         <div className="ecosystem-container">
-          <div className="ecosystem-header">
+          <ScrollReveal className="ecosystem-header">
             <p className="ecosystem-eyebrow">Our Ecosystem</p>
             <h2>Connected businesses shaping the Synergy story.</h2>
             <p className="ecosystem-subtitle">
               A diversified portfolio of healthcare and pharmaceutical operations driving innovation and accessibility across the region.
             </p>
-          </div>
+          </ScrollReveal>
 
-          <div className="ecosystem-cards-grid">
+          <ScrollRevealContainer staggerDelay={0.1} className="ecosystem-cards-grid">
             {aboutCards.map((card, index) => {
               const isFeatured = index === 0;
               const iconMap: { [key: string]: string } = {
@@ -201,7 +202,7 @@ export default function AboutPage() {
               };
 
               return (
-                <article
+                <ScrollRevealItem
                   className={`ecosystem-card reveal-on-scroll ${isFeatured ? "featured" : "secondary"}`.trim()}
                   key={card.title}
                 >
@@ -224,14 +225,14 @@ export default function AboutPage() {
                       <p>{card.description}</p>
                     </>
                   )}
-                </article>
+                </ScrollRevealItem>
               );
             })}
-          </div>
+          </ScrollRevealContainer>
         </div>
       </section>
 
-      <section ref={missionRef} className="container section mission-band reveal-on-scroll mission-animate" id="about-vision-mission">
+      <ScrollReveal className="container section mission-band reveal-on-scroll mission-animate">
         <div className="vision-panel about-vision-panel">
           <p className="eyebrow">Vision</p>
           <blockquote>
@@ -240,26 +241,34 @@ export default function AboutPage() {
         </div>
         <div className="mission-panel">
           <p className="eyebrow">Our Mission</p>
-          <div className="mission-grid">
+          <ScrollRevealContainer staggerDelay={0.1} className="mission-grid">
             <article className="mission-item">
-              <h3>Accessibility</h3>
-              <p>Deliver high-quality affordable medicine to global markets.</p>
+              <ScrollRevealItem>
+                <h3>Accessibility</h3>
+                <p>Deliver high-quality affordable medicine to global markets.</p>
+              </ScrollRevealItem>
             </article>
             <article className="mission-item">
-              <h3>Quality</h3>
-              <p>Maintain rigorous GMP compliance and transparent processes.</p>
+              <ScrollRevealItem>
+                <h3>Quality</h3>
+                <p>Maintain rigorous GMP compliance and transparent processes.</p>
+              </ScrollRevealItem>
             </article>
             <article className="mission-item">
-              <h3>Innovation</h3>
-              <p>Invest in advanced manufacturing and research partnerships.</p>
+              <ScrollRevealItem>
+                <h3>Innovation</h3>
+                <p>Invest in advanced manufacturing and research partnerships.</p>
+              </ScrollRevealItem>
             </article>
             <article className="mission-item">
-              <h3>Responsibility</h3>
-              <p>Build sustainable operations that uplift communities and care delivery.</p>
+              <ScrollRevealItem>
+                <h3>Responsibility</h3>
+                <p>Build sustainable operations that uplift communities and care delivery.</p>
+              </ScrollRevealItem>
             </article>
-          </div>
+          </ScrollRevealContainer>
         </div>
-      </section>
+      </ScrollReveal>
     </main>
   );
 }
