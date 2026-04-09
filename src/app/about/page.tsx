@@ -1,7 +1,6 @@
 ﻿"use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
 import { ScrollReveal, ScrollRevealContainer, ScrollRevealItem } from "@/components/scroll-reveal";
 
 import { SiteHeader } from "@/components/site-header";
@@ -54,97 +53,6 @@ const aboutCards = [
 ];
 
 export default function AboutPage() {
-  const heroRef = useRef<HTMLElement | null>(null);
-  const missionRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    const hero = heroRef.current;
-
-    let rafId = 0;
-    const updateHeroSize = () => {
-      rafId = 0;
-      const scrollY = window.scrollY || 0;
-
-      if (!hero) {
-        return;
-      }
-
-      const rawProgress = Math.min(scrollY / 240, 1);
-      const progress = 1 - Math.pow(1 - rawProgress, 2.8);
-      const startMinHeight = 600;
-      const endMinHeight = 300;
-      const minHeight = startMinHeight - (startMinHeight - endMinHeight) * progress;
-      hero.style.setProperty("--hero-min-h", `${minHeight.toFixed(2)}px`);
-      hero.style.setProperty("--about-hero-hide", progress.toFixed(4));
-      hero.style.setProperty("--about-hero-content-shift", `${(progress * 48).toFixed(2)}px`);
-      hero.style.setProperty("--about-hero-content-opacity", `${(1 - progress * 0.45).toFixed(4)}`);
-      hero.style.backgroundPosition = `center ${(100 - progress * 20).toFixed(2)}%`;
-      hero.style.backgroundSize = `${(135 + progress * 10).toFixed(2)}%`;
-    };
-
-    const onScroll = () => {
-      if (rafId) {
-        return;
-      }
-
-      rafId = window.requestAnimationFrame(updateHeroSize);
-    };
-
-    updateHeroSize();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (rafId) {
-        window.cancelAnimationFrame(rafId);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    const section = missionRef.current;
-
-    if (!section) {
-      return;
-    }
-
-    let rafId = 0;
-
-    const updateMissionSize = () => {
-      rafId = 0;
-      const rect = section.getBoundingClientRect();
-      const viewportHeight = window.innerHeight || 1;
-      const startLine = viewportHeight * 0.86;
-      const endLine = viewportHeight * 0.2;
-      const rawProgress = (startLine - rect.top) / (startLine - endLine);
-      const progress = Math.min(Math.max(rawProgress, 0), 1);
-
-      section.style.setProperty("--mission-progress", progress.toFixed(4));
-    };
-
-    const onScroll = () => {
-      if (rafId) {
-        return;
-      }
-
-      rafId = window.requestAnimationFrame(updateMissionSize);
-    };
-
-    updateMissionSize();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (rafId) {
-        window.cancelAnimationFrame(rafId);
-      }
-    };
-  }, []);
-
   return (
     <main className="about-page">
       <SiteHeader />
@@ -232,7 +140,9 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <ScrollReveal className="container section mission-band reveal-on-scroll mission-animate">
+      <ScrollReveal
+        className="container section mission-band reveal-on-scroll mission-animate"
+      >
         <div className="vision-panel about-vision-panel">
           <p className="eyebrow">Vision</p>
           <blockquote>

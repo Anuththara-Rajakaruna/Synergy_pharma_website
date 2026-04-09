@@ -35,7 +35,7 @@
 }
 
 .about-hero-section {
-  background-image: linear-gradient(rgba(1, 27, 49, 0.48), rgba(3, 43, 78, 0.48)), url("/manufacturing-showcase-v2.jpg");
+  background-image: linear-gradient(rgba(1, 27, 49, 0.48), rgba(3, 43, 78, 0.48)), url("/company.png");
 }
 
 .facility-hero-section {
@@ -74,7 +74,7 @@
 }
 
 /* ========================================
-   TYPOGRAPHY
+   TYPOGRAPHY - HERO (UPDATED)
    ======================================== */
 
 .hero h1,
@@ -84,10 +84,11 @@
 .quality-hero-content h1,
 .product-hero h1 {
   margin: 0;
-  font-size: clamp(2.2rem, 5vw, 3.8rem);
-  line-height: 1.1;
-  font-weight: 800;
-  color: white;
+  font-size: clamp(2.5rem, 5vw, 4.2rem); /* slightly bigger */
+  line-height: 1.15;
+  font-weight: 700; /* less heavy = modern look */
+  letter-spacing: -0.02em;
+  color: #ffffff;
   text-align: center;
 }
 
@@ -97,26 +98,27 @@
 .facility-hero-content p,
 .quality-hero-content p,
 .product-hero p {
-  margin: 0;
-  max-width: 760px;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: clamp(1rem, 2.5vw, 1.1rem);
+  margin-top: 1rem;
+  max-width: 700px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: clamp(1.05rem, 2vw, 1.2rem);
+  line-height: 1.7;
   text-align: center;
+  font-style: italic !important;
 }
 
 .hero .eyebrow,
 .hero-content .eyebrow,
 .home-hero .eyebrow,
 .product-hero .eyebrow {
-  margin: 0;
-  font-size: clamp(0.8rem, 1.5vw, 0.95rem);
-  font-weight: 800;
-  letter-spacing: 0.16em;
+  margin-bottom: 0.8rem;
+  font-size: clamp(0.75rem, 1.2vw, 0.9rem);
+  font-weight: 600;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.88);
+  color: rgba(255, 255, 255, 0.75);
   text-align: center;
 }
-
 /* ========================================
    COMPACT VARIANT
    ======================================== */
