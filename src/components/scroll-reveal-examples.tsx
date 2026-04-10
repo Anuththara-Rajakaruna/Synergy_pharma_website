@@ -31,7 +31,7 @@ export function StaggeredScrollRevealExample() {
     <ScrollRevealContainer staggerDelay={0.15}>
       {items.map((item, index) => (
         <ScrollRevealItem key={index}>
-          <div className="p-6 mb-4 bg-linear-to-r from-teal-100 to-cyan-100 rounded-lg">
+          <div className="p-6 mb-4 bg-gradient-to-r from-teal-100 to-cyan-100 rounded-lg">
             <h4 className="font-bold text-lg">{item.title}</h4>
             <p className="text-gray-700">{item.description}</p>
           </div>
@@ -58,7 +58,7 @@ export function CardGridExample() {
       {cards.map((card, index) => (
         <ScrollRevealItem key={index}>
           <div
-            className={`p-8 bg-linear-to-br ${card.color} rounded-xl shadow-md hover:shadow-lg transition-shadow`}
+            className={`p-8 bg-gradient-to-br ${card.color} rounded-xl shadow-md hover:shadow-lg transition-shadow`}
           >
             <div className="text-4xl mb-3">{card.icon}</div>
             <h3 className="font-bold text-lg">{card.title}</h3>
@@ -106,7 +106,7 @@ export function TailwindIntegrationExample() {
       </ScrollRevealItem>
 
       <ScrollRevealItem className="mb-6">
-        <div className="max-w-2xl p-8 bg-linear-to-r from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200">
+        <div className="max-w-2xl p-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200">
           <h3 className="text-lg font-semibold text-blue-900 mb-2">
             Feature Two
           </h3>
@@ -115,7 +115,7 @@ export function TailwindIntegrationExample() {
       </ScrollRevealItem>
 
       <ScrollRevealItem>
-        <div className="max-w-2xl p-8 bg-linear-to-r from-green-50 to-teal-50 rounded-2xl border-2 border-green-200">
+        <div className="max-w-2xl p-8 bg-gradient-to-r from-green-50 to-teal-50 rounded-2xl border-2 border-green-200">
           <h3 className="text-lg font-semibold text-green-900 mb-2">
             Feature Three
           </h3>
@@ -129,7 +129,7 @@ export function TailwindIntegrationExample() {
 // === EXAMPLE 6: Hero Section with ScrollReveal ===
 export function HeroSectionExample() {
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-900 to-slate-800 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center">
       <ScrollRevealContainer className="text-center text-white px-4">
         <ScrollRevealItem className="mb-6">
           <h1 className="text-5xl md:text-6xl font-bold mb-4">

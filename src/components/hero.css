@@ -118,7 +118,6 @@
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.75);
   text-align: center;
-   font-style: normal;
 }
 /* ========================================
    COMPACT VARIANT
@@ -166,6 +165,7 @@
   transform: translateX(-50%);
   width: min(340px, 45vw);
   height: 16px;
+  border-radius: var(--radius-full);
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.15), #f0ffff,
       rgba(255, 255, 255, 0.15));
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35),
