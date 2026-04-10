@@ -77,7 +77,7 @@ export default function FacilityPage() {
 
       <Hero
         eyebrow="Manufacturing Excellence"
-        heading="World-Class Manufacturing & Research Facilities"
+        heading="Advanced Pharma Excellence"
         description="GMP-compliant pharmaceutical manufacturing with advanced technology, rigorous quality systems, and global regulatory compliance."
         className="facility-hero-section"
       />

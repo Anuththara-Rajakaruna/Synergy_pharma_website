@@ -79,7 +79,7 @@ export default function ProductsPage() {
 
       <Hero
         eyebrow="Our Products"
-        heading="Pharmaceutical Products Designed for Quality, Safety, and Accessibility"
+        heading="Driven by Quality, Defined by Trust"
         description="We deliver a portfolio of APIs and finished-dose medicines built to global standards, with stringent GMP compliance and heir-to-market supply reliability."
         className="product-hero"
       />

@@ -84,7 +84,7 @@
 .quality-hero-content h1,
 .product-hero h1 {
   margin: 0;
-  font-size: clamp(2.5rem, 5vw, 4.2rem); /* slightly bigger */
+  font-size: clamp(2.5rem, 4vw, 4.2rem); /* slightly bigger */
   line-height: 1.15;
   font-weight: 700; /* less heavy = modern look */
   letter-spacing: -0.02em;
