@@ -2110,6 +2110,7 @@ button:active {
   border-top: 1px solid #cfdbe6;
   background: linear-gradient(135deg, rgba(227, 237, 245, 0.7) 0%, rgba(233, 242, 248, 0.28));
   margin-top: 0;
+  overflow: hidden;
 }
 
 .footer-inner {
@@ -2118,6 +2119,7 @@ button:active {
   gap: var(--space-2xl);
   padding: var(--space-2xl) 0 var(--space-lg);
   align-items: start;
+  max-width: 100%;
 }
 
 .footer-intro {
@@ -2290,6 +2292,14 @@ html[data-theme="dark"] .footer-col p,
 html[data-theme="dark"] .footer-col address {
   border-left-color: #304453;
 }
+
+@media (max-width: 1100px) {
+  .footer-inner {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-xl);
+  }
+}
+
 @media (max-width: 900px) {
   .desktop-nav {
     display: none;
@@ -4113,6 +4123,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   min-height: 100vh;
   padding-top: 5.0rem;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+  overflow-x: hidden;
 }
 
 
@@ -5078,6 +5089,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .highlight-container {
@@ -5284,8 +5296,9 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .qualityPage {
   min-height: 100vh;
-  padding-top: 5.0rem;
+  padding-top: clamp(3.5rem, 5vw, 5rem);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+  overflow-x: hidden;
 }
 
 
@@ -5297,13 +5310,14 @@ html[data-theme="dark"] .manufacturing-process-step {
   width: 100%;
   max-width: none;
   margin: 0 auto;
-  padding-inline: clamp(1.25rem, 4vw, 3.25rem);
+  padding-inline: clamp(0.75rem, 2vw, 3.25rem);
   transform: scale(calc(0.9 + (var(--quality-section-progress) * 0.1)))
     translateY(calc(36px - (var(--quality-section-progress) * 36px)));
   transform-origin: center center;
   transition:
     transform 0.3s ease,
     padding 0.3s ease;
+  overflow-x: hidden;
 }
 
 .qualityHero {
@@ -5429,7 +5443,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 }
 
 .showcaseSection {
-  padding: clamp(6rem, 10vw, 9rem) 0;
+  padding: clamp(3rem, 8vw, 9rem) 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -5444,11 +5458,26 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 }
 
+@media (max-width: 1024px) {
+  .showcaseContainer {
+    grid-template-columns: 1fr;
+    gap: clamp(2.5rem, 5vw, 4rem);
+  }
+}
+
+@media (max-width: 768px) {
+  .showcaseContainer {
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 4vw, 3rem);
+  }
+}
+
 .showcaseVisual {
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden;
 }
 
 .showcaseImageFrame {
@@ -5459,6 +5488,13 @@ html[data-theme="dark"] .manufacturing-process-step {
   overflow: hidden;
   box-shadow: 0 24px 48px rgba(5, 95, 124, 0.15);
   flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .showcaseImageFrame {
+    width: clamp(280px, 70vw, 320px);
+    height: clamp(280px, 70vw, 320px);
+  }
 }
 
 .showcaseImage {
@@ -5495,6 +5531,12 @@ html[data-theme="dark"] .manufacturing-process-step {
   max-width: 520px;
 }
 
+@media (max-width: 768px) {
+  .showcaseContent {
+    text-align: center;
+  }
+}
+
 .showcase-eyebrow {
   margin: 0 0 0.75rem;
   font-size: 0.8125rem;
@@ -5506,18 +5548,32 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .showcaseContent h2 {
   margin: 0 0 1.5rem;
-  font-size: 3rem;
+  font-size: clamp(1.5rem, 4vw, 3rem);
   line-height: 1.15;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: #18191a;
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .showcaseContent h2 {
+    font-size: clamp(1.3rem, 3.5vw, 1.8rem);
+  }
 }
 
 .showcase-subtitle {
   margin: 0 0 2rem;
-  font-size: 1.0625rem;
+  font-size: clamp(0.95rem, 2vw, 1.0625rem);
   line-height: 1.7;
   color: #556b7b;
+}
+
+@media (max-width: 768px) {
+  .showcase-subtitle {
+    margin: 0 0 1.5rem;
+    font-size: 0.9rem;
+  }
 }
 
 .showcase-button {
@@ -5548,7 +5604,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 }
 
 .highlightsSection {
-  padding: 0 0 clamp(5.5rem, 9vw, 8rem);
+  padding: clamp(3rem, 6vw, 8rem) 0 clamp(3rem, 6vw, 8rem) 0;
 }
 
 .highlightsGrid {
@@ -5557,8 +5613,22 @@ html[data-theme="dark"] .manufacturing-process-step {
   gap: 1.4rem;
 }
 
+@media (max-width: 1184px) {
+  .highlightsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .highlightsGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
 .highlightStatCard {
-  padding: 2rem 1.9rem 1.75rem 8.5rem;
+  padding: clamp(1.5rem, 3vw, 2rem) clamp(1rem, 2vw, 1.9rem) clamp(1.25rem, 2.5vw, 1.75rem) clamp(4rem, 8vw, 8.5rem);
   border-radius: 0;
   border-top-left-radius: var(--radius-lg);
   border-bottom-right-radius: var(--radius-lg);
@@ -5572,6 +5642,13 @@ html[data-theme="dark"] .manufacturing-process-step {
     inset 0 1px 2px rgba(255, 255, 255, 0.8);
   position: relative;
   text-align: center;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .highlightStatCard {
+    padding: 1.5rem 0.75rem 1.25rem 3rem;
+  }
 }
 
 .highlightStatCard::before {
@@ -5595,10 +5672,10 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .highlightStatIcon {
   position: absolute;
-  left: 3.0rem;
+  left: clamp(0.5rem, 1.5vw, 2.5rem);
   top: 50%;
-  width: 50px;
-  height: 50px;
+  width: clamp(35px, 7vw, 50px);
+  height: clamp(35px, 7vw, 50px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5659,7 +5736,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .highlightStatCard h3 {
   margin: 0;
-  font-size: clamp(1.1rem, 2vw, 1.8rem);
+  font-size: clamp(0.95rem, 2.5vw, 1.8rem);
   line-height: 1;
   letter-spacing: -0.05em;
   color: #1075bd;
@@ -5668,9 +5745,15 @@ html[data-theme="dark"] .manufacturing-process-step {
   z-index: 1;
 }
 
+@media (max-width: 768px) {
+  .highlightStatCard h3 {
+    font-size: clamp(0.9rem, 2vw, 1.3rem);
+  }
+}
+
 .highlightStatCard p {
-  margin: 0.7rem 0 0;
-  font-size: 0.95rem;
+  margin: 0.5rem 0 0;
+  font-size: clamp(0.8rem, 1.5vw, 0.95rem);
   font-weight: 700;
   line-height: 1.4;
   color: #0e2232;
@@ -5678,8 +5761,8 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .highlightStatCard small {
   display: block;
-  margin-top: 0.65rem;
-  font-size: 0.75rem;
+  margin-top: 0.4rem;
+  font-size: clamp(0.65rem, 1.2vw, 0.75rem);
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -5723,7 +5806,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 }
 
 .ecosystemSection {
-  padding: 0 0 clamp(5.5rem, 9vw, 8rem);
+  padding: clamp(3rem, 6vw, 8rem) 0 clamp(3rem, 6vw, 8rem) 0;
 }
 
 .ecosystemContainer {
@@ -5731,24 +5814,60 @@ html[data-theme="dark"] .manufacturing-process-step {
   gap: clamp(2rem, 4vw, 3rem);
 }
 
-.ecosystemHeader {
+.ecosystem-header {
   text-align: center;
+}
+
+.ecosystem-eyebrow {
+  margin: 0 0 0.75rem;
+  font-size: clamp(0.75rem, 1.5vw, 0.82rem);
+  font-weight: 600;
+  letter-spacing: 0.125rem;
+  text-transform: uppercase;
+  color: #1075bd;
+}
+
+.ecosystem-subtitle {
+  margin: 1rem auto 0;
+  max-width: 44rem;
+  font-size: clamp(0.95rem, 2vw, 1.08rem);
+  line-height: 1.65;
+  color: #435c71;
+}
+
+@media (max-width: 768px) {
+  .ecosystem-subtitle {
+    font-size: 0.9rem;
+  }
 }
 
 .ecosystemHeader h2 {
   margin: 0;
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(1.8rem, 5vw, 3rem);
   line-height: 1.08;
   letter-spacing: -0.04em;
   color: #0c4f8f;
 }
 
+@media (max-width: 768px) {
+  .ecosystemHeader h2 {
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+  }
+}
+
 .ecosystemHeader p {
   margin: 1rem auto 0;
   max-width: 44rem;
-  font-size: 1.08rem;
+  font-size: clamp(0.95rem, 2vw, 1.08rem);
   line-height: 1.65;
   color: #435c71;
+}
+
+@media (max-width: 768px) {
+  .ecosystemHeader p {
+    font-size: 0.9rem;
+    margin: 0.75rem auto 0;
+  }
 }
 
 .ecosystemGrid {
@@ -5757,12 +5876,25 @@ html[data-theme="dark"] .manufacturing-process-step {
   gap: 2rem;
 }
 
+@media (max-width: 768px) {
+  .ecosystemGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
 .ecosystemCard {
-  padding: 2.35rem 2.5rem;
+  padding: clamp(1.5rem, 3vw, 2.35rem) clamp(1.5rem, 3vw, 2.5rem);
   border-radius: 20px;
   background: transparent;
   border: none;
   box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .ecosystemCard {
+    padding: 1.5rem 1.5rem;
+  }
 }
 
 .ecosystemCardHeader {
@@ -5779,7 +5911,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .ecosystemCardHeader h3 {
   margin: 0;
-  font-size: clamp(1.5rem, 2vw, 2rem);
+  font-size: clamp(1.2rem, 2.5vw, 2rem);
   line-height: 1.2;
   color: #0a1f35;
 }
@@ -5794,9 +5926,9 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .ecosystemList li {
   position: relative;
-  padding: 1rem 1.1rem 1rem 4.6rem;
+  padding: clamp(0.75rem, 2vw, 1rem) clamp(0.75rem, 2vw, 1.1rem) clamp(0.75rem, 2vw, 1rem) clamp(3rem, 6vw, 4.6rem);
   color: #0c2135;
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 1.8vw, 1rem);
   font-weight: 600;
   line-height: 1.6;
   background: rgba(255, 255, 255, 0.25);
@@ -5807,6 +5939,15 @@ html[data-theme="dark"] .manufacturing-process-step {
   /* border-radius: 0.75rem; */
   transition: all 0.3s ease;
   display: block;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .ecosystemList li {
+    padding: 0.75rem 0.75rem 0.75rem 2.8rem;
+    font-size: 0.85rem;
+  }
 }
 
 .ecosystemList li:hover {
@@ -5898,7 +6039,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 }
 
 .laboratoryServicesSection {
-  padding: clamp(5.5rem, 9vw, 8rem) 0;
+  padding: clamp(3rem, 8vw, 8rem) 0;
   position: relative;
 }
 
@@ -5907,8 +6048,9 @@ html[data-theme="dark"] .manufacturing-process-step {
   margin: 0 auto;
   position: relative;
   z-index: 1;
-  padding: 0 1.5rem;
+  padding: 0 clamp(0.75rem, 2vw, 1.5rem);
   text-align: center;
+  overflow: hidden;
 }
 
 .laboratoryCardsGrid {
@@ -5972,16 +6114,16 @@ html[data-theme="dark"] .manufacturing-process-step {
 .laboratory-card-overlay h3 {
   margin: 0 0 0.75rem 0;
   color: #ffffff;
-  font-size: 1.5rem;
+  font-size: clamp(1.2rem, 2.5vw, 1.5rem);
   font-weight: 800;
   line-height: 1.3;
   letter-spacing: -0.02em;
 }
 
 .laboratory-card-overlay p {
-  margin: 0 0 1.5rem 0;
+  margin: 0 0 1rem 0;
   color: rgba(255, 255, 255, 0.9);
-  font-size: 0.93rem;
+  font-size: clamp(0.85rem, 1.5vw, 0.93rem);
   line-height: 1.75;
   flex-grow: 1;
 }
@@ -6018,13 +6160,27 @@ html[data-theme="dark"] .manufacturing-process-step {
 }
 
 .capabilitiesSection {
-  padding: 0 0 clamp(5.5rem, 9vw, 8rem);
+  padding: clamp(3rem, 6vw, 8rem) 0;
 }
 
 .capabilitiesGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .capabilitiesGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .capabilitiesGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
 }
 
 .capabilityShowcaseCard {
@@ -6083,17 +6239,23 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .capabilityShowcaseHeading h3 {
   margin: 0;
-  font-size: clamp(1.45rem, 1.8vw, 1.95rem);
+  font-size: clamp(1.2rem, 3vw, 1.95rem);
   line-height: 1.2;
   color: #0a1f35;
   font-weight: 700;
 }
 
+@media (max-width: 768px) {
+  .capabilityShowcaseHeading h3 {
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+  }
+}
+
 .capabilityShowcaseBody p {
   margin: 1rem 0 0;
-  min-height: 5.5rem;
+  min-height: auto;
   color: #3a4d60;
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 1.5vw, 1rem);
   line-height: 1.75;
   font-weight: 400;
 }
@@ -6123,8 +6285,44 @@ html[data-theme="dark"] .manufacturing-process-step {
   color: #6fe54f;
 }
 
-.complianceFrameworkSection {
-  padding: clamp(5.8rem, 10vw, 8.5rem) 0;
+.compliance-header {
+  text-align: center;
+}
+
+.compliance-eyebrow {
+  margin: 0 0 0.75rem;
+  font-size: clamp(0.75rem, 1.5vw, 0.82rem);
+  font-weight: 600;
+  letter-spacing: 0.125rem;
+  text-transform: uppercase;
+  color: #b8edf9;
+}
+
+.compliance-header h2 {
+  margin: 0;
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+  color: #ffffff;
+}
+
+.compliance-subtitle {
+  margin: 1rem auto 0;
+  max-width: 44rem;
+  font-size: clamp(0.95rem, 2vw, 1.08rem);
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+@media (max-width: 768px) {
+  .compliance-header h2 {
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+  }
+
+  .compliance-subtitle {
+    font-size: 0.9rem;
+    margin: 0.75rem auto 0;
+  }
 }
 
 .complianceFrameworkGrid {
@@ -6134,20 +6332,40 @@ html[data-theme="dark"] .manufacturing-process-step {
   align-items: center;
 }
 
+@media (max-width: 768px) {
+  .complianceFrameworkGrid {
+    grid-template-columns: 1fr;
+    gap: clamp(1.5rem, 3vw, 2rem);
+  }
+}
+
 .complianceFrameworkContent h2 {
   margin: 0;
-  font-size: clamp(2.3rem, 4.5vw, 4rem);
+  font-size: clamp(1.8rem, 5vw, 4rem);
   line-height: 1.05;
   letter-spacing: -0.05em;
   color: #ffffff;
 }
 
+@media (max-width: 768px) {
+  .complianceFrameworkContent h2 {
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+  }
+}
+
 .complianceFrameworkContent > p {
   margin: 1.7rem 0 0;
   max-width: 42rem;
-  font-size: 1.18rem;
+  font-size: clamp(0.95rem, 2vw, 1.18rem);
   line-height: 1.6;
   color: #6eb0ff;
+}
+
+@media (max-width: 768px) {
+  .complianceFrameworkContent > p {
+    margin: 1rem 0 0;
+    font-size: 0.95rem;
+  }
 }
 
 .compliancePrinciples {
@@ -6157,6 +6375,14 @@ html[data-theme="dark"] .manufacturing-process-step {
   margin-top: 2.6rem;
 }
 
+@media (max-width: 768px) {
+  .compliancePrinciples {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+    margin-top: 1.8rem;
+  }
+}
+
 .compliancePrinciple {
   padding-left: 1.55rem;
   border-left: 2px solid #6fe4dc;
@@ -6164,7 +6390,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .compliancePrinciple h3 {
   margin: 0;
-  font-size: 1.9rem;
+  font-size: clamp(1.3rem, 4vw, 1.9rem);
   line-height: 1.1;
   color: #000000;
 }
@@ -6172,16 +6398,22 @@ html[data-theme="dark"] .manufacturing-process-step {
 .compliancePrinciple p {
   margin: 0.85rem 0 0;
   color: #556b7b;
-  font-size: 1.05rem;
+  font-size: clamp(0.95rem, 2vw, 1.05rem);
   line-height: 1.5;
 }
 
 .trainingCard {
-  padding: 2.25rem 2.45rem;
+  padding: clamp(1.5rem, 3vw, 2.25rem) clamp(1.5rem, 3vw, 2.45rem);
   /* border-radius: var(--radius-xl); */
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(118, 177, 230, 0.2);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+@media (max-width: 768px) {
+  .trainingCard {
+    padding: 1.5rem 1.5rem;
+  }
 }
 
 .trainingHeader {
@@ -6197,7 +6429,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .trainingHeader h3 {
   margin: 0;
-  font-size: clamp(1.6rem, 2vw, 2.2rem);
+  font-size: clamp(1.3rem, 3vw, 2.2rem);
   line-height: 1.15;
   color: #000000;
 }
@@ -6208,13 +6440,20 @@ html[data-theme="dark"] .manufacturing-process-step {
   margin-top: 2rem;
 }
 
+@media (max-width: 768px) {
+  .trainingList {
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+}
+
 .trainingItem {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 1rem;
   align-items: center;
   position: relative;
-  padding: 1rem 1.1rem 1rem 4.6rem;
+  padding: clamp(0.75rem, 2vw, 1rem) clamp(0.75rem, 2vw, 1.1rem) clamp(0.75rem, 2vw, 1rem) clamp(3rem, 6vw, 4.6rem);
   background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -6222,6 +6461,14 @@ html[data-theme="dark"] .manufacturing-process-step {
   box-shadow: 0 8px 32px rgba(15, 20, 25, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.6);
   /* border-radius: 0.75rem; */
   transition: all 0.3s ease;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .trainingItem {
+    padding: 0.75rem 0.75rem 0.75rem 2.8rem;
+  }
 }
 
 .trainingItem:hover {
@@ -6289,7 +6536,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 .trainingItem p {
   margin: 0;
   color: #000000;
-  font-size: 1.06rem;
+  font-size: clamp(0.95rem, 2vw, 1.06rem);
   line-height: 1.45;
 }
 
@@ -6374,10 +6621,6 @@ html[data-theme="dark"] .manufacturing-process-step {
 
   .showcaseContent h2 {
     font-size: 2rem;
-  }
-
-  .highlightsGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .ecosystemGrid {
