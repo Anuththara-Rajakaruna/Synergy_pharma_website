@@ -10,8 +10,9 @@ import { RevealOnScroll } from "@/components/reveal-on-scroll";
 const leaders = [
   { role: "Chairman", name: "Mr.Ravi Wijeratne" },
   { role: "Managing Director", name: "Dr.Rohan Lalith Wijesundara" },
-  { role: "Director", name: "Mr.Rishi Wijeratne" },
+  { role: "Director", name: "Mr.Shahen Wijeratne" },
   { role: "Director", name: "Mr.Rahul Wijeratne" },
+  { role: "Director", name: "Mr.Rishi Wijeratne" },
 ];
 
 const aboutCards = [

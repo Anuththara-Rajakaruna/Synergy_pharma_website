@@ -4606,9 +4606,13 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 /* ABOUT PAGE - LEADERSHIP SECTION */
 .leadership-section {
-  padding: 8rem 1.5rem;
+  padding: 100px 1.5rem 8rem 1.5rem;
   position: relative;
   overflow: hidden;
+}
+
+.leadership-section .leadership-container {
+  padding-top: 0;
 }
 
 /* ABOUT PAGE - ECOSYSTEM SECTION */
