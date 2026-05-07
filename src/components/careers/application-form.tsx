@@ -25,7 +25,7 @@ const initialState: FormState = {
   cv: null,
 };
 
-const stepLabels = ["Your details", "Role and CV", "Final review"];
+const stepLabels = ["Details", "Role & CV", "Review"];
 
 export function ApplicationForm({ job }: ApplicationFormProps) {
   const [step, setStep] = useState(0);
@@ -126,10 +126,10 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
   return (
     <section className="career-apply-section" id="apply">
       <div className="career-apply-card">
-        <div className="career-apply-header">
-          <p className="eyebrow">Apply Now</p>
-          <h2>Submit your application in three quick steps.</h2>
-          <p>
+        <div className="portfolio-header">
+          <p className="portfolio-eyebrow">Apply Now</p>
+          <h2 className="portfolio-header h2">Submit your application in three quick steps.</h2>
+          <p className="portfolio-subtitle">
             We review every application with care. Share your details, upload your CV, and tell us
             a little about your fit for the role.
           </p>
@@ -140,6 +140,7 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
             <div key={label} className={`career-progress-step ${index <= step ? "active" : ""}`}>
               <span>{index + 1}</span>
               <p>{label}</p>
+              {index < stepLabels.length - 1 ? <i className="career-progress-connector" aria-hidden="true" /> : null}
             </div>
           ))}
         </div>
