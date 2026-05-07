@@ -4274,7 +4274,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 /* HOME PAGE - CORPORATION SECTION */
 .corporation-section {
-  padding: 8rem 1.5rem;
+  padding: 0 1.5rem 0 1.5rem;
   overflow: hidden;
 }
 
@@ -4288,7 +4288,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 /* HOME PAGE - MISSION SECTION */
 .mission-section {
-  padding: 8rem 1.5rem;
+  padding: 0 1.5rem 8rem 1.5rem;
   position: relative;
   overflow: hidden;
 }
