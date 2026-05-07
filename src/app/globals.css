@@ -1954,7 +1954,7 @@ button:active {
   grid-template-columns: minmax(280px, 0.9fr) minmax(520px, 1.35fr);
   gap: clamp(var(--space-3xl), 6vw, var(--space-5xl));
   align-items: center;
-  padding-top: var(--space-4xl);
+  padding-top: 0;
   padding-bottom: var(--space-4xl);
   width: 100%;
   max-width: 100%;
@@ -4621,9 +4621,13 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 /* ABOUT PAGE - ECOSYSTEM SECTION */
 .ecosystem-section {
-  padding: 8rem 1.5rem;
+  padding: 0 1.5rem 0 1.5rem;
   position: relative;
   overflow: hidden;
+}
+
+.ecosystem-section .ecosystem-container {
+  padding-top: 0;
 }
 
 /* PRODUCTS PAGE - HIGHLIGHT SECTION */
