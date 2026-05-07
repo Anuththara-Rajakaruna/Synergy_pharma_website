@@ -85,11 +85,13 @@ export function ScrollRevealContainer({
 interface ScrollRevealItemProps {
   children: ReactNode;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export function ScrollRevealItem({
   children,
   className = "",
+  style,
 }: ScrollRevealItemProps) {
   return (
     <motion.div
@@ -105,6 +107,7 @@ export function ScrollRevealItem({
         },
       }}
       className={className}
+      style={style}
     >
       {children}
     </motion.div>

@@ -1815,8 +1815,16 @@ button:active {
   padding: clamp(2rem, 4vw, 2.5rem);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.35s ease;
   position: relative;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(15, 20, 25, 0.08);
+  box-shadow: 0 24px 50px rgba(15, 20, 25, 0.06);
+}
+
+.ecosystem-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 34px 70px rgba(15, 20, 25, 0.12);
 }
 
 .ecosystem-card.featured {
@@ -1826,38 +1834,95 @@ button:active {
   color: white;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  min-height: 320px;
+  justify-content: center;
+  min-height: 360px;
   animation: slideInLeft 0.6s ease-out;
+  border: none;
+  box-shadow: 0 32px 68px rgba(5, 18, 56, 0.18);
+  overflow: hidden;
+  background-blend-mode: overlay;
+}
+
+.ecosystem-card-featured-body {
+  padding: clamp(2rem, 3.5vw, 2.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+.ecosystem-card.featured::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.14), transparent 22%),
+    radial-gradient(circle at 75% 80%, rgba(255, 255, 255, 0.08), transparent 28%);
+}
+
+.ecosystem-card-featured-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.ecosystem-card-featured-icon {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  font-size: 1.3rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(8px);
 }
 
 .ecosystem-card.featured h3 {
   color: white;
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  margin: 0 0 1rem;
-  font-weight: 700;
+  font-size: clamp(1.95rem, 3vw, 2.7rem);
+  margin: 0;
+  font-weight: 800;
+  line-height: 1.05;
 }
 
 .ecosystem-card.featured p {
   color: rgba(255, 255, 255, 0.85);
-  margin: 0 0 1.5rem;
-  font-size: 0.95rem;
-  line-height: 1.6;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.85;
 }
 
-.ecosystem-card.featured-cta {
-  display: inline-block;
-  color: #60e5d8;
-  font-size: 0.75rem;
+.ecosystem-card-featured-cta,
+.ecosystem-card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.ecosystem-card-featured-cta {
+  color: #84f6ff;
+  font-size: 0.85rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   margin-top: auto;
 }
 
+.ecosystem-card-cta {
+  margin-top: 1.35rem;
+  color: inherit;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .ecosystem-card.secondary {
-  background: linear-gradient(135deg, rgba(96, 229, 216, 0.08), rgba(45, 212, 180, 0.08));
-  border: 1px solid rgba(96, 229, 216, 0.2);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(15, 20, 25, 0.08);
+  box-shadow: 0 24px 45px rgba(15, 20, 25, 0.06);
   animation: slideInUp 0.6s ease-out;
 }
 
@@ -1900,29 +1965,32 @@ button:active {
 }
 
 .ecosystem-card.secondary h3 {
-  color: #1075bd;
-  font-size: clamp(1rem, 2vw, 1.25rem);
-  margin: 0 0 0.75rem;
+  color: #0d3f77;
+  font-size: clamp(1.1rem, 2vw, 1.45rem);
+  margin: 0 0 0.9rem;
   font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
 .ecosystem-card.secondary p {
-  color: #35506c;
+  color: #375168;
   margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.5;
+  font-size: 0.95rem;
+  line-height: 1.75;
 }
 
 .ecosystem-card-icon {
-  width: 32px;
-  height: 32px;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
+  border-radius: 16px;
+  background: rgba(16, 117, 189, 0.12);
+  color: #0d3f77;
   flex-shrink: 0;
 }
 
@@ -4217,6 +4285,23 @@ html[data-theme="dark"] .manufacturing-process-step {
   margin-bottom: 0.75rem;
 }
 
+.ecosystem-eyebrow {
+  color: #0f8470;
+  letter-spacing: 0.34em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.ecosystem-eyebrow::before,
+.ecosystem-eyebrow::after {
+  content: "•";
+  color: #0f8470;
+  opacity: 0.75;
+  font-size: 0.85rem;
+}
+
 /* GENERIC TITLE PATTERN (h2) */
 .corporation-header h2,
 .mission-header h2,
@@ -4239,6 +4324,24 @@ html[data-theme="dark"] .manufacturing-process-step {
   line-height: 1.1;
   letter-spacing: -0.01em;
   margin-bottom: 1.5rem;
+}
+
+.ecosystem-header h2 {
+  font-size: clamp(3rem, 4vw, 4.4rem);
+  max-width: 12ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ecosystem-header .highlight {
+  color: #0f8470;
+}
+
+.ecosystem-subtitle {
+  max-width: 48rem;
+  color: #4b5c72;
+  font-size: 1.03rem;
+  line-height: 1.85;
 }
 
 .corporation-header h2 {
@@ -4624,10 +4727,70 @@ html[data-theme="dark"] .manufacturing-process-step {
   padding: 0 1.5rem 0 1.5rem;
   position: relative;
   overflow: hidden;
+  background: rgba(237, 246, 255, 0.84);
+}
+
+.ecosystem-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(16, 117, 189, 0.16), transparent 16%),
+    radial-gradient(circle at 82% 18%, rgba(47, 123, 188, 0.10), transparent 18%),
+    radial-gradient(circle at 50% 84%, rgba(16, 117, 189, 0.08), transparent 24%);
+  pointer-events: none;
 }
 
 .ecosystem-section .ecosystem-container {
-  padding-top: 0;
+  position: relative;
+  z-index: 1;
+  padding-top: 4rem;
+}
+
+.ecosystem-header {
+  text-align: center;
+  margin-bottom: 3.5rem;
+}
+
+.ecosystem-eyebrow {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  color: #0f8470;
+  letter-spacing: 0.36em;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  gap: 0.75rem;
+}
+
+.ecosystem-eyebrow::before,
+.ecosystem-eyebrow::after {
+  content: "•";
+  color: #0f8470;
+  opacity: 0.8;
+}
+
+.ecosystem-header h2 {
+  margin: 0 auto 1rem;
+  font-size: clamp(3rem, 4vw, 4.4rem);
+  line-height: 1.02;
+  max-width: 12ch;
+  font-weight: 800;
+}
+
+.ecosystem-header .highlight {
+  color: #0f8470;
+}
+
+.ecosystem-subtitle {
+  margin: 0 auto;
+  max-width: 48rem;
+  color: #4b5c72;
+  font-size: 1.03rem;
+  line-height: 1.9;
 }
 
 /* PRODUCTS PAGE - HIGHLIGHT SECTION */
