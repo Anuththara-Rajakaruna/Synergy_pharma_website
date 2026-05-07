@@ -2023,7 +2023,7 @@ button:active {
   gap: clamp(var(--space-3xl), 6vw, var(--space-5xl));
   align-items: center;
   padding-top: 0;
-  padding-bottom: var(--space-4xl);
+  padding-bottom: 0;
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -4400,11 +4400,16 @@ html[data-theme="dark"] .manufacturing-process-step {
   overflow: hidden;
 }
 
+.mission-section .mission-container {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
 .mission-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4rem;
-  margin-top: 3rem;
+  margin-top: 0;
 }
 
 /* FACILITY PAGE - QUALITY & COMPLIANCE SECTION */
