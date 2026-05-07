@@ -79,12 +79,12 @@ export function CareersFilterBar({
           </button>
         </div>
 
-        <div className="mt-4 flex flex-col gap-2 border-t border-white/60 pt-4 text-sm text-[#456274] sm:flex-row sm:items-center sm:justify-between">
+        {/* <div className="mt-4 flex flex-col gap-2 border-t border-white/60 pt-4 text-sm text-[#456274] sm:flex-row sm:items-center sm:justify-between">
           <p className="font-semibold text-[#2f678f]">
             {isLoading ? "Loading roles..." : `${resultCount} roles currently open`}
           </p>
           <p className="text-[#6a8191]">Explore opportunities across quality, manufacturing, and scientific teams.</p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

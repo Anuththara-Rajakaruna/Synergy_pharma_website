@@ -6762,6 +6762,112 @@ html[data-theme="dark"] .gradient-decorator {
   padding: 0 clamp(0.75rem, 2vw, 1.5rem);
 }
 
+.career-detail-shell {
+  width: min(100%, 90rem);
+}
+
+.career-detail-top {
+  padding: clamp(7rem, 10vw, 9.5rem) 0 clamp(1.5rem, 4vw, 2.5rem);
+  position: relative;
+}
+
+.career-detail-top::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 0% 20%, rgba(123, 207, 238, 0.18), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+.career-detail-banner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.75fr);
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  align-items: start;
+  padding: clamp(1.6rem, 3vw, 2.4rem);
+  border-radius: 2rem;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(233, 243, 249, 0.9)),
+    radial-gradient(circle at top right, rgba(16, 117, 189, 0.12), transparent 35%);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  box-shadow: 0 24px 60px rgba(17, 58, 83, 0.08);
+}
+
+.career-detail-breadcrumb {
+  display: inline-flex;
+  margin-bottom: 1rem;
+  color: #42677f;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.career-detail-breadcrumb:hover {
+  color: #1075bd;
+}
+
+.career-detail-kicker {
+  margin: 0 0 0.8rem;
+  color: #1075bd;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.career-detail-banner h1 {
+  margin: 0;
+  max-width: 12ch;
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  line-height: 1.02;
+  letter-spacing: -0.05em;
+  color: #0a1f35;
+}
+
+.career-detail-lead {
+  margin-top: 1.25rem;
+  max-width: 52rem;
+  font-size: clamp(1rem, 1.4vw, 1.08rem);
+  line-height: 1.9;
+  color: #456274;
+}
+
+.career-detail-banner-meta {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.career-detail-meta-card {
+  padding: 1rem 1.05rem;
+  border-radius: 1.1rem;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(197, 221, 235, 0.8);
+}
+
+.career-detail-meta-card span {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #5b7c91;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.career-detail-meta-card strong {
+  color: #12334a;
+  font-size: 1rem;
+}
+
+.career-detail-banner-cta {
+  margin-top: 0.4rem;
+  width: 100%;
+}
+
 .careers-culture-section,
 .careers-benefits-section,
 .careers-jobs-section,
@@ -7015,23 +7121,53 @@ html[data-theme="dark"] .gradient-decorator {
   padding: clamp(1.5rem, 3vw, 2rem);
 }
 
-.career-detail-layout {
-  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+.career-detail-layout-v2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1.28fr) minmax(300px, 0.72fr);
+  gap: clamp(1.5rem, 4vw, 2.5rem);
   align-items: start;
 }
 
-.career-detail-main {
+.career-detail-main-v2 {
   display: grid;
   gap: 1.5rem;
 }
 
-.career-detail-panel h2 {
-  margin-bottom: 1rem;
+.career-detail-feature-card,
+.career-detail-side-card {
+  padding: 1.8rem;
+  border-radius: 1.6rem;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow: 0 18px 42px rgba(17, 58, 83, 0.08);
+}
+
+.career-detail-feature-card h2,
+.career-detail-panel h2,
+.career-detail-side-card h3 {
+  margin-bottom: 0.9rem;
   color: #113851;
 }
 
+.career-detail-feature-card p:last-child,
+.career-detail-side-card p,
+.career-detail-mini-list li {
+  color: #4d6578;
+  line-height: 1.8;
+}
+
+.career-detail-sections-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
 .career-detail-panel {
-  padding: 1.75rem;
+  padding: 2rem;
+}
+
+.career-detail-panel-soft {
+  background: rgba(255, 255, 255, 0.78);
 }
 
 .career-detail-list {
@@ -7043,10 +7179,18 @@ html[data-theme="dark"] .gradient-decorator {
   margin-top: 0.75rem;
 }
 
-.career-sticky-card {
+.career-detail-sidebar-v2 {
+  position: relative;
+}
+
+.career-detail-side-stack {
   position: sticky;
   top: 7rem;
-  padding: 1.6rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.career-detail-side-card-primary {
   display: grid;
   gap: 1rem;
 }
@@ -7060,6 +7204,19 @@ html[data-theme="dark"] .gradient-decorator {
 .career-sticky-button {
   width: 100%;
   margin-top: 0;
+}
+
+.career-detail-mini-list {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.career-detail-mini-list li + li {
+  margin-top: 0.75rem;
+}
+
+.career-detail-application-zone {
+  padding: 0 0 clamp(3.5rem, 8vw, 7rem);
 }
 
 .career-apply-header {
@@ -7238,9 +7395,18 @@ html[data-theme="dark"] .gradient-decorator {
 
   .careers-culture-grid,
   .careers-talent-layout,
-  .career-detail-layout,
+  .career-detail-banner,
+  .career-detail-layout-v2,
   .careers-admin-applicants {
     grid-template-columns: 1fr;
+  }
+
+  .career-detail-sections-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .career-detail-side-stack {
+    position: static;
   }
 }
 
@@ -7254,6 +7420,20 @@ html[data-theme="dark"] .gradient-decorator {
   .careers-benefits-grid,
   .careers-jobs-grid {
     grid-template-columns: 1fr;
+  }
+
+  .career-detail-top {
+    padding-top: 6.5rem;
+  }
+
+  .career-detail-banner {
+    padding: 1.35rem;
+    border-radius: 1.5rem;
+  }
+
+  .career-detail-banner h1 {
+    max-width: none;
+    font-size: clamp(1.8rem, 7vw, 2.6rem);
   }
 
   .career-progress {
