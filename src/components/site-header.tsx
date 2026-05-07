@@ -16,6 +16,7 @@ const navItems: NavItem[] = [
   { href: "/facility", label: "Facility" },
   { href: "/quality", label: "Quality" },
   { href: "/products", label: "Products" },
+  { href: "/careers", label: "Careers" },
   { href: "/#locations", label: "Contact", isContact: true },
 ];
 
@@ -23,7 +24,6 @@ export function SiteHeader() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
     const updateScrollState = () => {
@@ -53,28 +53,8 @@ export function SiteHeader() {
     };
   }, [isMenuOpen]);
 
-  useEffect(() => {
-    const root = document.documentElement;
-    const storedTheme =
-      root.dataset.theme === "dark" || window.localStorage.getItem("theme") === "dark" ? "dark" : "light";
-
-    root.dataset.theme = storedTheme;
-    setTheme(storedTheme);
-  }, []);
-
   const currentPath = useMemo(() => pathname ?? "/", [pathname]);
   const isHomeActive = currentPath === "/";
-
-  const toggleTheme = () => {
-    setTheme((previousTheme) => {
-      const nextTheme = previousTheme === "dark" ? "light" : "dark";
-
-      document.documentElement.dataset.theme = nextTheme;
-      window.localStorage.setItem("theme", nextTheme);
-
-      return nextTheme;
-    });
-  };
 
   return (
     <header className={`topbar ${isScrolled ? "topbar-scrolled" : ""} ${isMenuOpen ? "topbar-menu-open" : ""}`}>
@@ -94,7 +74,8 @@ export function SiteHeader() {
               (item.href === "/about" && currentPath === "/about") ||
               (item.href === "/facility" && currentPath === "/facility") ||
               (item.href === "/quality" && currentPath === "/quality") ||
-              (item.href === "/products" && currentPath === "/products");
+              (item.href === "/products" && currentPath === "/products") ||
+              (item.href === "/careers" && currentPath.startsWith("/careers"));
 
             return (
               <Link

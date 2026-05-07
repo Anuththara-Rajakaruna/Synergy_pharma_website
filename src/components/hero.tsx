@@ -5,6 +5,7 @@ export interface HeroProps {
   eyebrow: string;
   heading: string;
   description: string;
+  actions?: React.ReactNode;
   showGradients?: boolean;
   className?: string;
   leftGradientSrc?: string;
@@ -15,6 +16,7 @@ export const Hero: React.FC<HeroProps> = ({
   eyebrow,
   heading,
   description,
+  actions,
   showGradients = true,
   className = "",
   leftGradientSrc = "/left-grad.svg",
@@ -40,6 +42,7 @@ export const Hero: React.FC<HeroProps> = ({
         <p className="hero-eyebrow">{eyebrow}</p>
         <h1>{heading}</h1>
         <p>{description}</p>
+        {actions}
       </div>
     </section>
   );

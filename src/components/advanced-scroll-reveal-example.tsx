@@ -187,7 +187,7 @@ export function AdvancedScrollRevealExample() {
                     ))}
                   </div>
                   <blockquote className="text-gray-700 italic mb-6">
-                    "{testimonial.quote}"
+                    &ldquo;{testimonial.quote}&rdquo;
                   </blockquote>
                   <div>
                     <p className="font-bold text-gray-900">

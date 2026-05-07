@@ -1,0 +1,122 @@
+[
+  {
+    "id": "IT",
+    "title": "IT",
+    "department": "IT",
+    "location": "Bingiriya",
+    "type": "Full-time",
+    "description": "view batch manufacturing records and supporting GMP documentation.\nCoordinate deviation tracking, CAPA follow-up, and internal quality reporting.\nPartner with production and validation teams on release-readiness checks.\nSupport inspection preparation and continuo",
+    "responsibilities": [
+      "view batch manufacturing records and supporting GMP documentation.",
+      "Coordinate deviation tracking, CAPA follow-up, and internal quality reporting.",
+      "Partner with production and validation teams on release-readiness checks.",
+      "Support inspection preparation and continuo"
+    ],
+    "requirements": [
+      "view batch manufacturing records and supporting GMP documentation.",
+      "Coordinate deviation tracking, CAPA follow-up, and internal quality reporting.",
+      "Partner with production and validation teams on release-readiness checks.",
+      "Support inspection preparation and continuo"
+    ]
+  },
+  {
+    "id": "QC",
+    "title": "QC Executive",
+    "department": "QC",
+    "location": "Bingiriya",
+    "type": "Internship",
+    "description": "Quality control Specialist Review batch manufacturing records and supporting GMP documentation.\nCoordinate deviation tracking, CAPA follow-up, and internal quality reporting.\nPartner with production and validation teams on release-readiness checks.\nSupport inspection preparation and continuous improvement initiatives.",
+    "responsibilities": [
+      "Review batch manufacturing records and supporting GMP documentation.",
+      "Coordinate deviation tracking, CAPA follow-up, and internal quality reporting.",
+      "Partner with production and validation teams on release-readiness checks.",
+      "Support inspection preparation and continuous improvement initiatives."
+    ],
+    "requirements": [
+      "Review batch manufacturing records and supporting GMP documentation.",
+      "Coordinate deviation tracking, CAPA follow-up, and internal quality reporting.",
+      "Partner with production and validation teams on release-readiness checks.",
+      "Support inspection preparation and continuous improvement initiatives."
+    ]
+  },
+  {
+    "id": "qa-specialist",
+    "title": "Quality Assurance Specialist",
+    "department": "Quality Assurance",
+    "location": "Bingiriya, Sri Lanka",
+    "type": "Full-time",
+    "description": "Lead day-to-day quality assurance execution across our manufacturing campus and support a documentation culture that meets global pharmaceutical expectations.",
+    "responsibilities": [
+      "Review batch manufacturing records and supporting GMP documentation.",
+      "Coordinate deviation tracking, CAPA follow-up, and internal quality reporting.",
+      "Partner with production and validation teams on release-readiness checks.",
+      "Support inspection preparation and continuous improvement initiatives."
+    ],
+    "requirements": [
+      "Bachelor's degree in Pharmacy, Chemistry, Microbiology, or related field.",
+      "2+ years of quality assurance experience in a GMP-regulated environment.",
+      "Strong understanding of SOP control, deviations, and CAPA workflows.",
+      "Clear written communication and disciplined documentation habits."
+    ]
+  },
+  {
+    "id": "production-pharmacist",
+    "title": "Production Pharmacist",
+    "department": "Manufacturing",
+    "location": "Kurunegala District, Sri Lanka",
+    "type": "Full-time",
+    "description": "Oversee production line discipline, batch execution, and safe manufacturing practices while helping scale reliable medicine output across multiple dosage formats.",
+    "responsibilities": [
+      "Supervise daily production activities and enforce schedule adherence.",
+      "Verify line clearance, process parameters, and in-process documentation.",
+      "Coordinate with quality and engineering teams to resolve production issues.",
+      "Champion training and compliance for manufacturing operators."
+    ],
+    "requirements": [
+      "Registered pharmacist or equivalent academic qualification.",
+      "Experience in oral solid dosage or general pharmaceutical manufacturing.",
+      "Working knowledge of GMP, safety, and process controls.",
+      "Ability to manage cross-functional coordination under production timelines."
+    ]
+  },
+  {
+    "id": "r-and-d-analyst",
+    "title": "R&D Analytical Analyst",
+    "department": "Research & Development",
+    "location": "Colombo / Bingiriya",
+    "type": "Full-time",
+    "description": "Support product development and method verification with disciplined analytical work, technical reporting, and close collaboration across R&D and quality functions.",
+    "responsibilities": [
+      "Execute analytical testing for formulation development and stability studies.",
+      "Maintain lab documentation, raw data integrity, and sample traceability.",
+      "Assist in method transfer and troubleshooting for development programs.",
+      "Prepare concise technical summaries for internal review."
+    ],
+    "requirements": [
+      "Degree in Chemistry, Pharmaceutical Science, or a related discipline.",
+      "Hands-on experience with HPLC, UV, dissolution, or similar techniques.",
+      "Comfort working within structured lab documentation systems.",
+      "Strong attention to accuracy and scientific detail."
+    ]
+  },
+  {
+    "id": "regulatory-intern",
+    "title": "Regulatory Affairs Intern",
+    "department": "Regulatory Affairs",
+    "location": "Colombo, Sri Lanka",
+    "type": "Internship",
+    "description": "Join the regulatory team to learn submission workflows, dossier organization, and the operational detail behind compliant market access in the pharmaceutical sector.",
+    "responsibilities": [
+      "Assist with document preparation and submission trackers.",
+      "Support product registration file organization and version control.",
+      "Compile reference materials for regulatory response packages.",
+      "Help maintain clean administrative records across active projects."
+    ],
+    "requirements": [
+      "Current undergraduate in Pharmacy, Science, or a related discipline.",
+      "Strong organizational skills and confidence with structured documentation.",
+      "Clear written English and attention to detail.",
+      "Interest in pharmaceutical compliance and market authorization work."
+    ]
+  }
+]
