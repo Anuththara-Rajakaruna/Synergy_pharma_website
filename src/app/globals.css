@@ -4241,6 +4241,10 @@ html[data-theme="dark"] .manufacturing-process-step {
   margin-bottom: 1.5rem;
 }
 
+.corporation-header h2 {
+  margin-bottom: 35px;
+}
+
 /* Future Expansion italic title */
 .future-header h2 {
   font-style: italic;
