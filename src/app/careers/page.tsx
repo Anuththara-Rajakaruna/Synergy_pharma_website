@@ -80,12 +80,14 @@ export default async function CareersPage() {
       </section> */}
 
       <section className="careers-jobs-section reveal-on-scroll" id="open-positions">
-        <div className="careers-shell">
+          <div className="portfolio-header">
           <ScrollReveal className="careers-section-heading">
-            <p className="careers-eyebrow">Open Positions</p>
-            <h2>Explore current opportunities across the business.</h2>
-            <p>Search by role title, filter by department, and move into a detailed application flow.</p>
+            <p className="portfolio-eyebrow">Open Positions</p>
+            <h2 className="portfolio-header h2">Explore current opportunities across the business.</h2>
+            <p className="portfolio-subtitle">Search by role title, filter by department, and move into a detailed application flow.</p>
           </ScrollReveal>
+        </div>
+        <div className="careers-shell">
 
           <CareersListing initialJobs={jobs} />
         </div>
@@ -94,7 +96,7 @@ export default async function CareersPage() {
       <section className="careers-talent-section reveal-on-scroll">
         <div className="careers-shell careers-talent-layout">
           <ScrollReveal className="careers-talent-copy">
-            <p className="careers-eyebrow">Talent Pool</p>
+            <p className="portfolio-eyebrow">Talent Pool</p>
             <h2>Share your CV even if the right opening is not live yet.</h2>
             <p>
               We’re always interested in connecting with professionals who care about pharmaceutical

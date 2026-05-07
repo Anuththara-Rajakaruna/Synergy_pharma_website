@@ -37,13 +37,15 @@ export default async function CareerDetailPage({ params }: { params: Promise<{ i
         <div className="careers-shell career-detail-shell career-detail-reference-layout">
           <div className="career-detail-main-column">
             <ScrollReveal className="career-detail-panel career-detail-panel-soft">
-              <p className="eyebrow">Role Overview</p>
+              <p className="inline-flex rounded-full border border-[#cde6f3] bg-white/85 px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#1075bd] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-all duration-300 group-hover:border-[#a8d4ec] group-hover:bg-[#f7fbfe]">
+Role Overview</p>
               <h2>Job Description</h2>
               <p>{job.description}</p>
             </ScrollReveal>
 
             <ScrollReveal className="career-detail-panel career-detail-panel-soft" delay={0.05}>
-              <p className="eyebrow">Responsibilities</p>
+              <p className="inline-flex rounded-full border border-[#cde6f3] bg-white/85 px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#1075bd] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-all duration-300 group-hover:border-[#a8d4ec] group-hover:bg-[#f7fbfe]">
+Responsibilities</p>
               <h2>What you&apos;ll lead</h2>
               <ul className="career-detail-list">
                 {job.responsibilities.map((item) => (
@@ -53,7 +55,8 @@ export default async function CareerDetailPage({ params }: { params: Promise<{ i
             </ScrollReveal>
 
             <ScrollReveal className="career-detail-panel career-detail-panel-soft" delay={0.1}>
-              <p className="eyebrow">Requirements</p>
+              <p className="inline-flex rounded-full border border-[#cde6f3] bg-white/85 px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#1075bd] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-all duration-300 group-hover:border-[#a8d4ec] group-hover:bg-[#f7fbfe]">
+Requirements</p>
               <h2>What we&apos;re looking for</h2>
               <ul className="career-detail-list">
                 {job.requirements.map((item) => (
@@ -66,7 +69,8 @@ export default async function CareerDetailPage({ params }: { params: Promise<{ i
           <aside className="career-detail-summary-column">
             <ScrollReveal className="career-detail-summary-card" delay={0.12}>
               <div className="career-detail-side-card career-detail-side-card-primary">
-                <p className="eyebrow">Position Summary</p>
+                <p className="inline-flex rounded-full border border-[#cde6f3] bg-white/85 px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#1075bd] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-all duration-300 group-hover:border-[#a8d4ec] group-hover:bg-[#f7fbfe]">
+Position Summary</p>
                 <h3>{job.title}</h3>
                 <div className="career-sticky-meta">
                   <span>{job.department}</span>

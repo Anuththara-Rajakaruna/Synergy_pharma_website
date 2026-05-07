@@ -6295,7 +6295,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   font-weight: 600;
   letter-spacing: 0.125rem;
   text-transform: uppercase;
-  color: #b8edf9;
+  color: #1075bd;
 }
 
 .compliance-header h2 {
@@ -6303,7 +6303,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   font-size: clamp(1.8rem, 5vw, 3rem);
   line-height: 1.15;
   letter-spacing: -0.04em;
-  color: #ffffff;
+  color: #1a1a1a;
 }
 
 .compliance-subtitle {
@@ -6311,7 +6311,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   max-width: 44rem;
   font-size: clamp(0.95rem, 2vw, 1.08rem);
   line-height: 1.65;
-  color: rgba(255, 255, 255, 0.9);
+  color: #35506c;
 }
 
 @media (max-width: 768px) {
@@ -6899,7 +6899,7 @@ html[data-theme="dark"] .gradient-decorator {
 .career-sticky-card h3,
 .careers-empty-state h3 {
   margin: 0 0 0.75rem;
-  color: #0a1f35;
+  color:  #1075bd;
 }
 
 .careers-culture-card p,

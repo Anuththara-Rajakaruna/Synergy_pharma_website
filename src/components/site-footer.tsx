@@ -77,7 +77,7 @@ export function SiteFooter() {
           </address>
         </div>
 
-        <div className="footer-col">
+        {/* <div className="footer-col">
           <h3>Rank Entertainment</h3>
           <address>
             No. 9, 15th Lane
@@ -88,7 +88,7 @@ export function SiteFooter() {
             <br />
             Sri Lanka
           </address>
-        </div>
+        </div> */}
 
         <div className="footer-col">
           <h3>New Business Inquiries</h3>
