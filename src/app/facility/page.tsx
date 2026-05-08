@@ -15,8 +15,8 @@ const facilities = [
   },
   {
     id: 2,
-    title: "General Oral Solid Dosage ",
-    description: "Specialized in the reliable manufacturing of tablets and capsules to global standards.",
+    title: "General Injectables ",
+    description: "Ensuring precision and sterility in every injectable formulation.",
     image: "/facilities/osd.jpg",
   },
   {
@@ -27,14 +27,14 @@ const facilities = [
   },
   {
     id: 4,
-    title: "Oncology (OSD & Injectables) ",
-    description: "Specialized unit for oncology OSD and injectable formulations with enhanced containment protocols.",
+    title: "Manufacturing Facilities  ",
+    description: "State-of-the-art production lines meeting EU-GMP/ USFDA guidelines with precision, automation, and quality control systems. ",
     image: "/facilities/oncology.jpg",
   },
   {
     id: 5,
-    title: "Micro Biology Lab",
-    description: "Advanced microbial testing and analysis center for product quality assurance and contamination detection.",
+    title: "Oncology (OSD & Injectables) ",
+    description: "Dedicated manufacturing for oncology products with the highest levels of containment and care.",
     image: "/facilities/research-center.jpg",
   },
   {
@@ -89,9 +89,9 @@ export default function FacilityPage() {
 
       <motion.section className="facility-capabilitiesSection" id="facility-intro">
         <div className="facility-capabilitiesContainer">
-          <ScrollReveal className="facility-capabilitiesHeader">
+          <ScrollReveal className="facility-capabilitiesHeader facility-header">
             <motion.p
-              className="facility-capabilitiesEyebrow"
+              className="facility-eyebrow"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.1 }}
@@ -109,7 +109,7 @@ export default function FacilityPage() {
               General OSD
             </motion.h2>
             <motion.p
-              className="facility-capabilitiesSubtitle"
+              className="facility-capabilitiesSubtitle facility-subtitle"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
@@ -135,7 +135,7 @@ export default function FacilityPage() {
               },
               { 
                 title: "Independent QA", 
-                description: "a robust team ensuring our commitment to transparency and world-class quality.",
+                description: "A robust team ensuring our commitment to transparency and world-class quality.",
                 icon: (
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M12 2L2 7l10 5 10-5-10-5z" />
@@ -201,10 +201,10 @@ export default function FacilityPage() {
 
       <section className="facility-facilitiesSection">
         <div className="facility-facilitiesSectionInner">
-          <ScrollReveal className="facility-facilitiesHeader">
-            <p className="facility-facilitiesHeaderEyebrow">Integrated Operations</p>
+          <ScrollReveal className="facility-facilitiesHeader facility-header">
+            <p className="facility-eyebrow">Integrated Operations</p>
             <h2 className="facility-facilitiesTitle">Manufacturing Facilities </h2>
-            <p className="facility-facilitiesDescription">
+            <p className="facility-facilitiesDescription facility-subtitle">
               State-of-the-art production lines meeting EU-GMP / USFDA guidelines with precision, automation, and quality control systems.
             </p>
           </ScrollReveal>
@@ -239,7 +239,7 @@ export default function FacilityPage() {
           viewport={{ once: true, amount: 0.3 }}
         >
           <motion.p
-            className="facility-operationsEyebrow"
+            className="facility-eyebrow"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.1 }}
@@ -429,7 +429,7 @@ export default function FacilityPage() {
           viewport={{ once: true, amount: 0.3 }}
         >
           <motion.p
-            className="facility-operationsEyebrow"
+            className="facility-eyebrow"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.1 }}
@@ -493,7 +493,7 @@ export default function FacilityPage() {
           viewport={{ once: true, amount: 0.3 }}
         >
           <motion.p
-            className="facility-operationsEyebrow"
+            className="facility-eyebrow"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.1 }}
@@ -637,7 +637,7 @@ export default function FacilityPage() {
             viewport={{ once: true, amount: 0.3 }}
           >
             <motion.p
-              className="facility-qualityEyebrow"
+              className="facility-eyebrow"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
@@ -666,7 +666,7 @@ export default function FacilityPage() {
               {[
                 {
                   title: "Strong Quality Management System (QMS)",
-                  description: "End-to-end oversight ensuring every batch meets the Synergy standard of excellence.",
+                  description: "End-to-end oversight ensuring every batch meets the Synergy's standard of excellence.",
                   icon: "shield"
                 },
                 {
@@ -714,9 +714,9 @@ export default function FacilityPage() {
               <div className="facility-certificationsContent">
                 <p className="facility-certificationsLabel">International Certifications</p>
                 <div className="facility-certificationsGrid">
-                  <span className="facility-certification">USFDA</span>
-                  <span className="facility-certification">EU-GMP</span>
-                  <span className="facility-certification">WHO-GMP</span>
+                  <span className="facility-certification">NMRA-GMP</span>
+                  <span className="facility-certification">EU-GMP (Q4 2026)</span>
+                  <span className="facility-certification">WHO-GMP (Q1 2027)</span>
                 </div>
               </div>
             </motion.div>
