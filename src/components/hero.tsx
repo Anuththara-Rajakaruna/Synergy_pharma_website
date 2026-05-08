@@ -3,8 +3,8 @@ import "./hero.css";
 
 export interface HeroProps {
   eyebrow: string;
-  heading: string;
-  description: string;
+  heading: string | React.ReactNode;
+  description: string | React.ReactNode;
   actions?: React.ReactNode;
   showGradients?: boolean;
   className?: string;
