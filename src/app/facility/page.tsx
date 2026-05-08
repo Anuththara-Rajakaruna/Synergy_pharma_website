@@ -9,8 +9,8 @@ import { ScrollReveal, ScrollRevealContainer, ScrollRevealItem } from "@/compone
 const facilities = [
   {
     id: 1,
-    title: "Manufacturing Facilities",
-    description: "State-of-the-art production lines meeting WHO-GMP standards with precision automation and quality control systems.",
+    title: "General Oral Solid Dosage",
+    description: "Specialized in the reliable manufacturing of tablets and capsules to global standards.",
     image: "/facilities/manufacturing.jpg",
   },
   {
