@@ -1272,10 +1272,20 @@ button:active {
 
 .showcase-metrics {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-xl);
   padding-top: var(--space-lg);
   border-top: 1px solid #e6ebef;
+}
+
+.metric-card {
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
 .showcase-metrics strong {
@@ -4281,7 +4291,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 /* HOME PAGE - CORPORATION SECTION */
 .corporation-section {
-  padding: 8rem 1.5rem;
+  padding: 8rem 1.5rem 4rem 1.5rem;
   overflow: hidden;
 }
 
@@ -4295,7 +4305,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 /* HOME PAGE - MISSION SECTION */
 .mission-section {
-  padding: 8rem 1.5rem;
+  padding: 0.5rem 1.5rem 8rem 1.5rem;
   position: relative;
   overflow: hidden;
 }

@@ -120,8 +120,8 @@ export default function Home() {
       <SiteHeader />
 
       <Hero
-        eyebrow="Precision Healthcare Manufacturing"
-        heading="Advancing human health through precision."
+        eyebrow="Driven by Collaboration. Focused on Care."
+        heading="Creating meaningful impact through integrated healthcare solutions."
         description="Delivering high-quality, affordable medicines manufactured in Sri Lanka for the global healthcare economy."
         className="home-hero"
       />
@@ -129,12 +129,10 @@ export default function Home() {
       <section ref={corporationRef} className="corporation-section reveal-on-scroll corporation-shrink" id="corporation">
         <div className="corporation-container">
           <ScrollReveal className="corporation-header">
-            <p className="corporation-eyebrow">About The Corporation</p>
-            <h2>Excellence in Sri Lankan Manufacturing.</h2>
+            <p className="corporation-eyebrow">ABOUT THE CORPORATION</p>
+            <h2>Where Sri Lankan Manufacturing Meets Global Excellence</h2>
             <p className="corporation-subtitle">
-              Synergy Pharmaceutical is a premier manufacturer specializing in a wide range of
-              pharmaceutical products. Our expansive facility is built to exceed international quality
-              standards, ensuring medicine accessibility for all.
+              "Synergy Pharmaceutical is a trusted manufacturer of a diverse range of finished pharmaceutical products. With an advanced facility built to meet and exceed global quality standards, we are committed to making high-quality medicines accessible to all."
             </p>
           </ScrollReveal>
 
@@ -150,21 +148,28 @@ export default function Home() {
                 />
               </div>
               <article className="scope-card">
-                <p className="scope-label">Facility Scope</p>
+                <p className="scope-label">CERTIFICATIONS</p>
                 <p className="scope-copy">
-                  A 10.5-acre state-of-the-art pharmaceutical campus designed for scale and safety.
-                </p>
+Sri Lankan NMRA-GMP<br />EU-GMP (Q4 2026)                </p>
               </article>
             </div>
             <div className="showcase-metrics">
-              <div>
+              <div className="metric-card">
                 <strong>10.5</strong>
-                <span>Acre Campus</span>
+                <span>ACRES CAMPUS</span>
               </div>
-              <div>
-                <strong>Global</strong>
-                <span>Certifications</span>
+              <div className="metric-card">
+                <strong>4</strong>
+                <span>MANUFACTURING BLOCKS</span>
               </div>
+              <div className="metric-card">
+                <strong>1</strong>
+                <span>R&D CENTRE</span>
+              </div>
+              {/* <div className="metric-card">
+                <strong>CERTIFICATIONS</strong>
+                <span>Sri Lankan NMRA-GMP<br />EU-GMP (Q4 2026)</span>
+              </div> */}
             </div>
           </ScrollReveal>
         </div>

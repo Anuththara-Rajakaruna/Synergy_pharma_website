@@ -28,7 +28,7 @@ export function CorporateVisionMission({ className = "" }: CorporateVisionMissio
 
         <div className="corporate-values-layout">
           <ScrollReveal className="corporate-vision-card" delay={0.05}>
-            <div className="corporate-card-accent" aria-hidden="true" />
+            <div className="" aria-hidden="true" />
             <p className="corporate-card-label">Vision</p>
             <blockquote>
               &ldquo;To become a leading Sri Lankan pharmaceutical manufacturer of high-quality
