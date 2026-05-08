@@ -1,59 +1,15 @@
 ﻿"use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/hero";
-import { ScrollReveal, ScrollRevealContainer, ScrollRevealItem } from "@/components/scroll-reveal";
+import { ScrollReveal } from "@/components/scroll-reveal";
+import { CorporateVisionMission } from "@/components/corporate-vision-mission";
 
 export default function Home() {
-  const [isVisionOpen, setIsVisionOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const heroRef = useRef<HTMLElement | null>(null);
   const corporationRef = useRef<HTMLElement | null>(null);
   const missionRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    const hero = heroRef.current;
-
-    let rafId = 0;
-    const updateHeroSize = () => {
-      rafId = 0;
-      const scrollY = window.scrollY || 0;
-      setIsScrolled(scrollY > 24);
-
-      if (!hero) {
-        return;
-      }
-
-      const rawProgress = Math.min(scrollY / 240, 1);
-      const progress = 1 - Math.pow(1 - rawProgress, 2.8);
-      const startMinHeight = window.innerHeight * 1.1;
-      const endMinHeight = 350;
-      const minHeight = startMinHeight - (startMinHeight - endMinHeight) * progress;
-      hero.style.setProperty("--hero-min-h", `${minHeight.toFixed(2)}px`);
-    };
-
-    const onScroll = () => {
-      if (rafId) {
-        return;
-      }
-
-      rafId = window.requestAnimationFrame(updateHeroSize);
-    };
-
-    updateHeroSize();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (rafId) {
-        window.cancelAnimationFrame(rafId);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     const section = corporationRef.current;
@@ -159,21 +115,6 @@ export default function Home() {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (!isVisionOpen) {
-      return;
-    }
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsVisionOpen(false);
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isVisionOpen]);
-
   return (
     <main className="landing-page">
       <SiteHeader />
@@ -230,45 +171,7 @@ export default function Home() {
       </section>
 
       <section ref={missionRef} className="mission-section reveal-on-scroll mission-animate" id="quality">
-        <div className="mission-container">
-          <ScrollReveal className="mission-header">
-            <p className="mission-eyebrow">Strategic Direction</p>
-            <h2>Vision & Mission</h2>
-            <p className="mission-subtitle">
-              Guided by our commitment to excellence and sustainable healthcare innovation.
-            </p>
-          </ScrollReveal>
-
-          <div className="mission-content">
-            <div className="vision-panel">
-              <p className="eyebrow">Vision</p>
-              <blockquote>
-                &ldquo;Becoming the beacon of healthcare in the region through sustainable, global-standard medicine.&rdquo;
-              </blockquote>
-            </div>
-            <div className="mission-panel">
-              <p className="eyebrow">Our Mission</p>
-              <ScrollRevealContainer staggerDelay={0.1} className="mission-grid">
-              <ScrollRevealItem><article className="mission-item">
-                  <h3>Accessibility</h3>
-                  <p>Deliver high-quality affordable medicine to global markets.</p>
-                </article></ScrollRevealItem>
-                <ScrollRevealItem><article className="mission-item">
-                  <h3>Quality</h3>
-                  <p>Maintain rigorous GMP compliance and transparent processes.</p>
-                </article></ScrollRevealItem>
-                <ScrollRevealItem><article className="mission-item">
-                  <h3>Innovation</h3>
-                  <p>Invest in advanced manufacturing and research partnerships.</p>
-                </article></ScrollRevealItem>
-                <ScrollRevealItem><article className="mission-item">
-                  <h3>Responsibility</h3>
-                  <p>Build sustainable operations that uplift communities and care delivery.</p>
-                </article></ScrollRevealItem>
-              </ScrollRevealContainer>
-            </div>
-          </div>
-        </div>
+        <CorporateVisionMission />
       </section>
 
     </main>
