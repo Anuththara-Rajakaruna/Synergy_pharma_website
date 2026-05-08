@@ -4183,7 +4183,8 @@ html[data-theme="dark"] .manufacturing-process-step {
 .highlights-header,
 .ecosystem-header,
 .capabilities-header,
-.compliance-header {
+.compliance-header,
+.careers-header {
   text-align: center;
   margin-bottom: 5rem;
   max-width: 750px;
@@ -4205,7 +4206,8 @@ html[data-theme="dark"] .manufacturing-process-step {
 .highlights-eyebrow,
 .ecosystem-eyebrow,
 .capabilities-eyebrow,
-.compliance-eyebrow {
+.compliance-eyebrow,
+.careers-eyebrow {
   margin: 0;
   color: #1075bd;
   font-size: 0.8rem;
@@ -4233,7 +4235,8 @@ html[data-theme="dark"] .manufacturing-process-step {
 .highlights-header h2,
 .ecosystem-header h2,
 .capabilities-header h2,
-.compliance-header h2 {
+.compliance-header h2,
+.careers-header h2 {
   margin: 0;
   color: #1a1a1a;
   font-size: clamp(2rem, 5vw, 3.25rem);
@@ -4262,7 +4265,8 @@ html[data-theme="dark"] .manufacturing-process-step {
 .highlights-subtitle,
 .ecosystem-subtitle,
 .capabilities-subtitle,
-.compliance-subtitle {
+.compliance-subtitle,
+.careers-subtitle {
   margin: 0;
   color: #35506c;
   font-size: 1.125rem;
