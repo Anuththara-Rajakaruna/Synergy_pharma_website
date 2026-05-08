@@ -115,8 +115,6 @@ export function CareersListing({ initialJobs }: CareersListingProps) {
           searchTerm={searchTerm}
           department={department}
           departments={departments}
-          resultCount={filteredJobs.length}
-          isLoading={showSkeleton}
           hasActiveFilters={hasActiveFilters}
           onSearchChange={setSearchTerm}
           onDepartmentChange={setDepartment}
@@ -140,7 +138,7 @@ export function CareersListing({ initialJobs }: CareersListingProps) {
                     <div className="mt-3 h-4 w-full rounded-full bg-[#e6f2f8]" />
                     <div className="mt-2.5 h-4 w-5/6 rounded-full bg-[#e6f2f8]" />
                   </div>
-                  <div className="flex flex-col gap-3 lg:w-[210px] lg:items-end">
+                  <div className="flex flex-col gap-3 lg:w-52.5 lg:items-end">
                     <div className="h-9 w-9 rounded-full bg-[#e6f2f8]" />
                     <div className="h-4 w-32 rounded-full bg-[#e6f2f8]" />
                     <div className="h-12 w-40 rounded-2xl bg-[#dcecf5]" />

@@ -24,7 +24,7 @@ export function JobCard({ job, index }: JobCardProps) {
         <span className="sr-only">View details for {job.title}</span>
       </Link>
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(71,154,210,0.10),transparent_28%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-      <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-[#8ecceb] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div className="absolute inset-x-6 top-0 h-px bg-linear-to-r from-transparent via-[#8ecceb] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
       <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-7">
         <div className="min-w-0 flex-1">
           <div className="mb-3 flex items-start justify-between gap-4">
@@ -63,7 +63,7 @@ export function JobCard({ job, index }: JobCardProps) {
           </div>
         </div>
 
-        <div className="flex shrink-0 flex-col gap-3 lg:w-[210px] lg:items-end">
+        <div className="flex shrink-0 flex-col gap-3 lg:w-52.5 lg:items-end">
           <div className="hidden rounded-full bg-[#edf6fb] p-2 text-[#1075bd] transition-all duration-300 group-hover:rotate-6 group-hover:scale-110 group-hover:bg-[#dff0fb] lg:block">
             <ArrowUpRight className="h-4 w-4" />
           </div>

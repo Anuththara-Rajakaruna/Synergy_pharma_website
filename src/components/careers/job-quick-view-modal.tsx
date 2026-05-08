@@ -50,7 +50,7 @@ export function JobQuickViewModal({ job, onClose }: JobQuickViewModalProps) {
             onClick={(event) => event.stopPropagation()}
             className="relative w-full max-w-2xl overflow-hidden rounded-[30px] border border-white/65 bg-[linear-gradient(160deg,rgba(255,255,255,0.98),rgba(236,245,250,0.94))] shadow-[0_40px_90px_rgba(7,25,38,0.28)]"
           >
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#79c4e6] via-[#1075bd] to-[#79c4e6]" />
+            <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-[#79c4e6] via-[#1075bd] to-[#79c4e6]" />
 
             <button
               type="button"
@@ -72,7 +72,7 @@ export function JobQuickViewModal({ job, onClose }: JobQuickViewModalProps) {
                 <p className="mt-4 text-[1rem] leading-7 text-[#4d6578]">{job.description}</p>
               </div>
 
-              <div className="mt-6 grid gap-4 rounded-[24px] border border-white/70 bg-white/75 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+              <div className="mt-6 grid gap-4 rounded-3xl border border-white/70 bg-white/75 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
                 <div className="flex flex-wrap gap-3">
                   <span className="rounded-full bg-[#edf6fb] px-3.5 py-2 text-sm font-medium text-[#34596f]">
                     {job.location}
