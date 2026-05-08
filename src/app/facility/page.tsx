@@ -22,8 +22,8 @@ const facilities = [
   },
   {
     id: 3,
-    title: "Microbiology Laboratory",
-    description: "Advanced microbiological testing and environmental monitoring facilities ensuring product safety, sterility, and compliance with international quality standards.",
+    title: "Quality Control Lab",
+    description: "Ensuring product integrity through rigorous testing, high class equipment and quality assurance.",
     image: "/facilities/injectable.jpg",
   },
   {
@@ -46,8 +46,8 @@ const facilities = [
   },
   {
     id: 7,
-    title: "Quality Control Lab",
-    description: "Ensuring product integrity through rigorous testing, high class equipment and quality assurance.",
+    title: "Microbiology Laboratory",
+    description: "Advanced microbiological testing and environmental monitoring facilities ensuring product safety, sterility, and compliance with international quality standards.",
     image: "/facilities/manufacturing.jpg",
   },
 ];
