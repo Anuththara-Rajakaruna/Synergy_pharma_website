@@ -24,9 +24,9 @@ export default async function CareersPage() {
         className="careers-hero-section"
         actions={
           <div className="careers-hero-actions">
-            <a href="#open-positions" className="button-link">
+            {/* <a href="#open-positions" className="button-link">
               View Open Positions
-            </a>
+            </a> */}
           </div>
         }
       />
@@ -80,11 +80,11 @@ export default async function CareersPage() {
       </section> */}
 
       <section className="careers-jobs-section reveal-on-scroll" id="open-positions">
-          <div className="portfolio-header">
+          <div className="">
           <ScrollReveal className="careers-section-heading">
-            <p className="portfolio-eyebrow">Open Positions</p>
-            <h2 className="portfolio-header h2">Explore current opportunities across the business.</h2>
-            <p className="portfolio-subtitle">Search by role title, filter by department, and move into a detailed application flow.</p>
+            <p className="">Open Positions</p>
+            <h2 className="">Explore current opportunities across the business.</h2>
+            <p className="">Search by role title, filter by department, and move into a detailed application flow.</p>
           </ScrollReveal>
         </div>
         <div className="careers-shell">

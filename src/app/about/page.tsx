@@ -146,7 +146,7 @@ export default function AboutPage() {
         <div className="vision-panel about-vision-panel">
           <p className="eyebrow">Vision</p>
           <blockquote>
-            &ldquo;Becoming the beacon of healthcare in the region through sustainable, global-standard medicine.&rdquo;
+            &ldquo;To become a leading Sri Lankan pharmaceutical manufacturer of high-quality finished dosage forms, recognized globally for innovation, reliability, and excellence in healthcare.&rdquo;
           </blockquote>
         </div>
         <div className="mission-panel">
