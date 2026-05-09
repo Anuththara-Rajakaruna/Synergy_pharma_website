@@ -213,9 +213,12 @@ export default function QualityPage() {
                   <div className="highlightStatIcon">
                     <Icon size={28} strokeWidth={2.2} />
                   </div>
-                  <h3>{item.title}</h3>
-                  <p>{item.subtitle}</p>
-                  <small>{item.detail}</small>
+                  <div className="highlightStatContent">
+                    <h3>{item.title}</h3>
+                    <p>{item.subtitle}</p>
+                    <span className="highlightStatDivider" aria-hidden="true" />
+                    <small>{item.detail}</small>
+                  </div>
                 </ScrollRevealItem>
               );
             })}
