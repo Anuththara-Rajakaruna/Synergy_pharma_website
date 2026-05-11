@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Job } from "@/types/careers";
 import { CareersFilterBar } from "@/components/careers/careers-filter-bar";
 import { JobCard } from "@/components/careers/job-card";
+import { CAREER_DEPARTMENTS, CAREER_DEPARTMENT_SET } from "@/components/careers/department-options";
 
 type CareersListingProps = {
   initialJobs: Job[];
@@ -81,7 +82,15 @@ export function CareersListing({ initialJobs }: CareersListingProps) {
   }, [initialJobs]);
 
   const departments = useMemo(() => {
-    return [allDepartmentsLabel, ...Array.from(new Set(jobs.map((job) => job.department)))];
+    const uniqueDepartments = Array.from(new Set(jobs.map((job) => job.department)));
+    const preferredDepartments = CAREER_DEPARTMENTS.filter((department) =>
+      uniqueDepartments.includes(department)
+    );
+    const remainingDepartments = uniqueDepartments
+      .filter((department) => !CAREER_DEPARTMENT_SET.has(department))
+      .sort((left, right) => left.localeCompare(right));
+
+    return [allDepartmentsLabel, ...preferredDepartments, ...remainingDepartments];
   }, [jobs]);
 
   const filteredJobs = useMemo(() => {

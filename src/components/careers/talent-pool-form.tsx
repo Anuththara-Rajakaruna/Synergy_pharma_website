@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, startTransition, useState } from "react";
+import { CAREER_DEPARTMENTS } from "@/components/careers/department-options";
 
 type TalentPoolState = {
   name: string;
@@ -107,12 +108,17 @@ export function TalentPoolForm() {
         </label>
         <label className="careers-field">
           <span>Area of interest</span>
-          <input
-            type="text"
+          <select
             value={form.areaOfInterest}
             onChange={(event) => setForm((current) => ({ ...current, areaOfInterest: event.target.value }))}
-            placeholder="Quality, Manufacturing, Regulatory Affairs..."
-          />
+          >
+            <option value="">Select a department</option>
+            {CAREER_DEPARTMENTS.map((department) => (
+              <option key={department} value={department}>
+                {department}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="careers-field careers-field-full">
           <span>Notes (optional)</span>

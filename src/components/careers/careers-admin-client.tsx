@@ -2,6 +2,7 @@
 
 import { FormEvent, startTransition, useEffect, useState } from "react";
 import { ApplicationRecord, Job, TalentPoolRecord } from "@/types/careers";
+import { CAREER_DEPARTMENTS } from "@/components/careers/department-options";
 
 type JobEditorState = {
   id: string;
@@ -191,11 +192,17 @@ export function CareersAdminClient({ initialJobs }: CareersAdminClientProps) {
             </label>
             <label className="careers-field">
               <span>Department</span>
-              <input
-                type="text"
+              <select
                 value={editor.department}
                 onChange={(event) => setEditor((current) => ({ ...current, department: event.target.value }))}
-              />
+              >
+                <option value="">Select a department</option>
+                {CAREER_DEPARTMENTS.map((department) => (
+                  <option key={department} value={department}>
+                    {department}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="careers-field">
               <span>Location</span>

@@ -1,0 +1,25 @@
+export const CAREER_DEPARTMENTS = [
+  "Accounts",
+  "Analytical Development",
+  "Development Quality Assurance",
+  "EHS",
+  "Engineering",
+  "Finance",
+  "Formulation Development",
+  "HR & Admin",
+  "IT",
+  "Production",
+  "Microbiology",
+  "Packaging Development",
+  "Production Planning & Inventory Control",
+  "Purchase & Logistics",
+  "Quality Assurance",
+  "Quality Control",
+  "Regulatory Affairs",
+  "Sales & Marketing",
+  "Strategy Planning",
+  "Technology Transfer",
+  "Warehouse",
+] as const;
+
+export const CAREER_DEPARTMENT_SET = new Set<string>(CAREER_DEPARTMENTS);
