@@ -4419,7 +4419,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .corporate-values-section {
   position: relative;
-  padding: clamp(4.5rem, 8vw, 8rem) 0;
+  padding: 0 0 clamp(4.5rem, 8vw, 8rem) 0;
   
   overflow: hidden;
 }
