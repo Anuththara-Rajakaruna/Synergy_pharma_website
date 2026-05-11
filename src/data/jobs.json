@@ -1,45 +1,5 @@
 [
   {
-    "id": "IT",
-    "title": "IT",
-    "department": "IT",
-    "location": "Bingiriya",
-    "type": "Full-time",
-    "description": "view batch manufacturing records and supporting GMP documentation.\nCoordinate deviation tracking, CAPA follow-up, and internal quality reporting.\nPartner with production and validation teams on release-readiness checks.\nSupport inspection preparation and continuo",
-    "responsibilities": [
-      "view batch manufacturing records and supporting GMP documentation.",
-      "Coordinate deviation tracking, CAPA follow-up, and internal quality reporting.",
-      "Partner with production and validation teams on release-readiness checks.",
-      "Support inspection preparation and continuo"
-    ],
-    "requirements": [
-      "view batch manufacturing records and supporting GMP documentation.",
-      "Coordinate deviation tracking, CAPA follow-up, and internal quality reporting.",
-      "Partner with production and validation teams on release-readiness checks.",
-      "Support inspection preparation and continuo"
-    ]
-  },
-  {
-    "id": "QC",
-    "title": "QC Executive",
-    "department": "QC",
-    "location": "Bingiriya",
-    "type": "Internship",
-    "description": "Quality control Specialist Review batch manufacturing records and supporting GMP documentation.\nCoordinate deviation tracking, CAPA follow-up, and internal quality reporting.\nPartner with production and validation teams on release-readiness checks.\nSupport inspection preparation and continuous improvement initiatives.",
-    "responsibilities": [
-      "Review batch manufacturing records and supporting GMP documentation.",
-      "Coordinate deviation tracking, CAPA follow-up, and internal quality reporting.",
-      "Partner with production and validation teams on release-readiness checks.",
-      "Support inspection preparation and continuous improvement initiatives."
-    ],
-    "requirements": [
-      "Review batch manufacturing records and supporting GMP documentation.",
-      "Coordinate deviation tracking, CAPA follow-up, and internal quality reporting.",
-      "Partner with production and validation teams on release-readiness checks.",
-      "Support inspection preparation and continuous improvement initiatives."
-    ]
-  },
-  {
     "id": "qa-specialist",
     "title": "Quality Assurance Specialist",
     "department": "Quality Assurance",

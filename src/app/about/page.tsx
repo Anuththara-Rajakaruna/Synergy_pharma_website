@@ -5,6 +5,7 @@ import { ScrollReveal, ScrollRevealContainer, ScrollRevealItem } from "@/compone
 import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/hero";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
+import { CorporateVisionMission } from "@/components/corporate-vision-mission";
 
 const leaders = [
   { role: "Chairman", name: "Mr.Ravi Wijeratne" },
@@ -151,45 +152,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <ScrollReveal
-        className="container section mission-band reveal-on-scroll mission-animate"
-      >
-        <div className="vision-panel about-vision-panel">
-          <p className="eyebrow">Vision</p>
-          <blockquote>
-            &ldquo;Becoming the beacon of healthcare in the region through sustainable, global-standard medicine.&rdquo;
-          </blockquote>
-        </div>
-        <div className="mission-panel">
-          <p className="eyebrow">Our Mission</p>
-          <ScrollRevealContainer staggerDelay={0.1} className="mission-grid">
-            <article className="mission-item">
-              <ScrollRevealItem>
-                <h3>Accessibility</h3>
-                <p>Deliver high-quality affordable medicine to global markets.</p>
-              </ScrollRevealItem>
-            </article>
-            <article className="mission-item">
-              <ScrollRevealItem>
-                <h3>Quality</h3>
-                <p>Maintain rigorous GMP compliance and transparent processes.</p>
-              </ScrollRevealItem>
-            </article>
-            <article className="mission-item">
-              <ScrollRevealItem>
-                <h3>Innovation</h3>
-                <p>Invest in advanced manufacturing and research partnerships.</p>
-              </ScrollRevealItem>
-            </article>
-            <article className="mission-item">
-              <ScrollRevealItem>
-                <h3>Responsibility</h3>
-                <p>Build sustainable operations that uplift communities and care delivery.</p>
-              </ScrollRevealItem>
-            </article>
-          </ScrollRevealContainer>
-        </div>
-      </ScrollReveal>
+      <CorporateVisionMission className="corporate-values-about" />
     </main>
   );
 }

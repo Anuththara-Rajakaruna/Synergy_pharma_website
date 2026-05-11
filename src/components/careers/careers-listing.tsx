@@ -115,8 +115,6 @@ export function CareersListing({ initialJobs }: CareersListingProps) {
           searchTerm={searchTerm}
           department={department}
           departments={departments}
-          resultCount={filteredJobs.length}
-          isLoading={showSkeleton}
           hasActiveFilters={hasActiveFilters}
           onSearchChange={setSearchTerm}
           onDepartmentChange={setDepartment}
@@ -131,19 +129,19 @@ export function CareersListing({ initialJobs }: CareersListingProps) {
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
-                className="animate-pulse rounded-[28px] border border-white/60 bg-white p-6 shadow-[0_18px_42px_rgba(17,58,83,0.08)] md:p-7"
+                className="animate-pulse rounded-[28px] border border-[#e0ebf3] bg-white px-6 py-5 shadow-[0_16px_34px_rgba(17,58,83,0.08)] md:px-7 md:py-5"
               >
-                <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div className="min-w-0 flex-1">
-                    <div className="h-7 w-28 rounded-full bg-[#dcecf5]" />
-                    <div className="mt-5 h-7 w-3/5 rounded-xl bg-[#dcecf5]" />
-                    <div className="mt-4 h-4 w-full rounded-full bg-[#e6f2f8]" />
-                    <div className="mt-3 h-4 w-5/6 rounded-full bg-[#e6f2f8]" />
+                    <div className="h-6 w-28 rounded-full bg-[#dcecf5]" />
+                    <div className="mt-4 h-7 w-3/5 rounded-xl bg-[#dcecf5]" />
+                    <div className="mt-3 h-4 w-full rounded-full bg-[#e6f2f8]" />
+                    <div className="mt-2.5 h-4 w-5/6 rounded-full bg-[#e6f2f8]" />
                   </div>
-                  <div className="flex flex-col gap-3 lg:w-[240px] lg:items-end">
-                    <div className="h-10 w-36 rounded-full bg-[#e6f2f8]" />
-                    <div className="h-10 w-32 rounded-full bg-[#e6f2f8]" />
-                    <div className="mt-2 h-12 w-40 rounded-2xl bg-[#dcecf5]" />
+                  <div className="flex flex-col gap-3 lg:w-52.5 lg:items-end">
+                    <div className="h-9 w-9 rounded-full bg-[#e6f2f8]" />
+                    <div className="h-4 w-32 rounded-full bg-[#e6f2f8]" />
+                    <div className="h-12 w-40 rounded-2xl bg-[#dcecf5]" />
                   </div>
                 </div>
               </div>

@@ -24,9 +24,9 @@ export default async function CareersPage() {
         className="careers-hero-section"
         actions={
           <div className="careers-hero-actions">
-            <a href="#open-positions" className="button-link">
+            {/* <a href="#open-positions" className="button-link">
               View Open Positions
-            </a>
+            </a> */}
           </div>
         }
       />
@@ -80,23 +80,24 @@ export default async function CareersPage() {
       </section> */}
 
       <section className="careers-jobs-section reveal-on-scroll" id="open-positions">
-        <div className="careers-shell">
-          <ScrollReveal className="careers-section-heading">
+        <div>
+          <ScrollReveal className="careers-header">
             <p className="careers-eyebrow">Open Positions</p>
             <h2>Explore current opportunities across the business.</h2>
-            <p>Search by role title, filter by department, and move into a detailed application flow.</p>
+            <p className="careers-subtitle">Search by role title, filter by department, and move into a detailed application flow.</p>
           </ScrollReveal>
-
+        </div>
+        <div className="careers-shell">
           <CareersListing initialJobs={jobs} />
         </div>
       </section>
 
       <section className="careers-talent-section reveal-on-scroll">
         <div className="careers-shell careers-talent-layout">
-          <ScrollReveal className="careers-talent-copy">
+          <ScrollReveal className="careers-header careers-talent-copy">
             <p className="careers-eyebrow">Talent Pool</p>
             <h2>Share your CV even if the right opening is not live yet.</h2>
-            <p>
+            <p className="careers-subtitle">
               We’re always interested in connecting with professionals who care about pharmaceutical
               quality, manufacturing excellence, and sustainable healthcare growth.
             </p>
@@ -104,6 +105,7 @@ export default async function CareersPage() {
               Open admin tools
             </Link>
           </ScrollReveal>
+
 
           <ScrollReveal className="careers-talent-card" delay={0.1}>
             <TalentPoolForm />

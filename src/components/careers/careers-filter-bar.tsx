@@ -6,8 +6,6 @@ type CareersFilterBarProps = {
   searchTerm: string;
   department: string;
   departments: string[];
-  resultCount: number;
-  isLoading: boolean;
   hasActiveFilters: boolean;
   onSearchChange: (value: string) => void;
   onDepartmentChange: (value: string) => void;
@@ -18,8 +16,6 @@ export function CareersFilterBar({
   searchTerm,
   department,
   departments,
-  resultCount,
-  isLoading,
   hasActiveFilters,
   onSearchChange,
   onDepartmentChange,
@@ -27,7 +23,7 @@ export function CareersFilterBar({
 }: CareersFilterBarProps) {
   return (
     <div className="sticky top-24 z-20">
-      <div className="rounded-[28px] border border-white/60 bg-white/60 p-4 shadow-[0_24px_60px_rgba(16,58,84,0.12)] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/55 md:p-5">
+      <div className="rounded-[28px] border border-white/60 bg-white/60 p-4 shadow-[0_24px_60px_rgba(16,58,84,0.12)] backdrop-blur-2xl supports-backdrop-filter:bg-white/55 md:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
           <label className="group flex-1">
             <span className="mb-2 block text-[0.72rem] font-bold uppercase tracking-[0.18em] text-[#42677f]">
@@ -46,7 +42,7 @@ export function CareersFilterBar({
             </div>
           </label>
 
-          <label className="group lg:w-[270px]">
+          <label className="group lg:w-67.5">
             <span className="mb-2 block text-[0.72rem] font-bold uppercase tracking-[0.18em] text-[#42677f]">
               Department
             </span>
@@ -71,7 +67,7 @@ export function CareersFilterBar({
             type="button"
             onClick={onClear}
             disabled={!hasActiveFilters}
-            className="group relative inline-flex h-14 items-center justify-center gap-2 overflow-hidden rounded-2xl border border-[#d2e4ef] bg-[#edf6fb] px-5 text-[0.76rem] font-bold uppercase tracking-[0.16em] text-[#144564] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#b4d4e8] hover:bg-white hover:shadow-[0_16px_30px_rgba(20,69,100,0.12)] disabled:cursor-not-allowed disabled:opacity-50 lg:min-w-[180px]"
+            className="group relative inline-flex h-14 items-center justify-center gap-2 overflow-hidden rounded-2xl border border-[#d2e4ef] bg-[#edf6fb] px-5 text-[0.76rem] font-bold uppercase tracking-[0.16em] text-[#144564] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#b4d4e8] hover:bg-white hover:shadow-[0_16px_30px_rgba(20,69,100,0.12)] disabled:cursor-not-allowed disabled:opacity-50 lg:min-w-45"
           >
             <span className="absolute inset-0 scale-0 rounded-full bg-[#cae7f7] opacity-0 transition-all duration-500 group-hover:scale-[2.3] group-hover:opacity-35" />
             <X className="relative h-4 w-4" />
@@ -79,12 +75,12 @@ export function CareersFilterBar({
           </button>
         </div>
 
-        <div className="mt-4 flex flex-col gap-2 border-t border-white/60 pt-4 text-sm text-[#456274] sm:flex-row sm:items-center sm:justify-between">
+        {/* <div className="mt-4 flex flex-col gap-2 border-t border-white/60 pt-4 text-sm text-[#456274] sm:flex-row sm:items-center sm:justify-between">
           <p className="font-semibold text-[#2f678f]">
             {isLoading ? "Loading roles..." : `${resultCount} roles currently open`}
           </p>
           <p className="text-[#6a8191]">Explore opportunities across quality, manufacturing, and scientific teams.</p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

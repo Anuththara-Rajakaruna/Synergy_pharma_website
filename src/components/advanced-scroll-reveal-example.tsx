@@ -76,7 +76,7 @@ export function AdvancedScrollRevealExample() {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="py-20 px-6 bg-gradient-to-br from-slate-900 to-slate-800">
+      <section className="py-20 px-6 bg-linear-to-br from-slate-900 to-slate-800">
         <ScrollRevealContainer className="max-w-6xl mx-auto">
           <ScrollRevealItem className="mb-4">
             <p className="text-teal-400 uppercase tracking-widest text-sm font-semibold">
@@ -118,7 +118,7 @@ export function AdvancedScrollRevealExample() {
             {features.map((feature, index) => (
               <ScrollRevealItem key={index}>
                 <div
-                  className={`p-8 bg-gradient-to-br ${feature.color} rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 h-full`}
+                  className={`p-8 bg-linear-to-br ${feature.color} rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 h-full`}
                 >
                   <div className="text-5xl mb-4">{feature.icon}</div>
                   <h3 className="text-xl font-bold text-gray-900 mb-3">
@@ -135,7 +135,7 @@ export function AdvancedScrollRevealExample() {
       </section>
 
       {/* Statistics Section */}
-      <section className="py-20 px-6 bg-gradient-to-r from-blue-50 to-indigo-50">
+      <section className="py-20 px-6 bg-linear-to-r from-blue-50 to-indigo-50">
         <div className="max-w-6xl mx-auto">
           <ScrollRevealContainer
             staggerDelay={0.15}
@@ -203,7 +203,7 @@ export function AdvancedScrollRevealExample() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-6 bg-gradient-to-r from-blue-600 to-indigo-600">
+      <section className="py-20 px-6 bg-linear-to-r from-blue-600 to-indigo-600">
         <div className="max-w-4xl mx-auto text-center">
           <ScrollRevealContainer staggerDelay={0.2}>
             <ScrollRevealItem className="mb-6">

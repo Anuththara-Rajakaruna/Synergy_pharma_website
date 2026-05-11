@@ -64,11 +64,11 @@ export function SiteHeader() {
         </Link>
 
         <nav className="desktop-nav" aria-label="Main navigation">
-          <Link href="/" className="home-icon-link" aria-label="Home page" data-active={isHomeActive ? "true" : "false"}>
+          {/* <Link href="/" className="home-icon-link" aria-label="Home page" data-active={isHomeActive ? "true" : "false"}>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M3.75 10.5 12 4l8.25 6.5v8.25a1.5 1.5 0 0 1-1.5 1.5h-4.5V14.5h-4.5v5.75h-4.5a1.5 1.5 0 0 1-1.5-1.5V10.5Z" />
             </svg>
-          </Link>
+          </Link> */}
           {navItems.map((item) => {
             const active =
               (item.href === "/about" && currentPath === "/about") ||
@@ -126,12 +126,12 @@ export function SiteHeader() {
 
       <div className={`mobile-nav ${isMenuOpen ? "open" : ""}`}>
         <nav aria-label="Mobile navigation">
-          <Link href="/" className="home-icon-link mobile-home-link" onClick={() => setIsMenuOpen(false)}>
+          {/* <Link href="/" className="home-icon-link mobile-home-link" onClick={() => setIsMenuOpen(false)}>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M3.75 10.5 12 4l8.25 6.5v8.25a1.5 1.5 0 0 1-1.5 1.5h-4.5V14.5h-4.5v5.75h-4.5a1.5 1.5 0 0 1-1.5-1.5V10.5Z" />
             </svg>
             <span>Home</span>
-          </Link>
+          </Link> */}
           {navItems.map((item) => (
             <Link
               key={item.label}

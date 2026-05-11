@@ -4,50 +4,49 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/hero";
-import { SiteFooter } from "@/components/site-footer";
 import { ScrollReveal, ScrollRevealContainer, ScrollRevealItem } from "@/components/scroll-reveal";
 
 const facilities = [
   {
     id: 1,
-    title: "Manufacturing Facilities",
-    description: "State-of-the-art production lines meeting WHO-GMP standards with precision automation and quality control systems.",
+    title: "General Oral Solid Dosage",
+    description: "Specialized in the reliable manufacturing of tablets and capsules to global standards.",
     image: "/facilities/manufacturing.jpg",
   },
   {
     id: 2,
-    title: "General OSD Unit",
-    description: "High-capacity oral solid dosage manufacturing with tablet and capsule capabilities for global markets.",
+    title: "General Injectables ",
+    description: "Ensuring precision and sterility in every injectable formulation.",
     image: "/facilities/osd.jpg",
   },
   {
     id: 3,
-    title: "Injectable Facility",
-    description: "Sterile fill-finish operations for small volume parenteral (SVP) and large volume parenteral (LVP) products.",
+    title: "Quality Control Lab",
+    description: "Ensuring product integrity through rigorous testing, high class equipment and quality assurance.",
     image: "/facilities/injectable.jpg",
   },
   {
     id: 4,
-    title: "Oncology Facility",
-    description: "Specialized unit for oncology OSD and injectable formulations with enhanced containment protocols.",
+    title: "Manufacturing Facilities  ",
+    description: "State-of-the-art production lines meeting EU-GMP/ USFDA guidelines with precision, automation, and quality control systems. ",
     image: "/facilities/oncology.jpg",
   },
   {
     id: 5,
-    title: "Hormone Facility",
-    description: "Dedicated manufacturing for hormone-based OSD, injectables, and topical ointment formulations.",
-    image: "/facilities/hormone.jpg",
+    title: "Oncology (OSD & Injectables) ",
+    description: "Dedicated manufacturing for oncology products with the highest levels of containment and care.",
+    image: "/facilities/research-center.jpg",
   },
   {
     id: 6,
     title: "R&D Center",
-    description: "Advanced research laboratories for formulation development, stability studies, and process optimization.",
+    description: "An innovation hub dedicated to developing future-ready pharmaceuticals.",
     image: "/facilities/research.jpg",
   },
   {
     id: 7,
-    title: "Quality Control Lab",
-    description: "Advanced analytical testing center with state-of-the-art instruments for product quality verification, stability testing, and regulatory compliance.",
+    title: "Microbiology Laboratory",
+    description: "Advanced microbiological testing and environmental monitoring facilities ensuring product safety, sterility, and compliance with international quality standards.",
     image: "/facilities/manufacturing.jpg",
   },
 ];
@@ -77,16 +76,22 @@ export default function FacilityPage() {
 
       <Hero
         eyebrow="Manufacturing Excellence"
-        heading="Advanced Pharma Excellence"
-        description="GMP-compliant pharmaceutical manufacturing with advanced technology, rigorous quality systems, and global regulatory compliance."
+        heading="Reliable manufacturing driven by innovation and expertise."
+        description={
+          <>
+            Delivering dependable outcomes through continuous improvement and
+            <br />
+            technical excellence.
+          </>
+        }
         className="facility-hero-section"
       />
 
       <motion.section className="facility-capabilitiesSection" id="facility-intro">
         <div className="facility-capabilitiesContainer">
-          <ScrollReveal className="facility-capabilitiesHeader">
+          <ScrollReveal className="facility-capabilitiesHeader facility-header">
             <motion.p
-              className="facility-capabilitiesEyebrow"
+              className="facility-eyebrow"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.1 }}
@@ -101,10 +106,10 @@ export default function FacilityPage() {
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}
             >
-              Integrated Manufacturing Excellence
+              General OSD
             </motion.h2>
             <motion.p
-              className="facility-capabilitiesSubtitle"
+              className="facility-capabilitiesSubtitle facility-subtitle"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
@@ -119,8 +124,8 @@ export default function FacilityPage() {
           <ScrollRevealContainer staggerDelay={0.12} className="facility-capabilitiesGrid">
             {[
               { 
-                title: "WHO-GMP Certified", 
-                description: "Every facility engineered to exceed WHO-GMP standards",
+                title: "NMRA-GMP Certified", 
+                description: "EU-GMP expected Q4 2026",
                 icon: (
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
@@ -129,8 +134,8 @@ export default function FacilityPage() {
                 )
               },
               { 
-                title: "Comprehensive QA", 
-                description: "Advanced quality assurance systems and controls",
+                title: "Independent QA", 
+                description: "A robust team ensuring our commitment to transparency and world-class quality.",
                 icon: (
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M12 2L2 7l10 5 10-5-10-5z" />
@@ -140,22 +145,22 @@ export default function FacilityPage() {
                 )
               },
               { 
-                title: "Environmental Control", 
-                description: "Precision-engineered climate and contamination control",
-                icon: (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 6v6l4 2" />
-                  </svg>
-                )
-              },
-              { 
-                title: "Research Ready", 
-                description: "Advanced research capabilities and development labs",
+                title: "5 billion Tablets & Capsules", 
+                description: "Our three production lines enable efficient scaling while maintaining flexibility in operations.",
                 icon: (
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M6 9l12-7-7 12-5-5z" />
                     <circle cx="12" cy="12" r="1" />
+                  </svg>
+                )
+              },
+              { 
+                title: "In House R&D", 
+                description: "Our 6 Floor R&D centre fuels innovation from concept to completion.",
+                icon: (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 6v6l4 2" />
                   </svg>
                 )
               },
@@ -196,12 +201,11 @@ export default function FacilityPage() {
 
       <section className="facility-facilitiesSection">
         <div className="facility-facilitiesSectionInner">
-          <ScrollReveal className="facility-facilitiesHeader">
-            <p className="facility-facilitiesHeaderEyebrow">Integrated Operations</p>
-            <h2 className="facility-facilitiesTitle">Our Manufacturing Units</h2>
-            <p className="facility-facilitiesDescription">
-              Integrated pharmaceutical manufacturing facilities designed for precision, compliance, and global
-              scalability.
+          <ScrollReveal className="facility-facilitiesHeader facility-header">
+            <p className="facility-eyebrow">Integrated Operations</p>
+            <h2 className="facility-facilitiesTitle">Manufacturing Facilities </h2>
+            <p className="facility-facilitiesDescription facility-subtitle">
+              State-of-the-art production lines meeting EU-GMP / USFDA guidelines with precision, automation, and quality control systems.
             </p>
           </ScrollReveal>
 
@@ -235,7 +239,7 @@ export default function FacilityPage() {
           viewport={{ once: true, amount: 0.3 }}
         >
           <motion.p
-            className="facility-operationsEyebrow"
+            className="facility-eyebrow"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.1 }}
@@ -425,7 +429,7 @@ export default function FacilityPage() {
           viewport={{ once: true, amount: 0.3 }}
         >
           <motion.p
-            className="facility-operationsEyebrow"
+            className="facility-eyebrow"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.1 }}
@@ -489,7 +493,7 @@ export default function FacilityPage() {
           viewport={{ once: true, amount: 0.3 }}
         >
           <motion.p
-            className="facility-operationsEyebrow"
+            className="facility-eyebrow"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.1 }}
@@ -633,7 +637,7 @@ export default function FacilityPage() {
             viewport={{ once: true, amount: 0.3 }}
           >
             <motion.p
-              className="facility-qualityEyebrow"
+              className="facility-eyebrow"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
@@ -662,7 +666,7 @@ export default function FacilityPage() {
               {[
                 {
                   title: "Strong Quality Management System (QMS)",
-                  description: "End-to-end oversight ensuring every batch meets the Synergy standard of excellence.",
+                  description: "End-to-end oversight ensuring every batch meets the Synergy's standard of excellence.",
                   icon: "shield"
                 },
                 {
@@ -710,9 +714,9 @@ export default function FacilityPage() {
               <div className="facility-certificationsContent">
                 <p className="facility-certificationsLabel">International Certifications</p>
                 <div className="facility-certificationsGrid">
-                  <span className="facility-certification">USFDA</span>
-                  <span className="facility-certification">EU-GMP</span>
-                  <span className="facility-certification">WHO-GMP</span>
+                  <span className="facility-certification">NMRA-GMP</span>
+                  <span className="facility-certification">EU-GMP (Q4 2026)</span>
+                  <span className="facility-certification">WHO-GMP (Q1 2027)</span>
                 </div>
               </div>
             </motion.div>
@@ -720,71 +724,6 @@ export default function FacilityPage() {
         </div>
       </motion.section>
 
-      <motion.section className="facility-futureExpansionSection" {...fadeInUpVariants}>
-        <div className="facility-futureContainer">
-          <motion.div
-            className="future-header"
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true, amount: 0.3 }}
-          >
-            <motion.p
-              className="future-eyebrow"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              viewport={{ once: true }}
-            >
-              Next Horizon
-            </motion.p>
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              viewport={{ once: true }}
-            >
-              Future Expansion
-            </motion.h2>
-            <motion.p
-              className="future-subtitle"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              viewport={{ once: true }}
-            >
-              Expanding into Oncology, Injectables, and Hormonal manufacturing to meet global demand.
-            </motion.p>
-          </motion.div>
-
-          <motion.div
-            className="facility-expansionGrid"
-            initial="initial"
-            whileInView="whileInView"
-            variants={staggerContainerVariants}
-            viewport={{ once: true, amount: 0.2 }}
-          >
-            {[
-              { title: "Oncology", phase: "Phase I" },
-              { title: "Injectables", phase: "Phase II" },
-              { title: "Hormonal", phase: "Phase III" },
-            ].map((expansion, index) => (
-              <motion.div
-                key={index}
-                className="facility-expansionCard"
-                variants={staggerChildVariants}
-                transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
-              >
-                <div className="facility-expansionCardContent">
-                  <h3 className="facility-expansionCardTitle">{expansion.title}</h3>
-                  <p className="facility-expansionCardPhase">{expansion.phase}</p>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </motion.section>
-      
     </main>
   );
 }

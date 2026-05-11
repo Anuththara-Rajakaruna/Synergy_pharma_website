@@ -8,7 +8,6 @@ import { CapabilityCard } from "@/components/capability-card";
 import {
   ChartNoAxesColumn,
   CheckCircle2,
-  FlaskConical,
   Globe2,
   Microscope,
   Settings2,
@@ -72,39 +71,6 @@ const ecosystemCards = [
   },
 ];
 
-const qualityCapabilityCards = [
-  {
-    title: "Chemistry Section",
-    description:
-      "Equipped with HPLC, GC, and MS for precise molecular characterization and stability testing.",
-    label: "Instrumental Excellence",
-    accent: "blue",
-    icon: FlaskConical,
-    image: "/Chemistry.png",
-    imageAlt: "Chemistry instruments and laboratory glassware",
-  },
-  {
-    title: "Microbiology Section",
-    description:
-      "Specialized sterility testing, microbial limits, and environmental monitoring in Class A environments.",
-    label: "Biological Integrity",
-    accent: "teal",
-    icon: Microscope,
-    image: "/Microbiology.png",
-    imageAlt: "Microbiology laboratory environment",
-  },
-  {
-    title: "Digital Quality Systems",
-    description:
-      "Paperless documentation via eDMS, real-time LMS training tracking, and AI-driven automation.",
-    label: "Automated Precision",
-    accent: "teal",
-    icon: ChartNoAxesColumn,
-    image: "/Digital_Quality.png",
-    imageAlt: "Digital quality systems visualization",
-  },
-];
-
 const compliancePrinciples = [
   {
     title: "cGMP",
@@ -130,13 +96,7 @@ export default function QualityPage() {
   const complianceRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    const sections = [
-      showcaseRef,
-      highlightsRef,
-      ecosystemRef,
-      capabilitiesRef,
-      complianceRef,
-    ];
+    const sections = [showcaseRef, highlightsRef, ecosystemRef, capabilitiesRef, complianceRef];
 
     if (sections.every((ref) => !ref.current)) {
       return;
@@ -253,9 +213,12 @@ export default function QualityPage() {
                   <div className="highlightStatIcon">
                     <Icon size={28} strokeWidth={2.2} />
                   </div>
-                  <h3>{item.title}</h3>
-                  <p>{item.subtitle}</p>
-                  <small>{item.detail}</small>
+                  <div className="highlightStatContent">
+                    <h3>{item.title}</h3>
+                    <p>{item.subtitle}</p>
+                    <span className="highlightStatDivider" aria-hidden="true" />
+                    <small>{item.detail}</small>
+                  </div>
                 </ScrollRevealItem>
               );
             })}
@@ -356,53 +319,6 @@ export default function QualityPage() {
           </ScrollRevealContainer>
         </div>
       </section>
-
-      {/* <section ref={capabilitiesRef} className="capabilitiesSection qualityZoomSection">
-        <div className="capabilities-container qualityZoomSurface">
-          <div className="capabilities-header">
-            <p className="capabilities-eyebrow">Laboratory Services</p>
-            <h2>Quality Capability Centers</h2>
-            <p className="capabilities-subtitle">
-              State-of-the-art laboratory facilities supporting comprehensive quality control and analytical testing.
-            </p>
-          </div>
-
-          <div className="capabilitiesGrid">
-            {qualityCapabilityCards.map((card) => {
-              const Icon = card.icon;
-
-              return (
-                <article
-                  key={card.title}
-                  className={`capabilityShowcaseCard accent${card.accent[0].toUpperCase()}${card.accent.slice(1)}`}
-                >
-                  <div className="capabilityShowcaseMedia">
-                    <Image
-                      src={card.image}
-                      alt={card.imageAlt}
-                      width={520}
-                      height={320}
-                      className="capabilityShowcaseImage"
-                    />
-                  </div>
-
-                  <div className="capabilityShowcaseBody">
-                    <div className="capabilityShowcaseHeading">
-                      <div className="capabilityShowcaseIcon">
-                        <Icon size={22} strokeWidth={2.2} />
-                      </div>
-                      <h3>{card.title}</h3>
-                    </div>
-
-                    <p>{card.description}</p>
-                    <small>{card.label}</small>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        </div>
-      </section> */}
 
       <section ref={complianceRef} className="complianceFrameworkSection qualityZoomSection">
         <div className="compliance-container qualityZoomSurface">

@@ -77,7 +77,7 @@ export function SiteFooter() {
           </address>
         </div>
 
-        <div className="footer-col">
+        {/* <div className="footer-col">
           <h3>Rank Entertainment</h3>
           <address>
             No. 9, 15th Lane
@@ -88,14 +88,14 @@ export function SiteFooter() {
             <br />
             Sri Lanka
           </address>
-        </div>
+        </div> */}
 
         <div className="footer-col">
           <h3>New Business Inquiries</h3>
           <p>
-            <a href="tel:+94114786786">+ 94 11 4786786</a>
+            {/* <a href="tel:+94114786786">+ 94 11 4786786</a> */}
             <br />
-            <a href="mailto:info@rank.lk">info@rank.lk</a>
+            <a href="mailto:info@synergypharma.lk">info@synergypharma.lk</a>
           </p>
           <div className="footer-social" aria-label="Social media links">
             {socialLinks.map((socialLink) => (

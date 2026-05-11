@@ -87,7 +87,7 @@ export function CardList() {
     <ScrollRevealContainer staggerDelay={0.15}>
       {items.map((item, index) => (
         <ScrollRevealItem key={index}>
-          <div className="p-6 bg-gradient-to-r from-teal-100 to-cyan-100 rounded-lg mb-4">
+          <div className="p-6 bg-linear-to-r from-teal-100 to-cyan-100 rounded-lg mb-4">
             {item.title}
           </div>
         </ScrollRevealItem>
