@@ -96,11 +96,11 @@ export default function AboutPage() {
 
       <section className="ecosystem-section reveal-on-scroll" id="about-businesses">
         <div className="ecosystem-container">
-          <ScrollReveal className="ecosystem-header">
-            <p className="ecosystem-eyebrow">Our Connected Businesses</p>
-            <h2>Connected businesses shaping the <span className="highlight">Synergy</span> story.</h2>
-            <p className="ecosystem-subtitle">
-              A diversified portfolio of healthcare and pharmaceutical operations driving innovation and accessibility across the region.
+          <ScrollReveal className="corporation-header">
+            <p className="corporation-eyebrow">Our Connected Businesses</p>
+            <h2>Connected businesses shaping the Synergy story.</h2>
+            <p className="corporation-subtitle">
+              "A diversified portfolio of healthcare and pharmaceutical operations driving innovation and accessibility across the region."
             </p>
           </ScrollReveal>
 
@@ -113,11 +113,7 @@ export default function AboutPage() {
                   className={`ecosystem-card reveal-on-scroll ${isFeatured ? "featured" : "secondary"}`.trim()}
                   key={card.title}
                   style={isFeatured ? {
-                    backgroundImage: `linear-gradient(135deg, rgba(5, 31, 66, 0.86) 0%, rgba(13, 58, 102, 0.82) 100%), url(${card.image})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center center",
-                    backgroundRepeat: "no-repeat",
-                    backgroundBlendMode: "overlay",
+                    backgroundImage: `linear-gradient(135deg, rgba(5, 31, 66, 0.86) 0%, rgba(13, 58, 102, 0.82) 100%)`,
                   } : undefined}
                 >
                   {isFeatured ? (

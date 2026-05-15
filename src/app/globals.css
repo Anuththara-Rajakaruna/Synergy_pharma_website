@@ -1180,8 +1180,9 @@ button:active {
 }
 
 .manufacture-showcase {
-  width: 100%;
-  max-width: 100%;
+  width: min(100%, 90rem);
+  margin-left: auto;
+  margin-right: auto;
   min-width: 0;
   display: grid;
   grid-template-columns: minmax(320px, 0.95fr) minmax(320px, 1fr);
@@ -3365,6 +3366,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   min-height: 100vh;
   padding-top: 5.0rem;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+  background: var(--bg-light);
 }
 
 
@@ -3391,7 +3393,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 .facility-capabilitiesContainer {
   position: relative;
   z-index: 1;
-  width: 100%;
+  width: min(100%, 90rem);
   margin: 0 auto;
   padding: 0 clamp(1.5rem, 5vw, 3rem);
 }
@@ -3563,7 +3565,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 }
 
 .facility-facilitiesSectionInner {
-  width: 100%;
+  width: min(100%, 120rem);
   margin: 0 auto;
   position: relative;
   z-index: 1;
@@ -3602,7 +3604,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 .facility-facilitiesGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: minmax(300px, 1fr);
+  grid-auto-rows: clamp(280px, 22vw, 420px);
   gap: clamp(1.2rem, 2vw, 20px);
   margin-top: var(--space-4xl);
   width: 100%;
@@ -4198,6 +4200,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   padding-top: 5.0rem;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
   overflow-x: hidden;
+  background: var(--bg-light);
 }
 
 
@@ -4349,6 +4352,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 .corporation-header h2 {
   margin-bottom: 35px;
 }
+
 
 /* Future Expansion italic title */
 .future-header h2 {
@@ -4632,8 +4636,8 @@ html[data-theme="dark"] .manufacturing-process-step {
   grid-template-columns: 1fr 1fr;
   gap: clamp(4rem, 10vw, 8rem);
   align-items: center;
-  width: 100%;
-  max-width: 100%;
+  width: min(100%, 90rem);
+  max-width: 90rem;
   margin: 0 auto;
   padding: 0 clamp(1.5rem, 5vw, 3rem);
 }
@@ -4850,7 +4854,8 @@ html[data-theme="dark"] .manufacturing-process-step {
 }
 
 .facility-futureContainer {
-  max-width: 100%;
+  width: min(100%, 90rem);
+  max-width: 90rem;
   padding: clamp(1.5rem, 5vw, 3rem);
   margin: 0 auto;
 }
@@ -5360,14 +5365,14 @@ html[data-theme="dark"] .manufacturing-process-step {
 }
 
 .quality-section {
-  padding: 100px 0;
+  padding: clamp(4rem, 10vw, 6.25rem) 0;
   width: 100%;
 }
 
 .quality-grid {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
-  gap: 60px;
+  gap: clamp(2rem, 6vw, 3.75rem);
   align-items: start;
 }
 
@@ -5380,7 +5385,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 }
 
 .quality-left h2 {
-  font-size: 52px;
+  font-size: clamp(2rem, 5vw, 3.25rem);
   font-weight: 700;
   margin-bottom: 25px;
 }
@@ -5504,10 +5509,13 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .highlight-container {
   display: grid;
-  grid-template-columns: minmax(280px, 520px) minmax(0, 1fr);
-  gap: clamp(3rem, 8vw, 6rem);
+  grid-template-columns: minmax(280px, 520px) minmax(360px, 560px);
+  gap: clamp(2rem, 6vw, 5rem);
   align-items: center;
   justify-content: center;
+  width: min(100%, 72rem);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .highlight-header {
@@ -5632,7 +5640,8 @@ html[data-theme="dark"] .manufacturing-process-step {
 .btn-secondary { background: rgba(5, 95, 124, 0.12); color: var(--primary); border: 1.5px solid var(--primary); }
 .btn-secondary:hover { background: rgba(5, 95, 124, 0.18); transform: translateY(-2px); }
 
-@media (max-width: 900px) {  .product-section-surface {
+@media (max-width: 900px) {
+  .product-section-surface {
     width: 100%;
     padding-inline: 1rem;
     transform: none;
@@ -5642,6 +5651,11 @@ html[data-theme="dark"] .manufacturing-process-step {
     min-height: auto;
     padding-top: 4rem;
     padding-bottom: 4.5rem;
+  }
+
+  .highlight-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
   }
 
   .highlight-layout {
@@ -5659,6 +5673,14 @@ html[data-theme="dark"] .manufacturing-process-step {
     gap: 1.5rem;
   }
 
+  .quality-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quality-section {
+    padding: 3rem 1rem;
+  }
+
   .portfolio-header {
     flex-direction: column;
     align-items: flex-start;
@@ -5666,6 +5688,25 @@ html[data-theme="dark"] .manufacturing-process-step {
 
   .portfolio-cta {
     align-self: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .capabilities-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .portfolio-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+
+  .future-card {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .highlight-container {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -5709,6 +5750,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   padding-top: clamp(3.5rem, 5vw, 5rem);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
   overflow-x: hidden;
+  background: var(--bg-light);
 }
 
 
@@ -5864,8 +5906,10 @@ html[data-theme="dark"] .manufacturing-process-step {
   grid-template-columns: minmax(280px, 520px) minmax(0, 1fr);
   gap: clamp(3rem, 8vw, 6rem);
   align-items: center;
-    justify-content: center;
-
+  justify-content: center;
+  width: min(100%, 80rem);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 @media (max-width: 1024px) {
@@ -6054,6 +6098,9 @@ html[data-theme="dark"] .manufacturing-process-step {
   gap: 1rem;
   align-items: stretch;
   justify-items: center;
+  width: min(100%, 80rem);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 @media (max-width: 1184px) {
@@ -6265,6 +6312,9 @@ html[data-theme="dark"] .manufacturing-process-step {
 .ecosystemContainer {
   display: grid;
   gap: clamp(2rem, 4vw, 3rem);
+  width: min(100%, 90rem);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .ecosystem-header {
@@ -6327,6 +6377,9 @@ html[data-theme="dark"] .manufacturing-process-step {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 2rem;
+  width: min(100%, 72rem);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 @media (max-width: 768px) {
@@ -6738,6 +6791,13 @@ html[data-theme="dark"] .manufacturing-process-step {
   color: #6fe54f;
 }
 
+.compliance-container {
+  width: min(100%, 90rem);
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 clamp(1rem, 3vw, 2.5rem);
+}
+
 .compliance-header {
   text-align: center;
 }
@@ -6783,6 +6843,9 @@ html[data-theme="dark"] .manufacturing-process-step {
   grid-template-columns: minmax(0, 1fr) minmax(340px, 0.92fr);
   gap: clamp(2rem, 5vw, 4rem);
   align-items: center;
+  width: min(100%, 72rem);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 @media (max-width: 768px) {
@@ -7204,9 +7267,7 @@ html[data-theme="dark"] .gradient-decorator {
 .careers-page,
 .career-detail-page,
 .careers-admin-page {
-  background:
-    radial-gradient(circle at top left, rgba(123, 207, 238, 0.18), transparent 28%),
-    linear-gradient(180deg, #eef5fa 0%, #e7f1f6 100%);
+  background: var(--bg-light);
 }
 
 .careers-shell {
