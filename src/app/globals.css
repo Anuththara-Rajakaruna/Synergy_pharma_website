@@ -4328,15 +4328,9 @@ html[data-theme="dark"] .manufacturing-process-step {
   margin-bottom: 1.5rem;
 }
 
-.ecosystem-header h2 {
-  font-size: clamp(3rem, 4vw, 4.4rem);
-  max-width: 12ch;
-  margin-left: auto;
-  margin-right: auto;
-}
 
 .ecosystem-header .highlight {
-  color: #0f8470;
+  color: #1a1a1a;
 }
 
 .ecosystem-subtitle {
@@ -4988,44 +4982,34 @@ html[data-theme="dark"] .manufacturing-process-step {
 }
 
 .ecosystem-eyebrow {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1rem;
-  color: #0f8470;
-  letter-spacing: 0.36em;
+  margin: 0 0 0.8rem;
+  color: #1075bd;
   font-size: 0.8rem;
   font-weight: 700;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
-  gap: 0.75rem;
-}
-
-.ecosystem-eyebrow::before,
-.ecosystem-eyebrow::after {
-  content: "•";
-  color: #0f8470;
-  opacity: 0.8;
 }
 
 .ecosystem-header h2 {
-  margin: 0 auto 1rem;
-  font-size: clamp(3rem, 4vw, 4.4rem);
-  line-height: 1.02;
-  max-width: 12ch;
-  font-weight: 800;
+  margin: 0;
+  color: #1a1a1a;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin-bottom: 1.5rem;
 }
 
 .ecosystem-header .highlight {
-  color: #0f8470;
+  color: #1a1a1a;
 }
 
 .ecosystem-subtitle {
-  margin: 0 auto;
+  margin-top: 1.2rem;
   max-width: 48rem;
   color: #4b5c72;
   font-size: 1.03rem;
-  line-height: 1.9;
+  line-height: 1.85;
 }
 
 /* PRODUCTS PAGE - HIGHLIGHT SECTION */
@@ -7848,4 +7832,9 @@ html[data-theme="dark"] .gradient-decorator {
     flex-direction: column;
     align-items: stretch;
   }
+}
+
+/* Generic text pattern - highlight specific words with color */
+.text-highlight {
+  color: var(--color-accent, #16a085);
 }
