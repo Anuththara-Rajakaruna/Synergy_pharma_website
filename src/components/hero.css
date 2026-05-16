@@ -119,6 +119,15 @@
   color: rgba(255, 255, 255, 0.75);
   text-align: center;
 }
+
+/* ========================================
+   FACILITY HERO - 2-LINE HEADING OVERRIDE
+   ======================================== */
+
+.facility-hero-section .hero-content {
+  max-width: 1200px;
+}
+
 /* ========================================
    COMPACT VARIANT
    ======================================== */

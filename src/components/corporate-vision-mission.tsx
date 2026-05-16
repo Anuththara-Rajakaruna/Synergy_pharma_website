@@ -59,10 +59,14 @@ export function CorporateVisionMission({ className = "" }: CorporateVisionMissio
                   return (
                     <ScrollRevealItem key={value.title}>
                       <article className="corporate-value-pill">
-                        <span className="corporate-value-icon">
-                          <Icon size={18} strokeWidth={2.1} />
-                        </span>
-                        <span>{value.title}</span>
+                        <div className="corporate-value-icon-wrap">
+                          <div className="corporate-value-blob-1" />
+                          <div className="corporate-value-blob-2" />
+                          <div className="corporate-value-glass">
+                            <Icon size={18} strokeWidth={1.8} />
+                          </div>
+                        </div>
+                        <span className="corporate-value-label">{value.title}</span>
                       </article>
                     </ScrollRevealItem>
                   );
