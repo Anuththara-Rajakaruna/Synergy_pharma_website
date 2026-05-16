@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/hero";
 import { ScrollReveal } from "@/components/scroll-reveal";
-import { CorporateVisionMission } from "@/components/corporate-vision-mission";
+import { RankHoldings } from "@/components/rank-holdings";
 
 export default function Home() {
   const corporationRef = useRef<HTMLElement | null>(null);
@@ -176,7 +176,7 @@ Sri Lankan NMRA-GMP<br />EU-GMP (Q4 2026)                </p>
       </section>
 
       <section ref={missionRef} className="mission-section reveal-on-scroll mission-animate" id="quality">
-        <CorporateVisionMission />
+        <RankHoldings />
       </section>
 
     </main>
