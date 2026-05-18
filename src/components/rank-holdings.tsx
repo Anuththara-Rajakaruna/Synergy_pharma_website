@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Pill,
@@ -81,12 +81,39 @@ const industries = [
 
 export function RankHoldings() {
   const [activeId, setActiveId] = useState("pharmaceutical");
+  const [isPaused, setIsPaused] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const active = industries.find((i) => i.id === activeId)!;
   const activeIndex = industries.findIndex((i) => i.id === activeId);
 
+  const advance = useCallback(() => {
+    setActiveId(prev => {
+      const idx = industries.findIndex(i => i.id === prev);
+      return industries[(idx + 1) % industries.length].id;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isPaused) return;
+    timerRef.current = setInterval(advance, 3000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [isPaused, advance]);
+
+  const handleManualSelect = (id: string) => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setActiveId(id);
+    if (!isPaused) {
+      timerRef.current = setInterval(advance, 3000);
+    }
+  };
+
   return (
-    <section className="rh-section">
+    <section
+      className="rh-section"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       {/* Background orbs */}
       <div className="rh-orb rh-orb--tr" />
       <div className="rh-orb rh-orb--bl" />
@@ -130,7 +157,7 @@ export function RankHoldings() {
                 <motion.button
                   key={industry.id}
                   className={`rh-item${isActive ? " rh-item--active" : ""}`}
-                  onClick={() => setActiveId(industry.id)}
+                  onClick={() => handleManualSelect(industry.id)}
                   initial={{ opacity: 0, x: -16 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.4, delay: 0.08 * i }}
@@ -197,7 +224,7 @@ export function RankHoldings() {
                 <button
                   key={ind.id}
                   className={`rh-dot${activeId === ind.id ? " rh-dot--active" : ""}`}
-                  onClick={() => setActiveId(ind.id)}
+                  onClick={() => handleManualSelect(ind.id)}
                   aria-label={ind.label}
                 />
               ))}

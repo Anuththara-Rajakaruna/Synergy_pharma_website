@@ -175,7 +175,7 @@ Sri Lankan NMRA-GMP<br />EU-GMP (Q4 2026)                </p>
         </div>
       </section>
 
-      <section ref={missionRef} className="mission-section reveal-on-scroll mission-animate" id="quality">
+      <section ref={missionRef} className="rh-wrapper reveal-on-scroll" id="quality">
         <RankHoldings />
       </section>
 
