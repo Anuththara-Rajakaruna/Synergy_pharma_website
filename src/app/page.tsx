@@ -120,8 +120,15 @@ export default function Home() {
       <SiteHeader />
 
       <Hero
-        eyebrow="Driven by Collaboration. Focused on Care."
-        heading={<>Creating meaningful impact<br />through integrated<br />healthcare solutions.</>}
+        eyebrow="Synergy Pharmaceutical"
+        heading={
+          <>
+            <span className="hero-heading-line">
+              Driven by Collaboration.
+            </span>
+            <span className="hero-heading-line">Focused on Care.</span>
+          </>
+        }
         description="Delivering high-quality, affordable medicines manufactured in Sri Lanka for the global healthcare economy."
         className="home-hero"
       />

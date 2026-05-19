@@ -1,11 +1,13 @@
 ﻿"use client";
 
+import { motion } from "framer-motion";
 import { ScrollReveal, ScrollRevealContainer, ScrollRevealItem } from "@/components/scroll-reveal";
 
 import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/hero";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { CorporateVisionMission } from "@/components/corporate-vision-mission";
+import { Building2, Pill, BarChart3, Microscope, Globe } from "lucide-react";
 
 const leaders = [
   { role: "Chairman", name: "Mr.Ravi Wijeratne" },
@@ -20,41 +22,31 @@ const aboutCards = [
     title: "Mother Company Rank Holdings",
     description:
       "The parent group that provides strategic direction, long-term investment confidence, and diversified business strength across the Synergy ecosystem.",
-    cta: "Explore the group",
-    icon: "🏢",
-    color: "#39b68c",
+    icon: Building2,
   },
   {
     title: "Synergy Pharmaceuticals",
     description:
       "Our pharmaceutical arm focused on high-quality manufacturing, trusted compliance, and scalable healthcare solutions for regional markets.",
-    cta: "Learn more",
-    icon: "💊",
-    color: "#1e9f78",
+    icon: Pill,
   },
   {
     title: "Our Business",
     description:
       "A connected healthcare business model spanning manufacturing, diagnostics, and enterprise support to create dependable long-term value.",
-    cta: "Learn more",
-    icon: "📊",
-    color: "#6d4cff",
+    icon: BarChart3,
   },
   {
     title: "Synergy Diagnostics",
     description:
       "A diagnostics-focused extension of the group, supporting faster insights, stronger care pathways, and a broader healthcare footprint.",
-    cta: "Learn more",
-    icon: "🔬",
-    color: "#1366dc",
+    icon: Microscope,
   },
   {
     title: "Global Operations",
     description:
       "Strategic supply chain and logistics network ensuring reliable delivery of healthcare solutions across regional and international markets.",
-    cta: "Learn more",
-    icon: "🌍",
-    color: "#ff7f1f",
+    icon: Globe,
   },
 ];
 
@@ -107,40 +99,51 @@ export default function AboutPage() {
           <ScrollRevealContainer staggerDelay={0.1} className="ecosystem-cards-grid">
             {aboutCards.map((card, index) => {
               const isFeatured = index === 0;
+              const Icon = card.icon;
 
               return (
                 <ScrollRevealItem
                   className={`ecosystem-card reveal-on-scroll ${isFeatured ? "featured" : "secondary"}`.trim()}
                   key={card.title}
-                  style={isFeatured ? {
-                    backgroundImage: `linear-gradient(135deg, rgba(5, 31, 66, 0.86) 0%, rgba(13, 58, 102, 0.82) 100%)`,
-                  } : undefined}
                 >
                   {isFeatured ? (
                     <div className="ecosystem-card-featured-body">
-                      <span className="ecosystem-card-featured-icon" style={{ background: `${card.color}22`, color: card.color }}>
-                        {card.icon}
-                      </span>
+                      <motion.span
+                        className="ecosystem-card-featured-icon"
+                        animate={{ rotateY: 360 }}
+                        transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                      >
+                        <motion.span
+                          className="ecosystem-card-icon-animated"
+                          animate={{ y: [0, -8, 0] }}
+                          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                          <Icon size={28} strokeWidth={2.5} aria-hidden="true" />
+                        </motion.span>
+                      </motion.span>
                       <h3>{card.title}</h3>
                       <p>{card.description}</p>
-                      <span className="ecosystem-card-featured-cta">
-                        {card.cta}
-                        <span aria-hidden="true">→</span>
-                      </span>
                     </div>
                   ) : (
                     <>
-                      <span className="ecosystem-card-icon" style={{ background: `${card.color}18`, color: card.color }}>
-                        {card.icon}
-                      </span>
+                      <motion.span
+                        className="ecosystem-card-icon"
+                        animate={{ rotateY: 360 }}
+                        transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                      >
+                        <motion.span
+                          className="ecosystem-card-icon-animated"
+                          animate={{ y: [0, -8, 0] }}
+                          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                          <Icon size={24} strokeWidth={2.5} aria-hidden="true" />
+                        </motion.span>
+                      </motion.span>
                       <h3>{card.title}</h3>
                       <p>{card.description}</p>
-                      <span className="ecosystem-card-cta" style={{ color: card.color }}>
-                        {card.cta}
-                        <span aria-hidden="true">→</span>
-                      </span>
                     </>
                   )}
+                  <div className="ecosystem-card-accent" />
                 </ScrollRevealItem>
               );
             })}

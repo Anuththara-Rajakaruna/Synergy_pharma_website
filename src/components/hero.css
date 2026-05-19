@@ -19,35 +19,113 @@
   overflow: hidden;
   width: 100%;
   color: white;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   background-color: #0a1f33;
+  isolation: isolate;
+  --hero-image: url("/banner3.png");
+  --hero-overlay: linear-gradient(115deg, rgba(2, 18, 32, 0.82) 0%, rgba(2, 45, 69, 0.5) 44%, rgba(166, 221, 230, 0.18) 100%);
+  --hero-bg-scale: 1;
+  /*
+    Pan values are UNITLESS so calc() can multiply by 1vw / 1vh below.
+    They mirror .hero-background-layer's xPercent (6) and yPercent (30)
+    GSAP keyframes, so the heading's image stays locked to the layer.
+  */
+  --hero-bg-pan-x: 0;
+  --hero-bg-pan-y: 0;
+  /*
+    Alpha for the dark tint layer inside the cutout text.
+    Starts opaque enough to keep the letters legible at scale 1
+    (where banner3's pale backdrop dominates), and is driven to 0
+    by GSAP at scroll end so at maximum zoom the cutout becomes
+    a fully transparent window onto the image.
+  */
+  --hero-tint-alpha: 0.45;
 }
 
 /* Background Images - Set directly on containers */
 .hero {
-  background-image: linear-gradient(rgba(1, 27, 49, 0.48), rgba(3, 43, 78, 0.48)), url("/banner3.png");
+  --hero-image: url("/banner3.png");
 }
 
 .home-hero {
-  background-image: linear-gradient(rgba(1, 27, 49, 0.48), rgba(3, 43, 78, 0.48)), url("/banner3.png");
+  --hero-image: url("/banner3.png");
+  --hero-overlay: linear-gradient(125deg, rgba(2, 15, 28, 0.68) 0%, rgba(2, 45, 69, 0.42) 42%, rgba(187, 231, 232, 0.12) 100%);
 }
 
 .about-hero-section {
-  background-image: linear-gradient(rgba(1, 27, 49, 0.48), rgba(3, 43, 78, 0.48)), url("/company.png");
+  --hero-image: url("/company.png");
 }
 
 .facility-hero-section {
-  background-image: linear-gradient(rgba(1, 27, 49, 0.48), rgba(3, 43, 78, 0.48)), url("/facilities/manufacturing.jpg");
+  --hero-image: url("/facilities/manufacturing.jpg");
 }
 
 .quality-hero {
-  background-image: linear-gradient(rgba(1, 27, 49, 0.48), rgba(3, 43, 78, 0.48)), url("/Quality_Hero.png");
+  --hero-image: url("/Quality_Hero.png");
 }
 
 .product-hero {
-  background-image: linear-gradient(rgba(1, 27, 49, 0.48), rgba(3, 43, 78, 0.48)), url("/lab.jpeg");
+  --hero-image: url("/lab.jpeg");
+}
+
+.hero-background-layer,
+.hero-foreground-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transform: translateZ(0);
+  /*
+    Origin tuned to `12.5% center` — the 1/8-width, 1/2-height anchor.
+    At any scale > 1 the layer's left edge resolves negative
+    (12.5vw·(1 − S)), so the section's #0a1f33 never bleeds through.
+    The zoomed composition leans hard into the LEFT portion of
+    banner3.png (the salad / drink cluster) at scroll end.
+    At scroll start (scale = 1) the layer sits exactly on the viewport.
+  */
+  transform-origin: 12.5% center;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.hero-background-layer {
+  z-index: 0;
+  background-image: var(--hero-image);
+  /*
+    banner3.png is 1536 × 1024 (aspect 1.5:1).
+    `max(100vw, 150vh)` picks the larger of viewport width or
+    1.5× viewport height — whichever side of the image is the
+    coverage-limiting one. This guarantees the image always covers
+    the section vertically, even when the viewport is more square
+    than 1.5:1 (which left a dark band at the top before).
+  */
+  background-size: max(100vw, 150vh) auto;
+  background-position: left center;
+  background-repeat: no-repeat;
+  filter: saturate(1.02) contrast(1.12);
+}
+
+.hero-background-layer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 34%, rgba(208, 244, 244, 0.24), transparent 28%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.05), rgba(0, 12, 22, 0.56));
+  mix-blend-mode: screen;
+  opacity: 0.34;
+}
+
+.hero-foreground-layer {
+  z-index: 1;
+  background:
+    radial-gradient(circle at 52% 45%, rgba(255, 255, 255, 0.06), transparent 24%),
+    var(--hero-overlay);
+}
+
+.home-hero .hero-foreground-layer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(1, 9, 18, 0.08) 0%, rgba(1, 12, 22, 0.56) 100%);
 }
 
 /* ========================================
@@ -61,8 +139,8 @@
 .quality-hero-content,
 .product-hero-content {
   position: relative;
-  z-index: 1;
-  max-width: 900px;
+  z-index: 3;
+  max-width: 1100px;
   padding: clamp(3rem, 8vw, 12rem) var(--space-lg) clamp(2rem, 5vw, 4rem);
   text-align: center;
   width: 100%;
@@ -87,9 +165,124 @@
   font-size: clamp(2.5rem, 4vw, 4.2rem); /* slightly bigger */
   line-height: 1.15;
   font-weight: 700; /* less heavy = modern look */
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   color: #ffffff;
   text-align: center;
+}
+
+.home-hero .hero-cutout-heading {
+  position: relative;
+  display: grid;
+  justify-items: center;
+
+  /*
+    FULL-BLEED — the heading element spans the full 100vw of the hero,
+    breaking out of its centered .hero-content parent via negative inline
+    margins. This is essential: it puts the heading in the SAME coordinate
+    space as .hero-background-layer (which is also 100vw), so the background
+    image inside the letters lines up perfectly with the image behind the
+    hero at every point in the scroll animation.
+
+    Visual text content stays centered inside the 100vw element via
+    `justify-items: center` on this grid container.
+  */
+  width: 100vw;
+  max-width: 100vw;
+  margin-inline: calc(50% - 50vw);
+
+  font-size: clamp(3.4rem, 7.1vw, 7.4rem);
+  line-height: 0.94;
+  font-weight: 850;
+  letter-spacing: 0;
+  text-wrap: balance;
+  color: transparent;
+
+  /*
+    Background sized + positioned to track .hero-background-layer at
+    EVERY point in the scroll (not just t=0 and t=1).
+
+    The layer's image ends up at viewport coords:
+        image_left   = originₓ·(1 − scale) + scale·panₓ·1vw
+        image_centerᵧ = 50vh + scale·panᵧ·1vh
+
+    where originₓ = 12.5vw  (transform-origin: 12.5% center on the layer).
+    The constant `12.5vw` below MUST stay in sync with that origin — if you
+    change the layer's transform-origin you have to change this too, or
+    the image-in-text will drift away from the image-in-layer.
+
+    background-attachment: scroll because the heading has transform and
+    filter below, both of which break `fixed` attachment.
+  */
+  /*
+    TWO STACKED BACKGROUNDS inside the cutout:
+      1. A translucent dark gradient (top layer) — keeps the letters
+         readably tinted when the underlying image region is a light /
+         near-white area of banner3.png. Without this, certain zoom
+         points landed on banner3's pale backdrop and the text read as
+         solid white, losing the transparent-window effect.
+      2. The hero image itself (bottom layer) — tracked to the
+         .hero-background-layer transform as before.
+  */
+  background-image:
+    linear-gradient(
+      135deg,
+      rgba(2, 18, 32, var(--hero-tint-alpha)) 0%,
+      rgba(4, 38, 60, calc(var(--hero-tint-alpha) * 0.71)) 55%,
+      rgba(8, 60, 86, calc(var(--hero-tint-alpha) * 0.49)) 100%
+    ),
+    var(--hero-image);
+  /*
+    Image layer mirrors the .hero-background-layer's
+    max(100vw, 150vh) coverage formula, scaled by --hero-bg-scale,
+    so the image-in-text stays size-locked to the image-in-layer
+    at every viewport aspect (not just 1.5:1 or wider).
+  */
+  background-size:
+    100% 100%,
+    max(calc(100vw * var(--hero-bg-scale)), calc(150vh * var(--hero-bg-scale))) auto;
+  background-position:
+    0 0,
+    calc(12.5vw * (1 - var(--hero-bg-scale)) + var(--hero-bg-scale) * var(--hero-bg-pan-x) * 1vw)
+    calc(50% + var(--hero-bg-scale) * var(--hero-bg-pan-y) * 1vh);
+  background-repeat: no-repeat, no-repeat;
+  background-attachment: scroll, scroll;
+
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: clamp(0.5px, 0.08vw, 1.2px) rgba(236, 250, 252, 0.42);
+
+  mix-blend-mode: normal;
+
+  /*
+    Brightness pulled back from 1.22 → 1.0 and the cyan drop-shadow
+    removed: both were pushing the lightest pixels of the image cutout
+    toward pure white, which is what made the letters look like solid
+    white text at certain zoom frames.
+  */
+  filter: drop-shadow(0 22px 48px rgba(0, 9, 20, 0.5));
+  transform: translateZ(0);
+  will-change: filter;
+}
+
+.home-hero .hero-heading-line {
+  display: block;
+  white-space: nowrap;
+}
+
+.home-hero .hero-cutout-heading::before {
+  content: "";
+  position: absolute;
+  inset: -0.08em -0.04em;
+  z-index: -1;
+  background: rgba(220, 247, 249, 0.08);
+  filter: blur(18px);
+  opacity: 0.78;
+  pointer-events: none;
+}
+
+.home-hero .hero-cutout-heading::selection {
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.92);
 }
 
 .hero p,
@@ -105,6 +298,12 @@
   line-height: 1.7;
   text-align: center;
   font-style: italic !important;
+}
+
+.home-hero .hero-eyebrow,
+.home-hero .hero-content > p:last-of-type {
+  color: rgba(239, 249, 251, 0.82);
+  text-shadow: 0 1px 24px rgba(0, 12, 24, 0.32);
 }
 
 .hero .eyebrow,
@@ -199,6 +398,16 @@
     margin: 0.75rem auto 1rem;
   }
 
+  .home-hero .hero-cutout-heading {
+    max-width: 100vw;
+    /*
+      Tightened from 8.4vw → 5.4vw so the nowrapped
+      "Driven by Collaboration." line fits inside the viewport
+      between ~640px and 900px wide (was overflowing the right edge).
+    */
+    font-size: clamp(2rem, 5.4vw, 4.4rem);
+  }
+
   .hero p,
   .home-hero p,
   .about-hero-content p,
@@ -251,6 +460,29 @@
     font-size: clamp(1.4rem, 3.5vw, 2.2rem);
     margin: 0.5rem auto 0.75rem;
     line-height: 1.2;
+  }
+
+  .home-hero .hero-cutout-heading {
+    /*
+      Reduced upper bound so "Driven by Collaboration." (the longer of
+      the two nowrap lines) still fits at 640px → 480px. Was clamped
+      to 3.9rem (62.4px) which overflowed.
+    */
+    font-size: clamp(1.6rem, 6.8vw, 2.7rem);
+    line-height: 1;
+    /*
+      Two-layer sizing to match the desktop rule:
+        1. dark tint gradient → full cover
+        2. hero image → height-driven to keep aspect on portrait phones
+    */
+    background-size:
+      100% 100%,
+      auto calc(100vh * var(--hero-bg-scale));
+    background-attachment: scroll, scroll;
+  }
+
+  .hero-background-layer {
+    background-size: auto 100vh;
   }
 
   .hero p,
@@ -340,6 +572,11 @@
     line-height: 1.2;
   }
 
+  .home-hero .hero-cutout-heading {
+    font-size: clamp(1.4rem, 6.4vw, 2.3rem);
+    line-height: 1.02;
+  }
+
   .hero p,
   .home-hero p,
   .about-hero-content p,
@@ -383,5 +620,13 @@
     opacity: 0.6;
     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25),
                 0 0 20px rgba(180, 245, 255, 0.3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-background-layer,
+  .hero-foreground-layer {
+    transform: none !important;
+    will-change: auto;
   }
 }
