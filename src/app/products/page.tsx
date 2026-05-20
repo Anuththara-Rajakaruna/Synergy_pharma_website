@@ -2,11 +2,13 @@
 
 import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/hero";
+import { ProductBackground } from "@/components/product-background";
 import { ScrollReveal, ScrollRevealContainer, ScrollRevealItem } from "@/components/scroll-reveal";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import { CapabilityCard } from "@/components/capability-card";
 import { useEffect, useRef } from "react";
-import { FlaskConical, Pill, Microscope, ArrowRight } from "lucide-react";
+import { FlaskConical, Pill, Microscope, ArrowRight, ShieldCheck, Package } from "lucide-react";
 
 export default function ProductsPage() {
   const highlightRef = useRef<HTMLElement | null>(null);
@@ -75,6 +77,7 @@ export default function ProductsPage() {
 
   return (
     <main className="product-page">
+      <ProductBackground />
       <SiteHeader />
 
       <Hero
@@ -83,8 +86,6 @@ export default function ProductsPage() {
         description="We deliver a portfolio of APIs and finished-dose medicines built to global standards, with stringent GMP compliance and heir-to-market supply reliability."
         className="product-hero"
       />
-
-      <br></br>
 
       <section ref={highlightRef} className="product-highlight product-highlight-zoom">
         <div className="highlight-container">
@@ -142,11 +143,21 @@ export default function ProductsPage() {
             <ScrollRevealContainer staggerDelay={0.1} className="capabilities-grid">
               <ScrollRevealItem>
                 <div className="capability-card">
-                  <div className="capability-icon">
-                    <FlaskConical size={24} />
-                  </div>
-                  <h3>R&amp;D Laboratory</h3>
-                  <p>
+                  <motion.div
+                    className="facility-capabilityIcon"
+                    animate={{ rotateY: 360 }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                  >
+                    <motion.div
+                      className="facility-capabilityAnimatedIcon"
+                      animate={{ y: [0, -8, 0] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <FlaskConical size={40} strokeWidth={2} />
+                    </motion.div>
+                  </motion.div>
+                  <h3 className="facility-capabilityCardTitle">R&amp;D Laboratory</h3>
+                  <p className="facility-capabilityCardDescription">
                     Advancing pharmaceutical innovation through formulation research, process
                     development, and product optimization.
                   </p>
@@ -154,11 +165,21 @@ export default function ProductsPage() {
               </ScrollRevealItem>
               <ScrollRevealItem>
                 <div className="capability-card">
-                  <div className="capability-icon">
-                    <Pill size={24} />
-                  </div>
-                  <h3>Oral Solid Dosage Forms</h3>
-                  <p>
+                  <motion.div
+                    className="facility-capabilityIcon"
+                    animate={{ rotateY: 360 }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                  >
+                    <motion.div
+                      className="facility-capabilityAnimatedIcon"
+                      animate={{ y: [0, -8, 0] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <Pill size={40} strokeWidth={2} />
+                    </motion.div>
+                  </motion.div>
+                  <h3 className="facility-capabilityCardTitle">Oral Solid Dosage Forms</h3>
+                  <p className="facility-capabilityCardDescription">
                     Specialized in tablet and capsule manufacturing under controlled pharmaceutical
                     processing systems.
                   </p>
@@ -171,11 +192,21 @@ export default function ProductsPage() {
               </ScrollRevealItem>
               <ScrollRevealItem>
                 <div className="capability-card">
-                  <div className="capability-icon">
-                    <Microscope size={24} />
-                  </div>
-                  <h3>Bio-Equivalent Engineering</h3>
-                  <p>
+                  <motion.div
+                    className="facility-capabilityIcon"
+                    animate={{ rotateY: 360 }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                  >
+                    <motion.div
+                      className="facility-capabilityAnimatedIcon"
+                      animate={{ y: [0, -8, 0] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <Microscope size={40} strokeWidth={2} />
+                    </motion.div>
+                  </motion.div>
+                  <h3 className="facility-capabilityCardTitle">Bio-Equivalent Engineering</h3>
+                  <p className="facility-capabilityCardDescription">
                     Supporting therapeutic consistency through formulation precision and validated
                     pharmaceutical technologies.
                   </p>
@@ -271,16 +302,16 @@ export default function ProductsPage() {
                 <div className="quality-left">
                   <div className="quality-details">
                     <div>
-                      <h4>Stability Studies</h4>
-                      <p>
+                      <h4 className="facility-capabilityCardTitle">Stability Studies</h4>
+                      <p className="facility-capabilityCardDescription">
                         Conducted in ICH-compliant chambers for real-time and accelerated shelf-life
                         verification.
                       </p>
                     </div>
 
                     <div>
-                      <h4>In-Process QC</h4>
-                      <p>
+                      <h4 className="facility-capabilityCardTitle">In-Process QC</h4>
+                      <p className="facility-capabilityCardDescription">
                         Multi-stage testing including content uniformity, dissolution rates, and
                         microbial limits.
                       </p>
@@ -292,18 +323,30 @@ export default function ProductsPage() {
               <ScrollRevealItem>
                 <div className="quality-right">
                   <div className="quality-card">
-                    <div className="icon-box">🛡️</div>
+                    <div className="corporate-value-icon-wrap">
+                      <div className="corporate-value-blob-1" />
+                      <div className="corporate-value-blob-2" />
+                      <div className="corporate-value-glass">
+                        <ShieldCheck size={22} strokeWidth={1.8} />
+                      </div>
+                    </div>
                     <div>
                       <small>CERTIFICATION</small>
-                      <h3>FDA & GMP Standard Compliance</h3>
+                      <h3 className="facility-capabilityCardTitle">FDA & GMP Standard Compliance</h3>
                     </div>
                   </div>
 
                   <div className="quality-card">
-                    <div className="icon-box">📦</div>
+                    <div className="corporate-value-icon-wrap">
+                      <div className="corporate-value-blob-1" />
+                      <div className="corporate-value-blob-2" />
+                      <div className="corporate-value-glass">
+                        <Package size={22} strokeWidth={1.8} />
+                      </div>
+                    </div>
                     <div>
                       <small>SUPPLY CHAIN</small>
-                      <h3>Secured Cold-Chain Logistics</h3>
+                      <h3 className="facility-capabilityCardTitle">Secured Cold-Chain Logistics</h3>
                     </div>
                   </div>
                 </div>
