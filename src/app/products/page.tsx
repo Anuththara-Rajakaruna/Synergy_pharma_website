@@ -2,7 +2,6 @@
 
 import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/hero";
-import { ProductBackground } from "@/components/product-background";
 import { ScrollReveal, ScrollRevealContainer, ScrollRevealItem } from "@/components/scroll-reveal";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -77,7 +76,6 @@ export default function ProductsPage() {
 
   return (
     <main className="product-page">
-      <ProductBackground />
       <SiteHeader />
 
       <Hero
@@ -91,29 +89,28 @@ export default function ProductsPage() {
         <div className="highlight-container">
           <ScrollReveal>
             <div className="showcaseContent">
-              <p className="highlight-eyebrow">Product Overview</p>
+              <p className="eyebrow">Product Overview</p>
               <h2>Reliable Pharmaceutical Products for Safer Global Care</h2>
               <p className="highlight-subtitle">
                 Leveraging advanced chemical engineering and rigorous stability protocols to deliver
                 clinical excellence to healthcare providers worldwide.
               </p>
+              <p className="facility-label">CERTIFIED OPERATIONS</p>
             </div>
           </ScrollReveal>
 
           <ScrollReveal delay={0.2}>
             <div className="highlight-layout">
               <div className="highlight-image-card">
-                <div className="highlight-wave-background" aria-hidden="true" />
                 <div className="highlight-image-frame">
                   <Image
-                    src="/facility_1.png"
+                    src="/Product_Overview.jpg"
                     alt="Certified pharmaceutical facility"
                     width={400}
                     height={500}
                     className="facility-image"
                   />
                 </div>
-                <p className="facility-label">CERTIFIED OPERATIONS</p>
               </div>
 
               <div className="highlight-content">
@@ -132,7 +129,7 @@ export default function ProductsPage() {
           <div className="overview-container">
             <ScrollReveal>
               <div className="capabilities-header">
-                <p className="capabilities-eyebrow">Manufacturing Capabilities</p>
+                <p className="eyebrow">Manufacturing Capabilities</p>
                 <h2>Capabilities & Formulations</h2>
                 <p className="capabilities-subtitle">
                   Our manufacturing platform supports precision pharmaceutical production designed for stability, efficacy, and patient compliance.
@@ -222,7 +219,7 @@ export default function ProductsPage() {
           <div className="portfolio-container">
             <ScrollReveal>
               <div className="portfolio-header">
-                <p className="portfolio-eyebrow">Product Lineup</p>
+                <p className="eyebrow">Product Lineup</p>
                 <h2>Current Portfolio</h2>
                 <p className="portfolio-subtitle">Commercialized pharmaceutical solutions across key therapeutic areas.</p>
               </div>
@@ -287,7 +284,7 @@ export default function ProductsPage() {
           <div className="quality-container">
             <ScrollReveal>
               <div className="quality-header">
-                <p className="quality-eyebrow">Quality Assurance</p>
+                <p className="eyebrow">Quality Assurance</p>
                 <h2>Our Quality Commitment</h2>
                 <p className="quality-subtitle">
                   Every batch undergoes rigorous stability studies under varying climatic zones to
@@ -361,7 +358,7 @@ export default function ProductsPage() {
           <div className="future-container">
             <ScrollReveal>
               <div className="future-header">
-                <p className="future-eyebrow">Strategic Growth</p>
+                <p className="eyebrow">Strategic Growth</p>
                 <h2>Future Horizons</h2>
                 <p className="future-subtitle">
                   Expanding our therapeutic footprint with advanced biological and oncology solutions.

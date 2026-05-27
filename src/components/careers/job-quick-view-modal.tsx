@@ -55,10 +55,12 @@ export function JobQuickViewModal({ job, onClose }: JobQuickViewModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/80 bg-white/85 text-[#295a79] transition-all duration-300 hover:rotate-90 hover:border-[#abd5ea] hover:text-[#1075bd]"
+              className="career-icon-frame absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/80 bg-white/85 text-[#295a79] transition-all duration-300 hover:border-[#abd5ea] hover:text-[#1075bd]"
               aria-label="Close quick view"
             >
-              <X className="h-5 w-5" />
+              <span className="career-icon-glyph">
+                <X className="h-5 w-5" />
+              </span>
             </button>
 
             <div className="p-6 md:p-8">

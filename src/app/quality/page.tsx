@@ -162,11 +162,10 @@ export default function QualityPage() {
       <section ref={showcaseRef} className="showcaseSection qualityZoomSection">
         <div className="showcaseContainer qualityZoomSurface">
           <div className="showcaseVisual">
-            <div className="showcaseWaveBackground" aria-hidden="true" />
             <div className="showcaseRadialGradient" />
             <div className="showcaseImageFrame">
               <Image
-                src="/quality-doctor.png"
+                src="/Quality_Philosophy.jpg"
                 alt="Quality specialist in a pharmaceutical setting"
                 width={520}
                 height={640}

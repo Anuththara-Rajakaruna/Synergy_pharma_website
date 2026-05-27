@@ -4325,18 +4325,15 @@ html[data-theme="dark"] .manufacturing-process-step {
 .mission-eyebrow,
 .leadership-eyebrow,
 .ecosystem-eyebrow,
-.highlight-eyebrow,
 .overview-eyebrow,
-.portfolio-eyebrow,
-.quality-eyebrow,
-.future-eyebrow,
 .showcase-eyebrow,
 .highlights-eyebrow,
-.ecosystem-eyebrow,
-.capabilities-eyebrow,
+.quality-eyebrow,
 .compliance-eyebrow,
 .careers-eyebrow,
-.facility-eyebrow {
+.facility-eyebrow,
+.product-page .eyebrow,
+.qualityPage .eyebrow {
   margin: 0;
   color: #1075bd;
   font-size: 0.8rem;
@@ -4444,7 +4441,21 @@ html[data-theme="dark"] .manufacturing-process-step {
 /* HOME PAGE - CORPORATION SECTION */
 .corporation-section {
   padding: 0 1.5rem 4rem 1.5rem;
+  position: relative;
   overflow: hidden;
+  background: rgba(237, 246, 255, 0.84);
+}
+
+.corporation-section::before,
+.rh-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(16, 117, 189, 0.16), transparent 16%),
+    radial-gradient(circle at 82% 18%, rgba(47, 123, 188, 0.10), transparent 18%),
+    radial-gradient(circle at 50% 84%, rgba(16, 117, 189, 0.08), transparent 24%);
+  pointer-events: none;
 }
 
 .corporation-content {
@@ -4476,8 +4487,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 
 .corporate-values-section {
   position: relative;
-  padding: 0 0 clamp(4.5rem, 8vw, 8rem) 0;
-  
+  padding: clamp(3rem, 5vw, 5rem) 0 clamp(4.5rem, 8vw, 8rem) 0;
   overflow: hidden;
 }
 
@@ -4718,7 +4728,7 @@ html[data-theme="dark"] .manufacturing-process-step {
 }
 
 .corporate-values-about {
-  padding-top: 0;
+  padding-top: clamp(2rem, 4vw, 3.5rem);
 }
 
 /* FACILITY PAGE - QUALITY & COMPLIANCE SECTION */
@@ -4901,7 +4911,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   }
 
   .corporate-values-section {
-    padding: 4.25rem 0;
+    padding: 3rem 0 4.25rem 0;
   }
 
   .corporate-values-grid {
@@ -5706,12 +5716,23 @@ html[data-theme="dark"] .manufacturing-process-step {
   object-fit: cover;
 }
 
+
 .facility-label {
-  margin: 1rem 0 0;
-  text-align: center;
-  font-size: 0.85rem;
+  display: inline-block;
+  margin-top: 1.5rem;
+  white-space: nowrap;
+  padding: 0.45rem 1.2rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  box-shadow:
+    0 6px 24px rgba(5, 95, 124, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--primary-dark);
 }
@@ -5732,14 +5753,6 @@ html[data-theme="dark"] .manufacturing-process-step {
   color: #556b7b;
 }
 
-.highlight-eyebrow {
-  margin: 0 0 0.75rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.125rem;
-  text-transform: uppercase;
-  color: #1075bd;
-}
 
 .highlight-subtitle {
   margin: 0 0 2rem;
@@ -5870,7 +5883,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   }
 }
 
-.product-overview p {
+.product-overview p:not(.eyebrow) {
   color: var(--text-muted);
   max-width: 820px;
 }
@@ -7483,6 +7496,82 @@ html[data-theme="dark"] .gradient-decorator {
   position: relative;
 }
 
+.facility-capabilitiesSection,
+.facility-facilitiesSection,
+.facility-qualityComplianceSection,
+.product-highlight,
+.product-overview,
+.current-portfolio,
+.quality-section,
+.future-horizons,
+.showcaseSection,
+.highlightsSection,
+.ecosystemSection,
+.laboratoryServicesSection,
+.complianceFrameworkSection,
+.careers-culture-section,
+.careers-benefits-section,
+.careers-jobs-section,
+.careers-talent-section,
+.career-detail-content,
+.careers-admin-section {
+  background: rgba(237, 246, 255, 0.84);
+  overflow: hidden;
+}
+
+.facility-capabilitiesSection::before,
+.facility-facilitiesSection::before,
+.facility-qualityComplianceSection::before,
+.product-highlight::before,
+.product-overview::before,
+.current-portfolio::before,
+.quality-section::before,
+.future-horizons::before,
+.showcaseSection::before,
+.highlightsSection::before,
+.ecosystemSection::before,
+.laboratoryServicesSection::before,
+.complianceFrameworkSection::before,
+.careers-culture-section::before,
+.careers-benefits-section::before,
+.careers-jobs-section::before,
+.careers-talent-section::before,
+.career-detail-content::before,
+.careers-admin-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(16, 117, 189, 0.16), transparent 16%),
+    radial-gradient(circle at 82% 18%, rgba(47, 123, 188, 0.10), transparent 18%),
+    radial-gradient(circle at 50% 84%, rgba(16, 117, 189, 0.08), transparent 24%);
+}
+
+.facility-capabilitiesSection > *,
+.facility-facilitiesSection > *,
+.facility-qualityComplianceSection > *,
+.product-highlight > *,
+.product-overview > *,
+.current-portfolio > *,
+.quality-section > *,
+.future-horizons > *,
+.showcaseSection > *,
+.highlightsSection > *,
+.ecosystemSection > *,
+.laboratoryServicesSection > *,
+.complianceFrameworkSection > *,
+.careers-culture-section > *,
+.careers-benefits-section > *,
+.careers-jobs-section > *,
+.careers-talent-section > *,
+.career-detail-content > *,
+.careers-admin-section > * {
+  position: relative;
+  z-index: 1;
+}
+
 .careers-section-heading {
   text-align: center;
   max-width: 48rem;
@@ -7593,6 +7682,59 @@ html[data-theme="dark"] .gradient-decorator {
 .careers-field {
   display: grid;
   gap: 0.5rem;
+}
+
+.career-icon-frame {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: transparent;
+  border-radius: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  perspective: 1000px;
+  border: none;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.career-icon-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  display: none;
+  pointer-events: none;
+}
+
+.career-icon-frame-inline {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0;
+}
+
+.career-filter-icon {
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+}
+
+.career-icon-glyph {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+  font-weight: 800;
+}
+
+.career-icon-glyph svg {
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
+  color: currentColor;
+  filter: drop-shadow(0 2px 8px rgba(16, 117, 189, 0.12));
 }
 
 .careers-field span {
@@ -8062,7 +8204,7 @@ html[data-theme="dark"] .gradient-decorator {
 
 .rh-section {
   padding: clamp(5rem, 10vw, 9rem) 0;
-  background: #ffffff;
+  background: rgba(237, 246, 255, 0.84);
   position: relative;
   overflow: hidden;
 }

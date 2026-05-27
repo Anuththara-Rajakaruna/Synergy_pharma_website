@@ -30,7 +30,11 @@ export function CareersFilterBar({
               Search by title
             </span>
             <div className="relative">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#5f89a4] transition-colors group-focus-within:text-[#1075bd]" />
+              <span className="career-icon-frame career-filter-icon pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#5f89a4] transition-colors group-focus-within:text-[#1075bd]">
+                <span className="career-icon-glyph">
+                  <Search className="h-4 w-4" />
+                </span>
+              </span>
               <input
                 type="search"
                 name="search"
@@ -47,7 +51,11 @@ export function CareersFilterBar({
               Department
             </span>
             <div className="relative">
-              <SlidersHorizontal className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#5f89a4] transition-colors group-focus-within:text-[#1075bd]" />
+              <span className="career-icon-frame career-filter-icon pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#5f89a4] transition-colors group-focus-within:text-[#1075bd]">
+                <span className="career-icon-glyph">
+                  <SlidersHorizontal className="h-4 w-4" />
+                </span>
+              </span>
               <select
                 value={department}
                 onChange={(event) => onDepartmentChange(event.target.value)}
@@ -70,7 +78,11 @@ export function CareersFilterBar({
             className="group relative inline-flex h-14 items-center justify-center gap-2 overflow-hidden rounded-2xl border border-[#d2e4ef] bg-[#edf6fb] px-5 text-[0.76rem] font-bold uppercase tracking-[0.16em] text-[#144564] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#b4d4e8] hover:bg-white hover:shadow-[0_16px_30px_rgba(20,69,100,0.12)] disabled:cursor-not-allowed disabled:opacity-50 lg:min-w-45"
           >
             <span className="absolute inset-0 scale-0 rounded-full bg-[#cae7f7] opacity-0 transition-all duration-500 group-hover:scale-[2.3] group-hover:opacity-35" />
-            <X className="relative h-4 w-4" />
+            <span className="career-icon-frame career-icon-frame-inline relative">
+              <span className="career-icon-glyph">
+                <X className="h-4 w-4" />
+              </span>
+            </span>
             <span className="relative">Clear Filters</span>
           </button>
         </div>
