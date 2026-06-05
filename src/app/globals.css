@@ -4489,6 +4489,7 @@ html[data-theme="dark"] .manufacturing-process-step {
   position: relative;
   padding: clamp(3rem, 5vw, 5rem) 0 clamp(4.5rem, 8vw, 8rem) 0;
   overflow: hidden;
+  background: rgba(237, 246, 255, 0.84);
 }
 
 .corporate-values-section::before,
@@ -4507,12 +4508,22 @@ html[data-theme="dark"] .manufacturing-process-step {
   top: 8%;
   left: -8%;
   background: rgba(132, 211, 240, 0.18);
+  inset: 0;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  filter: none;
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(16, 117, 189, 0.16), transparent 16%),
+    radial-gradient(circle at 82% 18%, rgba(47, 123, 188, 0.10), transparent 18%),
+    radial-gradient(circle at 50% 84%, rgba(16, 117, 189, 0.08), transparent 24%);
 }
 
 .corporate-values-section::after {
   right: -6%;
   bottom: 10%;
-  background: rgba(164, 197, 235, 0.18);
+  background: transparent;
+  display: none;
 }
 
 .corporate-values-shell {
@@ -5035,10 +5046,24 @@ html[data-theme="dark"] .manufacturing-process-step {
   padding: 100px 1.5rem 8rem 1.5rem;
   position: relative;
   overflow: hidden;
+  background: rgba(237, 246, 255, 0.84);
+}
+
+.leadership-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(16, 117, 189, 0.16), transparent 16%),
+    radial-gradient(circle at 82% 18%, rgba(47, 123, 188, 0.10), transparent 18%),
+    radial-gradient(circle at 50% 84%, rgba(16, 117, 189, 0.08), transparent 24%);
+  pointer-events: none;
 }
 
 .leadership-section .leadership-container {
   padding-top: 0;
+  position: relative;
+  z-index: 1;
 }
 
 /* ABOUT PAGE - ECOSYSTEM SECTION */
