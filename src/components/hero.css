@@ -122,7 +122,6 @@
     calc(var(--hero-transform-origin-x-ratio) * 100%)
     calc(var(--hero-transform-origin-y-ratio) * 100%);
   will-change: transform, opacity;
-  backface-visibility: hidden;
 }
 
 .hero-background-layer {
@@ -139,7 +138,6 @@
   background-size: var(--hero-base-image-width) var(--hero-base-image-height);
   background-position: var(--hero-base-image-left) var(--hero-base-image-top);
   background-repeat: no-repeat;
-  filter: saturate(1.02) contrast(1.12);
 }
 
 .hero-background-layer::after {
@@ -408,14 +406,6 @@
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.75);
   text-align: center;
-}
-
-/* ========================================
-   FACILITY HERO - 2-LINE HEADING OVERRIDE
-   ======================================== */
-
-.facility-hero-section .hero-content {
-  max-width: 1200px;
 }
 
 /* ========================================

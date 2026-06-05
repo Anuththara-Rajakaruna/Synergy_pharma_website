@@ -104,10 +104,10 @@ export default function ProductsPage() {
               <div className="highlight-image-card">
                 <div className="highlight-image-frame">
                   <Image
-                    src="/Product_Overview.jpg"
+                    src="/Overview.png"
                     alt="Certified pharmaceutical facility"
                     width={400}
-                    height={500}
+                    height={400}
                     className="facility-image"
                   />
                 </div>
@@ -275,9 +275,6 @@ export default function ProductsPage() {
           </div>
         </div>
       </section>
-
-      <br></br>
-      <br></br>
 
       <section ref={qualityRef} className="quality-section product-section-zoom">
         <div className="product-section-surface">
