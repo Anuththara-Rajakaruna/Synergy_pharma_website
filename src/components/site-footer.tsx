@@ -114,6 +114,7 @@ export function SiteFooter() {
         <div className="footer-bottom">
           <span>© {currentYear} Synergy Pharmaceutical Corporation Pvt. Ltd.</span>
           <span className="footer-bottom-muted">All rights reserved.</span>
+          <a href="/privacy" className="footer-bottom-link">Privacy Notice</a>
         </div>
       </div>
     </footer>

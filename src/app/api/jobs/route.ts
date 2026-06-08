@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createJob, getJobs } from "@/lib/careers";
+import { createJob, getJobs, getActiveJobs } from "@/lib/careers";
 import { Job } from "@/types/careers";
 
 function normalizeTextArray(value: unknown) {
@@ -14,6 +14,9 @@ function normalizeTextArray(value: unknown) {
 }
 
 function validateJobPayload(payload: Partial<Job>) {
+  const salary = String(payload.salary ?? "").trim();
+  const closingDate = String(payload.closingDate ?? "").trim();
+  const preferredRequirements = normalizeTextArray(payload.preferredRequirements);
   const job: Job = {
     id: String(payload.id ?? "").trim(),
     title: String(payload.title ?? "").trim(),
@@ -23,6 +26,9 @@ function validateJobPayload(payload: Partial<Job>) {
     description: String(payload.description ?? "").trim(),
     responsibilities: normalizeTextArray(payload.responsibilities),
     requirements: normalizeTextArray(payload.requirements),
+    ...(preferredRequirements.length > 0 ? { preferredRequirements } : {}),
+    ...(salary ? { salary } : {}),
+    ...(closingDate ? { closingDate } : {}),
   };
 
   if (
@@ -40,19 +46,30 @@ function validateJobPayload(payload: Partial<Job>) {
   return { job };
 }
 
-export async function GET() {
-  const jobs = await getJobs();
-  return NextResponse.json(jobs);
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    // Admin can pass ?all=true to see expired jobs too
+    const all = searchParams.get("all") === "true";
+    const jobs = all ? await getJobs() : await getActiveJobs();
+    return NextResponse.json(jobs);
+  } catch {
+    return NextResponse.json({ error: "Failed to load jobs." }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
-  const payload = (await request.json()) as Partial<Job>;
-  const result = validateJobPayload(payload);
+  try {
+    const payload = (await request.json()) as Partial<Job>;
+    const result = validateJobPayload(payload);
 
-  if ("error" in result) {
-    return NextResponse.json({ error: result.error }, { status: 400 });
+    if ("error" in result) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
+    }
+
+    const createdJob = await createJob(result.job);
+    return NextResponse.json(createdJob, { status: 201 });
+  } catch {
+    return NextResponse.json({ error: "Failed to create job." }, { status: 500 });
   }
-
-  const createdJob = await createJob(result.job);
-  return NextResponse.json(createdJob, { status: 201 });
 }

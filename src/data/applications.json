@@ -1,5 +1,46 @@
 [
   {
+    "id": "application-1780374465833-myg6qv",
+    "name": "Tilina",
+    "email": "wdev091@gmail.com",
+    "phone": "012312312",
+    "position": "Regulatory Affairs Intern",
+    "jobId": "regulatory-intern",
+    "coverLetter": "",
+    "cvFileName": "1780374465821-test1.pdf",
+    "cvFilePath": "/api/cvs/cvs/1780374465821-test1.pdf",
+    "createdAt": "2026-06-02T04:27:45.833Z",
+    "status": "pending"
+  },
+  {
+    "id": "application-1780372529186-v2bu3g",
+    "name": "Sandarekha",
+    "email": "sandarekhagunasiri@gmail.com",
+    "phone": "0703600532",
+    "position": "Quality Assurance Specialist",
+    "jobId": "qa-specialist",
+    "coverLetter": "",
+    "cvFileName": "1780372529149-test1.pdf",
+    "cvFilePath": "/api/cvs/cvs/1780372529149-test1.pdf",
+    "createdAt": "2026-06-02T03:55:29.186Z",
+    "status": "offer",
+    "notes": "demo"
+  },
+  {
+    "id": "application-1780371605822-pg074f",
+    "name": "Dilki",
+    "email": "sandarekhagunasiri@gmail.com",
+    "phone": "0703600532",
+    "position": "Regulatory Affairs Intern",
+    "jobId": "regulatory-intern",
+    "coverLetter": "",
+    "cvFileName": "1780371605733-test1.pdf",
+    "cvFilePath": "/api/cvs/cvs/1780371605733-test1.pdf",
+    "createdAt": "2026-06-02T03:40:05.822Z",
+    "status": "reviewed",
+    "notes": "demo"
+  },
+  {
     "id": "application-1778074701145-urewsl",
     "name": "Tisala",
     "email": "sandarekha.gunasiri@synergypharma.lk",
@@ -9,7 +50,8 @@
     "coverLetter": "",
     "cvFileName": "1778074701138-test1.pdf",
     "cvFilePath": "/uploads/cvs/1778074701138-test1.pdf",
-    "createdAt": "2026-05-06T13:38:21.145Z"
+    "createdAt": "2026-05-06T13:38:21.145Z",
+    "status": "reviewed"
   },
   {
     "id": "application-1778073863841-64emi0",
@@ -21,6 +63,7 @@
     "coverLetter": "",
     "cvFileName": "1778073863827-test1.pdf",
     "cvFilePath": "/uploads/cvs/1778073863827-test1.pdf",
-    "createdAt": "2026-05-06T13:24:23.841Z"
+    "createdAt": "2026-05-06T13:24:23.841Z",
+    "status": "shortlisted"
   }
 ]

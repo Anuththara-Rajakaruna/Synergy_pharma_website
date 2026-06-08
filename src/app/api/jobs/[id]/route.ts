@@ -14,6 +14,9 @@ function normalizeTextArray(value: unknown) {
 }
 
 function validateJobPayload(id: string, payload: Partial<Job>) {
+  const salary = String(payload.salary ?? "").trim();
+  const closingDate = String(payload.closingDate ?? "").trim();
+  const preferredRequirements = normalizeTextArray(payload.preferredRequirements);
   const job: Job = {
     id,
     title: String(payload.title ?? "").trim(),
@@ -23,6 +26,9 @@ function validateJobPayload(id: string, payload: Partial<Job>) {
     description: String(payload.description ?? "").trim(),
     responsibilities: normalizeTextArray(payload.responsibilities),
     requirements: normalizeTextArray(payload.requirements),
+    ...(preferredRequirements.length > 0 ? { preferredRequirements } : {}),
+    ...(salary ? { salary } : {}),
+    ...(closingDate ? { closingDate } : {}),
   };
 
   if (
@@ -40,41 +46,53 @@ function validateJobPayload(id: string, payload: Partial<Job>) {
 }
 
 export async function GET(_: Request, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params;
-  const job = await getJobById(id);
+  try {
+    const { id } = await context.params;
+    const job = await getJobById(id);
 
-  if (!job) {
-    return NextResponse.json({ error: "Job not found." }, { status: 404 });
+    if (!job) {
+      return NextResponse.json({ error: "Job not found." }, { status: 404 });
+    }
+
+    return NextResponse.json(job);
+  } catch {
+    return NextResponse.json({ error: "Failed to load job." }, { status: 500 });
   }
-
-  return NextResponse.json(job);
 }
 
 export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params;
-  const payload = (await request.json()) as Partial<Job>;
-  const result = validateJobPayload(id, payload);
+  try {
+    const { id } = await context.params;
+    const payload = (await request.json()) as Partial<Job>;
+    const result = validateJobPayload(id, payload);
 
-  if ("error" in result) {
-    return NextResponse.json({ error: result.error }, { status: 400 });
+    if ("error" in result) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
+    }
+
+    const updatedJob = await updateJob(id, result.job);
+
+    if (!updatedJob) {
+      return NextResponse.json({ error: "Job not found." }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedJob);
+  } catch {
+    return NextResponse.json({ error: "Failed to update job." }, { status: 500 });
   }
-
-  const updatedJob = await updateJob(id, result.job);
-
-  if (!updatedJob) {
-    return NextResponse.json({ error: "Job not found." }, { status: 404 });
-  }
-
-  return NextResponse.json(updatedJob);
 }
 
 export async function DELETE(_: Request, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params;
-  const removed = await deleteJob(id);
+  try {
+    const { id } = await context.params;
+    const removed = await deleteJob(id);
 
-  if (!removed) {
-    return NextResponse.json({ error: "Job not found." }, { status: 404 });
+    if (!removed) {
+      return NextResponse.json({ error: "Job not found." }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json({ error: "Failed to delete job." }, { status: 500 });
   }
-
-  return NextResponse.json({ success: true });
 }
