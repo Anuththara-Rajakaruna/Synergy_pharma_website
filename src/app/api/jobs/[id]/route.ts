@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 import { deleteJob, getJobById, updateJob } from "@/lib/careers";
-import { Job } from "@/types/careers";
+import { Job, JobStatus } from "@/types/careers";
 
 function normalizeTextArray(value: unknown) {
   if (Array.isArray(value)) {
     return value.map((item) => String(item).trim()).filter(Boolean);
   }
-
   return String(value ?? "")
     .split("\n")
     .map((item) => item.trim())
@@ -14,12 +13,19 @@ function normalizeTextArray(value: unknown) {
 }
 
 function validateJobPayload(id: string, payload: Partial<Job>) {
+  const statusInput = String(payload.status ?? "published");
+  const validStatuses: JobStatus[] = ["draft", "published", "closed"];
+  const status: JobStatus = validStatuses.includes(statusInput as JobStatus)
+    ? (statusInput as JobStatus)
+    : "published";
+
   const job: Job = {
     id,
     title: String(payload.title ?? "").trim(),
     department: String(payload.department ?? "").trim(),
     location: String(payload.location ?? "").trim(),
     type: payload.type === "Internship" ? "Internship" : "Full-time",
+    status,
     description: String(payload.description ?? "").trim(),
     responsibilities: normalizeTextArray(payload.responsibilities),
     requirements: normalizeTextArray(payload.requirements),
@@ -42,11 +48,7 @@ function validateJobPayload(id: string, payload: Partial<Job>) {
 export async function GET(_: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
   const job = await getJobById(id);
-
-  if (!job) {
-    return NextResponse.json({ error: "Job not found." }, { status: 404 });
-  }
-
+  if (!job) return NextResponse.json({ error: "Job not found." }, { status: 404 });
   return NextResponse.json(job);
 }
 
@@ -54,27 +56,15 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   const { id } = await context.params;
   const payload = (await request.json()) as Partial<Job>;
   const result = validateJobPayload(id, payload);
-
-  if ("error" in result) {
-    return NextResponse.json({ error: result.error }, { status: 400 });
-  }
-
+  if ("error" in result) return NextResponse.json({ error: result.error }, { status: 400 });
   const updatedJob = await updateJob(id, result.job);
-
-  if (!updatedJob) {
-    return NextResponse.json({ error: "Job not found." }, { status: 404 });
-  }
-
+  if (!updatedJob) return NextResponse.json({ error: "Job not found." }, { status: 404 });
   return NextResponse.json(updatedJob);
 }
 
 export async function DELETE(_: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
   const removed = await deleteJob(id);
-
-  if (!removed) {
-    return NextResponse.json({ error: "Job not found." }, { status: 404 });
-  }
-
+  if (!removed) return NextResponse.json({ error: "Job not found." }, { status: 404 });
   return NextResponse.json({ success: true });
 }
