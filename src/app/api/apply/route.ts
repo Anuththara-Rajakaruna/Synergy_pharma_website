@@ -1,39 +1,47 @@
 import { NextResponse } from "next/server";
 import { createApplicationRecord, getJobById } from "@/lib/careers";
 
-function isPdf(file: File | null) {
-  if (!file) {
-    return false;
-  }
-
-  return file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
-}
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_REGEX = /^\+?[\d\s\-().]{7,20}$/;
 
 export async function POST(request: Request) {
   const formData = await request.formData();
-  const name = String(formData.get("name") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim();
-  const phone = String(formData.get("phone") ?? "").trim();
-  const position = String(formData.get("position") ?? "").trim();
+  const name = String(formData.get("name") ?? "").trim().slice(0, 120);
+  const email = String(formData.get("email") ?? "").trim().slice(0, 254);
+  const phone = String(formData.get("phone") ?? "").trim().slice(0, 20);
+  const position = String(formData.get("position") ?? "").trim().slice(0, 200);
   const jobId = String(formData.get("jobId") ?? "").trim();
-  const coverLetter = String(formData.get("coverLetter") ?? "").trim();
+  const coverLetter = String(formData.get("coverLetter") ?? "").trim().slice(0, 3000);
+  const consentGiven = formData.get("consentGiven") === "true";
   const cv = formData.get("cv");
 
   if (!name || !email || !phone || !position || !jobId || !(cv instanceof File) || cv.size === 0) {
     return NextResponse.json({ error: "Please complete every required application field." }, { status: 400 });
   }
 
-  if (!isPdf(cv)) {
-    return NextResponse.json({ error: "CV uploads must be provided as PDF files." }, { status: 400 });
+  if (!EMAIL_REGEX.test(email)) {
+    return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
+  }
+
+  if (!PHONE_REGEX.test(phone)) {
+    return NextResponse.json({ error: "Please enter a valid phone number." }, { status: 400 });
+  }
+
+  if (!consentGiven) {
+    return NextResponse.json({ error: "You must consent to data processing to apply." }, { status: 400 });
+  }
+
+  if (cv.size > MAX_FILE_SIZE) {
+    return NextResponse.json({ error: "CV file must be under 10 MB." }, { status: 413 });
   }
 
   const job = await getJobById(jobId);
-
   if (!job) {
     return NextResponse.json({ error: "The selected role could not be found." }, { status: 404 });
   }
 
-  const application = await createApplicationRecord({
+  const result = await createApplicationRecord({
     name,
     email,
     phone,
@@ -41,11 +49,18 @@ export async function POST(request: Request) {
     jobId,
     coverLetter,
     cv,
+    consentGiven,
   });
+
+  if ("error" in result) {
+    const errorMsg = result.error ?? "Application submission failed.";
+    const status = errorMsg.includes("already submitted") ? 409 : 500;
+    return NextResponse.json({ error: errorMsg }, { status });
+  }
 
   return NextResponse.json({
     success: true,
-    id: application.id,
+    id: result.record.id,
     message: "Application submitted successfully.",
   });
 }

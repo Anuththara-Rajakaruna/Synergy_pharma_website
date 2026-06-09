@@ -1,38 +1,32 @@
 [
   {
-    "id": "application-1779870445746-5zs19z",
-    "name": "Anuththara",
-    "email": "anuththara.rajakaruna@synergypharma.lk",
-    "phone": "+94702774251",
+    "id": "application-demo-001",
+    "name": "Priya Sharma",
+    "email": "priya.sharma@example.com",
+    "phone": "+94711234567",
     "position": "Quality Assurance Specialist",
     "jobId": "qa-specialist",
-    "coverLetter": "",
-    "cvFileName": "1779870445728-test.pdf",
-    "cvFilePath": "/uploads/cvs/1779870445728-test.pdf",
-    "createdAt": "2026-05-27T08:27:25.746Z"
+    "coverLetter": "I bring three years of QA experience in a WHO-GMP certified facility and am eager to contribute to Synergy Pharma's quality team.",
+    "cvFileName": "demo-cv-priya.pdf",
+    "cvFilePath": "/api/files/cvs/demo-cv-priya.pdf",
+    "status": "reviewing",
+    "notes": "",
+    "consentGiven": true,
+    "createdAt": "2026-06-01T08:00:00.000Z"
   },
   {
-    "id": "application-1778074701145-urewsl",
-    "name": "Tisala",
-    "email": "sandarekha.gunasiri@synergypharma.lk",
-    "phone": "0702233263",
-    "position": "IT",
-    "jobId": "IT",
+    "id": "application-demo-002",
+    "name": "Rohan Perera",
+    "email": "rohan.perera@example.com",
+    "phone": "+94779876543",
+    "position": "Production Pharmacist",
+    "jobId": "production-pharmacist",
     "coverLetter": "",
-    "cvFileName": "1778074701138-test1.pdf",
-    "cvFilePath": "/uploads/cvs/1778074701138-test1.pdf",
-    "createdAt": "2026-05-06T13:38:21.145Z"
-  },
-  {
-    "id": "application-1778073863841-64emi0",
-    "name": "Sandarekha",
-    "email": "sandarekha.gunasiri@synergypharma.lk",
-    "phone": "0702233263",
-    "position": "Quality Assurance Specialist",
-    "jobId": "qa-specialist",
-    "coverLetter": "",
-    "cvFileName": "1778073863827-test1.pdf",
-    "cvFilePath": "/uploads/cvs/1778073863827-test1.pdf",
-    "createdAt": "2026-05-06T13:24:23.841Z"
+    "cvFileName": "demo-cv-rohan.pdf",
+    "cvFilePath": "/api/files/cvs/demo-cv-rohan.pdf",
+    "status": "new",
+    "notes": "",
+    "consentGiven": true,
+    "createdAt": "2026-06-03T10:30:00.000Z"
   }
 ]

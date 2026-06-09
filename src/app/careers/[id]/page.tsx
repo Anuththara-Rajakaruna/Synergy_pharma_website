@@ -24,9 +24,21 @@ export default async function CareerDetailPage({ params }: { params: Promise<{ i
       <section className="career-detail-top">
         <div className="portfolio-header">
           <ScrollReveal className="career-detail-header">
-            <Link href="/careers" className="portfolio-eyebrow">
-              Careers / Open Roles
-            </Link>
+            <nav aria-label="Breadcrumb" className="mb-4">
+              <ol className="flex items-center gap-2 text-[0.78rem] text-[#5f89a4]">
+                <li>
+                  <Link href="/" className="hover:text-[#1075bd] transition-colors">Home</Link>
+                </li>
+                <li aria-hidden="true" className="text-[#9db8c8]">/</li>
+                <li>
+                  <Link href="/careers" className="hover:text-[#1075bd] transition-colors">Careers</Link>
+                </li>
+                <li aria-hidden="true" className="text-[#9db8c8]">/</li>
+                <li aria-current="page" className="font-semibold text-[#2f5a73] truncate max-w-[200px]">
+                  {job.title}
+                </li>
+              </ol>
+            </nav>
             <h1 className="portfolio-header h2">{job.title}</h1>
             <p className="portfolio-subtitle">{job.description}</p>
           </ScrollReveal>
@@ -37,15 +49,17 @@ export default async function CareerDetailPage({ params }: { params: Promise<{ i
         <div className="careers-shell career-detail-shell career-detail-reference-layout">
           <div className="career-detail-main-column">
             <ScrollReveal className="career-detail-panel career-detail-panel-soft">
-              <p className="inline-flex rounded-full border border-[#cde6f3] bg-white/85 px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#1075bd] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-all duration-300 group-hover:border-[#a8d4ec] group-hover:bg-[#f7fbfe]">
-Role Overview</p>
+              <p className="inline-flex rounded-full border border-[#cde6f3] bg-white/85 px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#1075bd] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+                Role Overview
+              </p>
               <h2>Job Description</h2>
               <p>{job.description}</p>
             </ScrollReveal>
 
             <ScrollReveal className="career-detail-panel career-detail-panel-soft" delay={0.05}>
-              <p className="inline-flex rounded-full border border-[#cde6f3] bg-white/85 px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#1075bd] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-all duration-300 group-hover:border-[#a8d4ec] group-hover:bg-[#f7fbfe]">
-Responsibilities</p>
+              <p className="inline-flex rounded-full border border-[#cde6f3] bg-white/85 px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#1075bd] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+                Responsibilities
+              </p>
               <h2>What you&apos;ll lead</h2>
               <ul className="career-detail-list">
                 {job.responsibilities.map((item) => (
@@ -55,8 +69,9 @@ Responsibilities</p>
             </ScrollReveal>
 
             <ScrollReveal className="career-detail-panel career-detail-panel-soft" delay={0.1}>
-              <p className="inline-flex rounded-full border border-[#cde6f3] bg-white/85 px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#1075bd] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-all duration-300 group-hover:border-[#a8d4ec] group-hover:bg-[#f7fbfe]">
-Requirements</p>
+              <p className="inline-flex rounded-full border border-[#cde6f3] bg-white/85 px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#1075bd] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+                Requirements
+              </p>
               <h2>What we&apos;re looking for</h2>
               <ul className="career-detail-list">
                 {job.requirements.map((item) => (
@@ -69,8 +84,9 @@ Requirements</p>
           <aside className="career-detail-summary-column">
             <ScrollReveal className="career-detail-summary-card" delay={0.12}>
               <div className="career-detail-side-card career-detail-side-card-primary">
-                <p className="inline-flex rounded-full border border-[#cde6f3] bg-white/85 px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#1075bd] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-all duration-300 group-hover:border-[#a8d4ec] group-hover:bg-[#f7fbfe]">
-Position Summary</p>
+                <p className="inline-flex rounded-full border border-[#cde6f3] bg-white/85 px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#1075bd] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+                  Position Summary
+                </p>
                 <h3>{job.title}</h3>
                 <div className="career-sticky-meta">
                   <span>{job.department}</span>
