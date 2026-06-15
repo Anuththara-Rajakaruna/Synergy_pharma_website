@@ -63,7 +63,7 @@ export function SiteFooter() {
         </div>
 
         <div className="footer-col footer-col-wide">
-          <h3>Headoffice</h3>
+          <h3>Head office</h3>
           <address>
             Astoria Colombo
             <br />
