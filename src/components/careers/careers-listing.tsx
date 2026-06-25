@@ -1,6 +1,7 @@
 "use client";
 
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Job } from "@/types/careers";
 import { CareersFilterBar } from "@/components/careers/careers-filter-bar";
@@ -12,127 +13,105 @@ type CareersListingProps = {
 };
 
 const allDepartmentsLabel = "All departments";
-const storageKey = "synergy-careers-filters";
-
-type SavedFilters = {
-  searchTerm: string;
-  department: string;
-};
+const allTypesLabel = "All types";
+const allLocationsLabel = "All locations";
 
 export function CareersListing({ initialJobs }: CareersListingProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [jobs, setJobs] = useState<Job[]>(initialJobs);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [department, setDepartment] = useState(allDepartmentsLabel);
   const [isLoading, setIsLoading] = useState(initialJobs.length === 0);
-  const [hasFetched, setHasFetched] = useState(false);
-  const resultsRef = useRef<HTMLDivElement | null>(null);
+
+  const searchTerm = searchParams.get("q") ?? "";
+  const department = searchParams.get("dept") ?? allDepartmentsLabel;
+  const jobType = searchParams.get("type") ?? allTypesLabel;
+  const location = searchParams.get("loc") ?? allLocationsLabel;
+
   const deferredSearchTerm = useDeferredValue(searchTerm);
   const isFiltering = deferredSearchTerm !== searchTerm;
 
-  useEffect(() => {
-    try {
-      const saved = window.sessionStorage.getItem(storageKey);
-
-      if (!saved) {
-        return;
-      }
-
-      const parsed = JSON.parse(saved) as SavedFilters;
-      setSearchTerm(parsed.searchTerm ?? "");
-      setDepartment(parsed.department ?? allDepartmentsLabel);
-    } catch {
-      window.sessionStorage.removeItem(storageKey);
+  function updateParam(key: string, value: string, defaultValue: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value === defaultValue || value === "") {
+      params.delete(key);
+    } else {
+      params.set(key, value);
     }
-  }, []);
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }
 
-  useEffect(() => {
-    window.sessionStorage.setItem(storageKey, JSON.stringify({ searchTerm, department }));
-  }, [searchTerm, department]);
+  function clearFilters() {
+    router.replace("?", { scroll: false });
+  }
 
   useEffect(() => {
     let ignore = false;
-
     async function loadJobs() {
       setIsLoading(true);
-
       try {
         const response = await fetch("/api/jobs", { cache: "no-store" });
         const result = (await response.json()) as Job[];
-
-        if (!ignore) {
-          setJobs(result);
-        }
+        if (!ignore) setJobs(result);
       } catch {
-        if (!ignore) {
-          setJobs(initialJobs);
-        }
+        if (!ignore) setJobs(initialJobs);
       } finally {
-        if (!ignore) {
-          setIsLoading(false);
-          setHasFetched(true);
-        }
+        if (!ignore) setIsLoading(false);
       }
     }
-
     void loadJobs();
-
-    return () => {
-      ignore = true;
-    };
+    return () => { ignore = true; };
   }, [initialJobs]);
 
   const departments = useMemo(() => {
-    const uniqueDepartments = Array.from(new Set(jobs.map((job) => job.department)));
-    const preferredDepartments = CAREER_DEPARTMENTS.filter((department) =>
-      uniqueDepartments.includes(department)
-    );
-    const remainingDepartments = uniqueDepartments
-      .filter((department) => !CAREER_DEPARTMENT_SET.has(department))
-      .sort((left, right) => left.localeCompare(right));
+    const unique = Array.from(new Set(jobs.map((j) => j.department)));
+    const preferred = CAREER_DEPARTMENTS.filter((d) => unique.includes(d));
+    const remaining = unique.filter((d) => !CAREER_DEPARTMENT_SET.has(d)).sort((a, b) => a.localeCompare(b));
+    return [allDepartmentsLabel, ...preferred, ...remaining];
+  }, [jobs]);
 
-    return [allDepartmentsLabel, ...preferredDepartments, ...remainingDepartments];
+  const locations = useMemo(() => {
+    const unique = Array.from(new Set(jobs.map((j) => j.location)));
+    return [allLocationsLabel, ...unique.sort((a, b) => a.localeCompare(b))];
   }, [jobs]);
 
   const filteredJobs = useMemo(() => {
-    const normalizedSearch = deferredSearchTerm.trim().toLowerCase();
-
+    const q = deferredSearchTerm.trim().toLowerCase();
     return jobs.filter((job) => {
-      const matchesSearch =
-        !normalizedSearch ||
-        job.title.toLowerCase().includes(normalizedSearch) ||
-        job.description.toLowerCase().includes(normalizedSearch);
-      const matchesDepartment = department === allDepartmentsLabel || job.department === department;
-      return matchesSearch && matchesDepartment;
+      const matchesSearch = !q || job.title.toLowerCase().includes(q) || job.description.toLowerCase().includes(q);
+      const matchesDept = department === allDepartmentsLabel || job.department === department;
+      const matchesType = jobType === allTypesLabel || job.type === jobType;
+      const matchesLoc = location === allLocationsLabel || job.location === location;
+      return matchesSearch && matchesDept && matchesType && matchesLoc;
     });
-  }, [deferredSearchTerm, department, jobs]);
+  }, [deferredSearchTerm, department, jobType, location, jobs]);
 
-  useEffect(() => {
-    if (!hasFetched || !resultsRef.current) {
-      return;
-    }
+  const hasActiveFilters =
+    searchTerm.trim().length > 0 ||
+    department !== allDepartmentsLabel ||
+    jobType !== allTypesLabel ||
+    location !== allLocationsLabel;
 
-    resultsRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [deferredSearchTerm, department, hasFetched]);
-
-  const hasActiveFilters = searchTerm.trim().length > 0 || department !== allDepartmentsLabel;
   const showSkeleton = isLoading || isFiltering;
 
   return (
-    <>
-      <div className="space-y-6" ref={resultsRef}>
-        <CareersFilterBar
-          searchTerm={searchTerm}
-          department={department}
-          departments={departments}
-          hasActiveFilters={hasActiveFilters}
-          onSearchChange={setSearchTerm}
-          onDepartmentChange={setDepartment}
-          onClear={() => {
-            setSearchTerm("");
-            setDepartment(allDepartmentsLabel);
-          }}
-        />
+    <div className="space-y-6">
+      <CareersFilterBar
+        searchTerm={searchTerm}
+        department={department}
+        departments={departments}
+        jobType={jobType}
+        location={location}
+        locations={locations}
+        hasActiveFilters={hasActiveFilters}
+        onSearchChange={(v) => updateParam("q", v, "")}
+        onDepartmentChange={(v) => updateParam("dept", v, allDepartmentsLabel)}
+        onJobTypeChange={(v) => updateParam("type", v, allTypesLabel)}
+        onLocationChange={(v) => updateParam("loc", v, allLocationsLabel)}
+        onClear={clearFilters}
+      />
 
+      <div aria-live="polite" aria-relevant="additions removals">
         {showSkeleton ? (
           <div className="space-y-4">
             {Array.from({ length: 6 }).map((_, index) => (
@@ -157,10 +136,7 @@ export function CareersListing({ initialJobs }: CareersListingProps) {
             ))}
           </div>
         ) : filteredJobs.length > 0 ? (
-          <motion.div
-            layout
-            className="space-y-4"
-          >
+          <motion.div layout className="space-y-4">
             {filteredJobs.map((job, index) => (
               <JobCard key={job.id} job={job} index={index} />
             ))}
@@ -177,10 +153,7 @@ export function CareersListing({ initialJobs }: CareersListingProps) {
             </p>
             <button
               type="button"
-              onClick={() => {
-                setSearchTerm("");
-                setDepartment(allDepartmentsLabel);
-              }}
+              onClick={clearFilters}
               className="mt-6 inline-flex items-center justify-center rounded-2xl bg-[#1075bd] px-5 py-3 text-[0.76rem] font-bold uppercase tracking-[0.16em] text-white shadow-[0_14px_30px_rgba(16,117,189,0.24)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0c68a7]"
             >
               Clear Filters
@@ -188,6 +161,6 @@ export function CareersListing({ initialJobs }: CareersListingProps) {
           </motion.div>
         )}
       </div>
-    </>
+    </div>
   );
 }

@@ -1,4 +1,6 @@
 export type JobType = "Full-time" | "Internship";
+export type JobStatus = "draft" | "published" | "closed";
+export type ApplicationStatus = "new" | "reviewing" | "shortlisted" | "rejected" | "hired";
 
 export type Job = {
   id: string;
@@ -6,6 +8,7 @@ export type Job = {
   department: string;
   location: string;
   type: JobType;
+  status?: JobStatus;
   description: string;
   responsibilities: string[];
   requirements: string[];
@@ -21,6 +24,9 @@ export type ApplicationRecord = {
   coverLetter: string;
   cvFileName: string;
   cvFilePath: string;
+  status: ApplicationStatus;
+  notes: string;
+  consentGiven: boolean;
   createdAt: string;
 };
 
@@ -33,5 +39,6 @@ export type TalentPoolRecord = {
   notes: string;
   cvFileName: string;
   cvFilePath: string;
+  consentGiven: boolean;
   createdAt: string;
 };

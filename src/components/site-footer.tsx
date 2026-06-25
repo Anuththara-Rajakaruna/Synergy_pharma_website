@@ -1,9 +1,11 @@
-﻿const currentYear = new Date().getFullYear();
+import Link from "next/link";
+
+const currentYear = new Date().getFullYear();
 
 const socialLinks = [
   {
     name: "Facebook",
-    href: "#",
+    href: "https://www.facebook.com/synergypharmasrilanka",
     icon: (
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M13.5 21v-7h2.4l.36-2.8H13.5V9.42c0-.81.22-1.36 1.38-1.36H16.5V5.57c-.28-.04-1.24-.12-2.36-.12-2.34 0-3.94 1.43-3.94 4.06v1.69H7.8V14h2.4v7h3.3Z" />
@@ -21,19 +23,10 @@ const socialLinks = [
   },
   {
     name: "X",
-    href: "#",
+    href: "https://twitter.com/synergypharmalK",
     icon: (
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M17.81 3H20l-4.78 5.46L20.84 21h-4.4l-3.45-4.52L9.04 21H6.84l5.11-5.84L6.56 3h4.5l3.12 4.12L17.81 3Zm-.77 16.68h1.22L10.4 4.23H9.09l7.95 15.45Z" />
-      </svg>
-    ),
-  },
-  {
-    name: "Twitter",
-    href: "#",
-    icon: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M21 7.54c-.66.29-1.37.49-2.12.58a3.71 3.71 0 0 0 1.63-2.05 7.4 7.4 0 0 1-2.35.9 3.7 3.7 0 0 0-6.3 3.37 10.5 10.5 0 0 1-7.63-3.87 3.7 3.7 0 0 0 1.15 4.94 3.67 3.67 0 0 1-1.67-.46v.05a3.7 3.7 0 0 0 2.97 3.63c-.4.11-.83.17-1.27.17-.31 0-.61-.03-.9-.08a3.71 3.71 0 0 0 3.46 2.57A7.43 7.43 0 0 1 3 18.82a10.48 10.48 0 0 0 5.67 1.66c6.8 0 10.52-5.63 10.52-10.52 0-.16 0-.32-.01-.48A7.5 7.5 0 0 0 21 7.54Z" />
       </svg>
     ),
   },
@@ -77,23 +70,9 @@ export function SiteFooter() {
           </address>
         </div>
 
-        {/* <div className="footer-col">
-          <h3>Rank Entertainment</h3>
-          <address>
-            No. 9, 15th Lane
-            <br />
-            Galle Road
-            <br />
-            Colombo 3
-            <br />
-            Sri Lanka
-          </address>
-        </div> */}
-
         <div className="footer-col">
           <h3>New Business Inquiries</h3>
           <p>
-            {/* <a href="tel:+94114786786">+ 94 11 4786786</a> */}
             <br />
             <a href="mailto:info@synergypharma.lk">info@synergypharma.lk</a>
           </p>
@@ -104,6 +83,8 @@ export function SiteFooter() {
                 href={socialLink.href}
                 className="footer-social-link"
                 aria-label={socialLink.name}
+                target="_blank"
+                rel="noreferrer"
               >
                 {socialLink.icon}
               </a>
@@ -114,6 +95,9 @@ export function SiteFooter() {
         <div className="footer-bottom">
           <span>© {currentYear} Synergy Pharmaceutical Corporation Pvt. Ltd.</span>
           <span className="footer-bottom-muted">All rights reserved.</span>
+          <Link href="/privacy-policy" className="footer-bottom-muted hover:text-[#1075bd] transition-colors">
+            Privacy Policy
+          </Link>
         </div>
       </div>
     </footer>

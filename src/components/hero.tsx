@@ -146,13 +146,6 @@ export const Hero: React.FC<HeroProps> = ({
       return;
     }
 
-    const rectToObject = (rect: DOMRect) => ({
-      left: rect.left,
-      top: rect.top,
-      width: rect.width,
-      height: rect.height,
-    });
-
     const syncHomeHeroMask = () => {
       const sectionRect = section.getBoundingClientRect();
       const headingRect = headingElement.getBoundingClientRect();
@@ -190,27 +183,6 @@ export const Hero: React.FC<HeroProps> = ({
         }
 
         return nextMetrics;
-      });
-
-      const backgroundStyles = window.getComputedStyle(backgroundElement);
-      const textMaskElement = textMaskRef.current;
-      const textMaskStyles = textMaskElement ? window.getComputedStyle(textMaskElement) : null;
-
-      console.log("[hero-debug]", {
-        background: {
-          backgroundPosition: backgroundStyles.backgroundPosition,
-          backgroundSize: backgroundStyles.backgroundSize,
-          transform: backgroundStyles.transform,
-          rect: rectToObject(backgroundElement.getBoundingClientRect()),
-        },
-        mask: textMaskStyles && textMaskElement
-          ? {
-              backgroundPosition: textMaskStyles.backgroundPosition,
-              backgroundSize: textMaskStyles.backgroundSize,
-              transform: textMaskStyles.transform,
-              rect: rectToObject(textMaskElement.getBoundingClientRect()),
-            }
-          : null,
       });
     };
 
