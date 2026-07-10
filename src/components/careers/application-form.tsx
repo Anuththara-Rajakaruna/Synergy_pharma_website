@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, startTransition, useEffect, useState } from "react";
+import { DragEvent, FormEvent, startTransition, useEffect, useRef, useState } from "react";
 import { Job } from "@/types/careers";
 
 type ApplicationFormProps = {
@@ -13,12 +13,16 @@ type FormState = {
   email: string;
   phone: string;
   position: string;
+  linkedIn: string;
+  portfolio: string;
   coverLetter: string;
   consentGiven: boolean;
 };
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const stepLabels = ["Details", "Role & CV", "Review"];
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_RE = /^\+?[\d\s\-().]{7,20}$/;
 
 export function ApplicationForm({ job }: ApplicationFormProps) {
   const storageKey = `synergy-apply-draft-${job.id}`;
@@ -29,16 +33,19 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
     email: "",
     phone: "",
     position: job.title,
+    linkedIn: "",
+    portfolio: "",
     coverLetter: "",
     consentGiven: false,
   });
   const [cv, setCv] = useState<File | null>(null);
   const [fileError, setFileError] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Restore autosaved draft on mount
   useEffect(() => {
     try {
       const saved = window.sessionStorage.getItem(storageKey);
@@ -57,17 +64,11 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
     }
   }, [storageKey]);
 
-  // Autosave on field change (exclude File — not serializable)
   useEffect(() => {
     try {
       window.sessionStorage.setItem(
         storageKey,
-        JSON.stringify({
-          name: form.name,
-          email: form.email,
-          phone: form.phone,
-          coverLetter: form.coverLetter,
-        })
+        JSON.stringify({ name: form.name, email: form.email, phone: form.phone, coverLetter: form.coverLetter })
       );
     } catch {
       // sessionStorage may be unavailable in some environments
@@ -76,10 +77,7 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
 
   function handleFileChange(file: File | null) {
     setFileError("");
-    if (!file) {
-      setCv(null);
-      return;
-    }
+    if (!file) { setCv(null); return; }
     if (file.size > MAX_FILE_SIZE) {
       setFileError("File is too large. Please upload a PDF under 10 MB.");
       setCv(null);
@@ -94,22 +92,31 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
     setCv(file);
   }
 
+  function handleDrop(e: DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0] ?? null;
+    handleFileChange(file);
+  }
+
   function validateCurrentStep(currentStep: number) {
     if (currentStep === 0) {
       if (!form.name.trim() || !form.email.trim() || !form.phone.trim()) {
         return "Please complete your name, email, and phone number.";
       }
+      if (!EMAIL_RE.test(form.email.trim())) {
+        return "Please enter a valid email address.";
+      }
+      if (!PHONE_RE.test(form.phone.trim())) {
+        return "Please enter a valid phone number (e.g. +94 77 000 0000).";
+      }
     }
     if (currentStep === 1) {
-      if (!form.position.trim() || !cv) {
-        return "Please confirm the position and upload your CV.";
-      }
+      if (!form.position.trim() || !cv) return "Please confirm the position and upload your CV.";
       if (fileError) return fileError;
     }
     if (currentStep === 2) {
-      if (!form.consentGiven) {
-        return "Please read and accept the privacy policy to continue.";
-      }
+      if (!form.consentGiven) return "Please read and accept the privacy policy to continue.";
     }
     return "";
   }
@@ -117,9 +124,7 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
   function handleNext() {
     const nextError = validateCurrentStep(step);
     setError(nextError);
-    if (!nextError) {
-      setStep((current) => Math.min(current + 1, 2));
-    }
+    if (!nextError) setStep((current) => Math.min(current + 1, 2));
   }
 
   function handlePrevious() {
@@ -130,15 +135,8 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const stepError = validateCurrentStep(2);
-    if (stepError) {
-      setError(stepError);
-      return;
-    }
-    if (!cv) {
-      setError("Please upload your CV before submitting.");
-      setStep(1);
-      return;
-    }
+    if (stepError) { setError(stepError); return; }
+    if (!cv) { setError("Please upload your CV before submitting."); setStep(1); return; }
 
     const payload = new FormData();
     payload.set("name", form.name);
@@ -149,6 +147,8 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
     payload.set("coverLetter", form.coverLetter);
     payload.set("consentGiven", "true");
     payload.set("cv", cv);
+    if (form.linkedIn) payload.set("linkedIn", form.linkedIn);
+    if (form.portfolio) payload.set("portfolio", form.portfolio);
 
     setIsSubmitting(true);
     setError("");
@@ -158,15 +158,10 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
       try {
         const response = await fetch("/api/apply", { method: "POST", body: payload });
         const result = (await response.json()) as { error?: string; message?: string };
-
-        if (!response.ok) {
-          setError(result.error ?? "We couldn't submit your application.");
-          return;
-        }
-
+        if (!response.ok) { setError(result.error ?? "We couldn't submit your application."); return; }
         setSuccessMessage(result.message ?? "Application submitted successfully.");
         window.sessionStorage.removeItem(storageKey);
-        setForm({ name: "", email: "", phone: "", position: job.title, coverLetter: "", consentGiven: false });
+        setForm({ name: "", email: "", phone: "", position: job.title, linkedIn: "", portfolio: "", coverLetter: "", consentGiven: false });
         setCv(null);
         setStep(0);
       } catch {
@@ -178,7 +173,7 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
   }
 
   return (
-    <section className="career-apply-section" id="apply">
+    <section className="career-apply-section">
       <div className="career-apply-card">
         <div className="portfolio-header">
           <p className="portfolio-eyebrow">Apply Now</p>
@@ -225,9 +220,11 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
                 <input
                   type="tel"
                   required
+                  placeholder="+94 77 000 0000"
                   value={form.phone}
                   onChange={(e) => setForm((c) => ({ ...c, phone: e.target.value }))}
                 />
+                <span className="text-xs text-[#7d97a9] mt-1">Include country code, e.g. +94 77 123 4567</span>
               </label>
             </div>
           ) : null}
@@ -243,15 +240,89 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
                   onChange={(e) => setForm((c) => ({ ...c, position: e.target.value }))}
                 />
               </label>
-              <div className="careers-field">
-                <span id="cv-label">CV upload (PDF) <span aria-hidden="true">*</span></span>
-                <span id="cv-hint" className="text-xs text-[#5f89a4]">PDF files only, maximum 10 MB</span>
+              <label className="careers-field">
+                <span>LinkedIn profile URL <span className="text-[#7d97a9] font-normal">(optional)</span></span>
                 <input
+                  type="url"
+                  placeholder="https://linkedin.com/in/yourprofile"
+                  value={form.linkedIn}
+                  onChange={(e) => setForm((c) => ({ ...c, linkedIn: e.target.value }))}
+                />
+              </label>
+              <label className="careers-field">
+                <span>Portfolio / Website URL <span className="text-[#7d97a9] font-normal">(optional)</span></span>
+                <input
+                  type="url"
+                  placeholder="https://yourwebsite.com"
+                  value={form.portfolio}
+                  onChange={(e) => setForm((c) => ({ ...c, portfolio: e.target.value }))}
+                />
+              </label>
+              <div className="careers-field careers-field-full">
+                <span id="cv-label">CV upload (PDF) <span aria-hidden="true">*</span></span>
+                <div
+                  role="button"
+                  tabIndex={0}
+                  aria-labelledby="cv-label"
+                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  onKeyDown={(e) => e.key === "Enter" || e.key === " " ? fileInputRef.current?.click() : undefined}
+                  style={{
+                    border: `2px dashed ${isDragging ? "#1075bd" : "#c4dff0"}`,
+                    borderRadius: "1rem",
+                    padding: "1.5rem",
+                    textAlign: "center",
+                    cursor: "pointer",
+                    background: isDragging ? "#edf6fd" : "#f7fbfd",
+                    transition: "all 0.2s",
+                    marginTop: "0.35rem",
+                  }}
+                >
+                  {cv ? (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.75rem" }}>
+                      <span style={{ fontSize: "1.25rem" }}>📄</span>
+                      <div style={{ textAlign: "left" }}>
+                        <p style={{ fontWeight: 600, color: "#0a1f35", margin: 0, fontSize: "0.9rem" }}>{cv.name}</p>
+                        <p style={{ color: "#7d97a9", margin: "0.15rem 0 0", fontSize: "0.75rem" }}>
+                          {(cv.size / 1024).toFixed(0)} KB
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        aria-label="Remove CV"
+                        onClick={(e) => { e.stopPropagation(); setCv(null); setFileError(""); }}
+                        style={{
+                          marginLeft: "auto",
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          color: "#5f89a4",
+                          fontSize: "1.1rem",
+                          lineHeight: 1,
+                          padding: "0.25rem",
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <p style={{ color: "#1075bd", fontWeight: 600, margin: 0, fontSize: "0.9rem" }}>
+                        Drag &amp; drop your CV here
+                      </p>
+                      <p style={{ color: "#7d97a9", margin: "0.35rem 0 0", fontSize: "0.78rem" }}>
+                        or click to browse — PDF only, max 10 MB
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <input
+                  ref={fileInputRef}
                   type="file"
                   accept="application/pdf,.pdf"
-                  required
-                  aria-labelledby="cv-label"
-                  aria-describedby="cv-hint"
+                  style={{ display: "none" }}
                   onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
                 />
                 {fileError ? (
@@ -281,6 +352,18 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
                   <strong>CV file</strong>
                   <span>{cv?.name ?? "Not uploaded yet"}</span>
                 </div>
+                {form.linkedIn ? (
+                  <div>
+                    <strong>LinkedIn</strong>
+                    <span style={{ wordBreak: "break-all" }}>{form.linkedIn}</span>
+                  </div>
+                ) : null}
+                {form.portfolio ? (
+                  <div>
+                    <strong>Portfolio</strong>
+                    <span style={{ wordBreak: "break-all" }}>{form.portfolio}</span>
+                  </div>
+                ) : null}
               </div>
               <label className="careers-field careers-field-checkbox">
                 <input

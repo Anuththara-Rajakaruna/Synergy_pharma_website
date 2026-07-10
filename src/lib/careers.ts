@@ -17,6 +17,15 @@ async function ensureJsonFile(filePath: string, initialValue: string) {
   }
 }
 
+const fileLocks = new Map<string, Promise<unknown>>();
+
+async function withFileLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
+  const prev = fileLocks.get(key) ?? Promise.resolve();
+  const next = prev.then(() => fn());
+  fileLocks.set(key, next.catch(() => {}));
+  return next;
+}
+
 async function readJsonFile<T>(filePath: string, initialValue: string): Promise<T> {
   await ensureJsonFile(filePath, initialValue);
   const content = await readFile(filePath, "utf8");
@@ -61,32 +70,38 @@ export async function getJobById(id: string) {
   return jobs.find((job) => job.id === id) ?? null;
 }
 
-export async function createJob(job: Job): Promise<{ job: Job } | { error: string }> {
-  const jobs = await getJobs();
-  if (jobs.some((existing) => existing.id === job.id)) {
-    return { error: "A job with this ID already exists." };
-  }
-  const jobWithStatus: Job = { ...job, status: job.status ?? "published" };
-  jobs.unshift(jobWithStatus);
-  await writeJsonFile(jobsFile, jobs);
-  return { job: jobWithStatus };
+export function createJob(job: Job): Promise<{ job: Job } | { error: string }> {
+  return withFileLock(jobsFile, async () => {
+    const jobs = await getJobs();
+    if (jobs.some((existing) => existing.id === job.id)) {
+      return { error: "A job with this ID already exists." };
+    }
+    const jobWithStatus: Job = { ...job, status: job.status ?? "published" };
+    jobs.unshift(jobWithStatus);
+    await writeJsonFile(jobsFile, jobs);
+    return { job: jobWithStatus };
+  });
 }
 
-export async function updateJob(id: string, updates: Job) {
-  const jobs = await getJobs();
-  const index = jobs.findIndex((job) => job.id === id);
-  if (index === -1) return null;
-  jobs[index] = updates;
-  await writeJsonFile(jobsFile, jobs);
-  return jobs[index];
+export function updateJob(id: string, updates: Job) {
+  return withFileLock(jobsFile, async () => {
+    const jobs = await getJobs();
+    const index = jobs.findIndex((job) => job.id === id);
+    if (index === -1) return null;
+    jobs[index] = updates;
+    await writeJsonFile(jobsFile, jobs);
+    return jobs[index];
+  });
 }
 
-export async function deleteJob(id: string) {
-  const jobs = await getJobs();
-  const nextJobs = jobs.filter((job) => job.id !== id);
-  if (nextJobs.length === jobs.length) return false;
-  await writeJsonFile(jobsFile, nextJobs);
-  return true;
+export function deleteJob(id: string) {
+  return withFileLock(jobsFile, async () => {
+    const jobs = await getJobs();
+    const nextJobs = jobs.filter((job) => job.id !== id);
+    if (nextJobs.length === jobs.length) return false;
+    await writeJsonFile(jobsFile, nextJobs);
+    return true;
+  });
 }
 
 export async function getApplications(): Promise<ApplicationRecord[]> {
@@ -104,42 +119,48 @@ export async function getTalentPoolEntries(): Promise<TalentPoolRecord[]> {
   return records.map((r) => ({ ...r, consentGiven: r.consentGiven ?? false }));
 }
 
-export async function updateApplicationRecord(
+export function updateApplicationRecord(
   id: string,
   updates: Partial<Pick<ApplicationRecord, "status" | "notes">>
 ) {
-  const applications = await getApplications();
-  const index = applications.findIndex((a) => a.id === id);
-  if (index === -1) return null;
-  applications[index] = { ...applications[index], ...updates };
-  await writeJsonFile(applicationsFile, applications);
-  return applications[index];
+  return withFileLock(applicationsFile, async () => {
+    const applications = await getApplications();
+    const index = applications.findIndex((a) => a.id === id);
+    if (index === -1) return null;
+    applications[index] = { ...applications[index], ...updates };
+    await writeJsonFile(applicationsFile, applications);
+    return applications[index];
+  });
 }
 
-export async function deleteApplicationRecord(id: string): Promise<boolean> {
-  const applications = await getApplications();
-  const record = applications.find((a) => a.id === id);
-  if (!record) return false;
-  if (record.cvFileName) {
-    const filePath = path.join(privateUploadsDirectory, "cvs", record.cvFileName);
-    await unlink(filePath).catch(() => {});
-  }
-  const next = applications.filter((a) => a.id !== id);
-  await writeJsonFile(applicationsFile, next);
-  return true;
+export function deleteApplicationRecord(id: string): Promise<boolean> {
+  return withFileLock(applicationsFile, async () => {
+    const applications = await getApplications();
+    const record = applications.find((a) => a.id === id);
+    if (!record) return false;
+    if (record.cvFileName) {
+      const filePath = path.join(privateUploadsDirectory, "cvs", record.cvFileName);
+      await unlink(filePath).catch(() => {});
+    }
+    const next = applications.filter((a) => a.id !== id);
+    await writeJsonFile(applicationsFile, next);
+    return true;
+  });
 }
 
-export async function deleteTalentPoolRecord(id: string): Promise<boolean> {
-  const records = await getTalentPoolEntries();
-  const record = records.find((r) => r.id === id);
-  if (!record) return false;
-  if (record.cvFileName) {
-    const filePath = path.join(privateUploadsDirectory, "talent-pool", record.cvFileName);
-    await unlink(filePath).catch(() => {});
-  }
-  const next = records.filter((r) => r.id !== id);
-  await writeJsonFile(talentPoolFile, next);
-  return true;
+export function deleteTalentPoolRecord(id: string): Promise<boolean> {
+  return withFileLock(talentPoolFile, async () => {
+    const records = await getTalentPoolEntries();
+    const record = records.find((r) => r.id === id);
+    if (!record) return false;
+    if (record.cvFileName) {
+      const filePath = path.join(privateUploadsDirectory, "talent-pool", record.cvFileName);
+      await unlink(filePath).catch(() => {});
+    }
+    const next = records.filter((r) => r.id !== id);
+    await writeJsonFile(talentPoolFile, next);
+    return true;
+  });
 }
 
 export async function getPrivateFilePath(directory: string, fileName: string): Promise<string> {
@@ -165,7 +186,7 @@ async function persistUpload(
   };
 }
 
-export async function createApplicationRecord(data: {
+export function createApplicationRecord(data: {
   name: string;
   email: string;
   phone: string;
@@ -174,40 +195,47 @@ export async function createApplicationRecord(data: {
   coverLetter: string;
   cv: File;
   consentGiven: boolean;
+  linkedIn?: string;
+  portfolio?: string;
 }): Promise<{ record: ApplicationRecord } | { error: string }> {
-  const uploadResult = await persistUpload(data.cv, "cvs");
-  if ("error" in uploadResult) return { error: uploadResult.error };
+  return withFileLock(applicationsFile, async () => {
+    const applications = await getApplications();
+    if (
+      applications.some(
+        (a) => a.email.toLowerCase() === data.email.toLowerCase() && a.jobId === data.jobId
+      )
+    ) {
+      return { error: "You have already submitted an application for this position." };
+    }
 
-  const applications = await getApplications();
-  const duplicate = applications.some(
-    (a) => a.email.toLowerCase() === data.email.toLowerCase() && a.jobId === data.jobId
-  );
-  if (duplicate) {
-    return { error: "You have already submitted an application for this position." };
-  }
+    const uploadResult = await persistUpload(data.cv, "cvs");
+    if ("error" in uploadResult) return { error: uploadResult.error };
 
-  const record: ApplicationRecord = {
-    id: createRecordId("application"),
-    name: data.name,
-    email: data.email,
-    phone: data.phone,
-    position: data.position,
-    jobId: data.jobId,
-    coverLetter: data.coverLetter,
-    cvFileName: uploadResult.fileName,
-    cvFilePath: uploadResult.apiPath,
-    status: "new",
-    notes: "",
-    consentGiven: data.consentGiven,
-    createdAt: new Date().toISOString(),
-  };
+    const record: ApplicationRecord = {
+      id: createRecordId("application"),
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      position: data.position,
+      jobId: data.jobId,
+      coverLetter: data.coverLetter,
+      cvFileName: uploadResult.fileName,
+      cvFilePath: uploadResult.apiPath,
+      status: "new",
+      notes: "",
+      consentGiven: data.consentGiven,
+      createdAt: new Date().toISOString(),
+      ...(data.linkedIn ? { linkedIn: data.linkedIn } : {}),
+      ...(data.portfolio ? { portfolio: data.portfolio } : {}),
+    };
 
-  applications.unshift(record);
-  await writeJsonFile(applicationsFile, applications);
-  return { record };
+    applications.unshift(record);
+    await writeJsonFile(applicationsFile, applications);
+    return { record };
+  });
 }
 
-export async function createTalentPoolRecord(data: {
+export function createTalentPoolRecord(data: {
   name: string;
   email: string;
   phone: string;
@@ -216,25 +244,30 @@ export async function createTalentPoolRecord(data: {
   cv: File;
   consentGiven: boolean;
 }): Promise<{ record: TalentPoolRecord } | { error: string }> {
-  const uploadResult = await persistUpload(data.cv, "talent-pool");
-  if ("error" in uploadResult) return { error: uploadResult.error };
+  return withFileLock(talentPoolFile, async () => {
+    const records = await getTalentPoolEntries();
+    if (records.some((r) => r.email.toLowerCase() === data.email.toLowerCase())) {
+      return { error: "A profile with this email address is already in our talent pool." };
+    }
 
-  const records = await getTalentPoolEntries();
+    const uploadResult = await persistUpload(data.cv, "talent-pool");
+    if ("error" in uploadResult) return { error: uploadResult.error };
 
-  const record: TalentPoolRecord = {
-    id: createRecordId("talent"),
-    name: data.name,
-    email: data.email,
-    phone: data.phone,
-    areaOfInterest: data.areaOfInterest,
-    notes: data.notes,
-    cvFileName: uploadResult.fileName,
-    cvFilePath: uploadResult.apiPath,
-    consentGiven: data.consentGiven,
-    createdAt: new Date().toISOString(),
-  };
+    const record: TalentPoolRecord = {
+      id: createRecordId("talent"),
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      areaOfInterest: data.areaOfInterest,
+      notes: data.notes,
+      cvFileName: uploadResult.fileName,
+      cvFilePath: uploadResult.apiPath,
+      consentGiven: data.consentGiven,
+      createdAt: new Date().toISOString(),
+    };
 
-  records.unshift(record);
-  await writeJsonFile(talentPoolFile, records);
-  return { record };
+    records.unshift(record);
+    await writeJsonFile(talentPoolFile, records);
+    return { record };
+  });
 }

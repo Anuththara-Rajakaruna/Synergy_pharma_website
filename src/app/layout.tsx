@@ -4,15 +4,8 @@ import { SiteFooter } from "@/components/site-footer";
 
 export const metadata: Metadata = {
   title: "Synergy | Advancing human health through precision",
-  description: "Corporate website starter for Synergy",
+  description: "Explore career opportunities at Synergy Pharma — Sri Lanka's leading pharmaceutical company advancing human health through precision.",
 };
-
-const themeInitScript = `try {
-  const storedTheme = localStorage.getItem("theme");
-  document.documentElement.dataset.theme = storedTheme === "dark" ? "dark" : "light";
-} catch {
-  document.documentElement.dataset.theme = "light";
-}`;
 
 export default function RootLayout({
   children,
@@ -26,7 +19,7 @@ export default function RootLayout({
         <link rel="icon" href="/logo.png" sizes="32x32" type="image/png" />
         <link rel="icon" href="/logo.png" sizes="16x16" type="image/png" />
         <link rel="shortcut icon" href="/logo.png" />
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script src="/theme-init.js" />
       </head>
       <body suppressHydrationWarning>
         {children}

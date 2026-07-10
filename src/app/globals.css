@@ -1408,7 +1408,9 @@ button:active {
   border-color: rgba(255, 255, 255, 0.5);
 }
 
-.reveal-on-scroll {
+/* Hidden only when JS has confirmed it's running (data-reveal attribute set by RevealOnScroll).
+   Without JS the element stays visible — prevents blank pages on CSP or JS failures. */
+.reveal-on-scroll[data-reveal="pending"] {
   opacity: 0;
   transform: translateY(28px);
   transition:
@@ -1416,7 +1418,8 @@ button:active {
     transform 0.7s cubic-bezier(0.21, 0.76, 0.28, 1);
 }
 
-.reveal-on-scroll.is-visible {
+.reveal-on-scroll[data-reveal="pending"].is-visible,
+.reveal-on-scroll[data-reveal="visible"] {
   opacity: 1;
   transform: translateY(0);
 }
@@ -1685,7 +1688,7 @@ button:active {
 
 @media (prefers-reduced-motion: reduce) {
   .hero-light,
-  .reveal-on-scroll,
+  .reveal-on-scroll[data-reveal="pending"],
   .about-hero-kicker,
   .about-hero-title,
   .about-hero-copy-line,
@@ -7447,7 +7450,16 @@ html[data-theme="dark"] .gradient-decorator {
 }
 
 .careers-hero-actions {
-  margin-top: 0.4rem;
+  margin-top: 1.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.careers-hero-actions .button-link,
+.careers-hero-actions .button-link-secondary {
+  margin-top: 0;
 }
 
 .careers-page,
@@ -7544,7 +7556,9 @@ html[data-theme="dark"] .gradient-decorator {
 .career-detail-content,
 .careers-admin-section {
   background: rgba(237, 246, 255, 0.84);
-  overflow: hidden;
+  /* clip instead of hidden: clips decorative overflow without creating a
+     scroll container, so position:sticky inside the section still works */
+  overflow: clip;
 }
 
 .facility-capabilitiesSection::before,
@@ -7987,8 +8001,28 @@ html[data-theme="dark"] .gradient-decorator {
   max-width: 48rem;
 }
 
+/* Wrapper rendered by ApplicationForm — provides scroll target; styling
+   comes from .career-apply-card inside */
+.career-apply-section {
+  display: contents;
+}
+
 .career-apply-header {
   margin-bottom: 1.5rem;
+}
+
+.careers-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.careers-hiring-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  position: relative;
+  margin-top: 2.5rem;
 }
 
 .career-progress {
@@ -8186,6 +8220,10 @@ html[data-theme="dark"] .gradient-decorator {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .careers-hiring-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .careers-culture-grid,
   .careers-talent-layout,
   .career-detail-reference-layout,
@@ -8206,7 +8244,9 @@ html[data-theme="dark"] .gradient-decorator {
   }
 
   .careers-benefits-grid,
-  .careers-jobs-grid {
+  .careers-jobs-grid,
+  .careers-hiring-grid,
+  .careers-stats-grid {
     grid-template-columns: 1fr;
   }
 

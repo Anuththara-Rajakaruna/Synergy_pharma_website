@@ -13,6 +13,8 @@ export async function POST(request: Request) {
   const position = String(formData.get("position") ?? "").trim().slice(0, 200);
   const jobId = String(formData.get("jobId") ?? "").trim();
   const coverLetter = String(formData.get("coverLetter") ?? "").trim().slice(0, 3000);
+  const linkedIn = String(formData.get("linkedIn") ?? "").trim().slice(0, 300) || undefined;
+  const portfolio = String(formData.get("portfolio") ?? "").trim().slice(0, 300) || undefined;
   const consentGiven = formData.get("consentGiven") === "true";
   const cv = formData.get("cv");
 
@@ -50,6 +52,8 @@ export async function POST(request: Request) {
     coverLetter,
     cv,
     consentGiven,
+    linkedIn,
+    portfolio,
   });
 
   if ("error" in result) {

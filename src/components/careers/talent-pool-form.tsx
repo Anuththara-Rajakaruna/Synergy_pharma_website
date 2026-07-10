@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, startTransition, useEffect, useState } from "react";
+import { DragEvent, FormEvent, startTransition, useEffect, useRef, useState } from "react";
 import { CAREER_DEPARTMENTS } from "@/components/careers/department-options";
 
 type TalentPoolState = {
@@ -13,8 +13,10 @@ type TalentPoolState = {
   consentGiven: boolean;
 };
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const STORAGE_KEY = "synergy-talent-draft";
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_RE = /^\+?[\d\s\-().]{7,20}$/;
 
 export function TalentPoolForm() {
   const [form, setForm] = useState<TalentPoolState>({
@@ -27,11 +29,12 @@ export function TalentPoolForm() {
   });
   const [cv, setCv] = useState<File | null>(null);
   const [fileError, setFileError] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Restore autosaved draft on mount
   useEffect(() => {
     try {
       const saved = window.sessionStorage.getItem(STORAGE_KEY);
@@ -51,18 +54,11 @@ export function TalentPoolForm() {
     }
   }, []);
 
-  // Autosave on field change (exclude File — not serializable)
   useEffect(() => {
     try {
       window.sessionStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({
-          name: form.name,
-          email: form.email,
-          phone: form.phone,
-          areaOfInterest: form.areaOfInterest,
-          notes: form.notes,
-        })
+        JSON.stringify({ name: form.name, email: form.email, phone: form.phone, areaOfInterest: form.areaOfInterest, notes: form.notes })
       );
     } catch {
       // sessionStorage may be unavailable in some environments
@@ -71,10 +67,7 @@ export function TalentPoolForm() {
 
   function handleFileChange(file: File | null) {
     setFileError("");
-    if (!file) {
-      setCv(null);
-      return;
-    }
+    if (!file) { setCv(null); return; }
     if (file.size > MAX_FILE_SIZE) {
       setFileError("File is too large. Please upload a PDF under 10 MB.");
       setCv(null);
@@ -89,6 +82,13 @@ export function TalentPoolForm() {
     setCv(file);
   }
 
+  function handleDrop(e: DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0] ?? null;
+    handleFileChange(file);
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -97,12 +97,17 @@ export function TalentPoolForm() {
       setMessage("");
       return;
     }
-
-    if (fileError) {
-      setError(fileError);
+    if (!EMAIL_RE.test(form.email.trim())) {
+      setError("Please enter a valid email address.");
+      setMessage("");
       return;
     }
-
+    if (!PHONE_RE.test(form.phone.trim())) {
+      setError("Please enter a valid phone number (e.g. +94 77 000 0000).");
+      setMessage("");
+      return;
+    }
+    if (fileError) { setError(fileError); return; }
     if (!form.consentGiven) {
       setError("Please read and accept the privacy policy to submit your profile.");
       setMessage("");
@@ -126,12 +131,7 @@ export function TalentPoolForm() {
       try {
         const response = await fetch("/api/talent-pool", { method: "POST", body: payload });
         const result = (await response.json()) as { error?: string; message?: string };
-
-        if (!response.ok) {
-          setError(result.error ?? "We couldn't submit your profile.");
-          return;
-        }
-
+        if (!response.ok) { setError(result.error ?? "We couldn't submit your profile."); return; }
         setMessage(result.message ?? "Talent profile submitted successfully.");
         setForm({ name: "", email: "", phone: "", areaOfInterest: "", notes: "", consentGiven: false });
         setCv(null);
@@ -170,9 +170,11 @@ export function TalentPoolForm() {
           <input
             type="tel"
             required
+            placeholder="+94 77 000 0000"
             value={form.phone}
             onChange={(e) => setForm((c) => ({ ...c, phone: e.target.value }))}
           />
+          <span className="text-xs text-[#7d97a9] mt-1">Include country code, e.g. +94 77 123 4567</span>
         </label>
         <label className="careers-field">
           <span>Area of interest <span aria-hidden="true">*</span></span>
@@ -198,13 +200,69 @@ export function TalentPoolForm() {
         </label>
         <div className="careers-field careers-field-full">
           <span id="tp-cv-label">Upload CV (PDF) <span aria-hidden="true">*</span></span>
-          <span id="tp-cv-hint" className="text-xs text-[#5f89a4]">PDF files only, maximum 10 MB</span>
+          <div
+            role="button"
+            tabIndex={0}
+            aria-labelledby="tp-cv-label"
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            onKeyDown={(e) => e.key === "Enter" || e.key === " " ? fileInputRef.current?.click() : undefined}
+            style={{
+              border: `2px dashed ${isDragging ? "#1075bd" : "#c4dff0"}`,
+              borderRadius: "1rem",
+              padding: "1.5rem",
+              textAlign: "center",
+              cursor: "pointer",
+              background: isDragging ? "#edf6fd" : "#f7fbfd",
+              transition: "all 0.2s",
+              marginTop: "0.35rem",
+            }}
+          >
+            {cv ? (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.75rem" }}>
+                <span style={{ fontSize: "1.25rem" }}>📄</span>
+                <div style={{ textAlign: "left" }}>
+                  <p style={{ fontWeight: 600, color: "#0a1f35", margin: 0, fontSize: "0.9rem" }}>{cv.name}</p>
+                  <p style={{ color: "#7d97a9", margin: "0.15rem 0 0", fontSize: "0.75rem" }}>
+                    {(cv.size / 1024).toFixed(0)} KB
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  aria-label="Remove CV"
+                  onClick={(e) => { e.stopPropagation(); setCv(null); setFileError(""); }}
+                  style={{
+                    marginLeft: "auto",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#5f89a4",
+                    fontSize: "1.1rem",
+                    lineHeight: 1,
+                    padding: "0.25rem",
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            ) : (
+              <div>
+                <p style={{ color: "#1075bd", fontWeight: 600, margin: 0, fontSize: "0.9rem" }}>
+                  Drag &amp; drop your CV here
+                </p>
+                <p style={{ color: "#7d97a9", margin: "0.35rem 0 0", fontSize: "0.78rem" }}>
+                  or click to browse — PDF only, max 10 MB
+                </p>
+              </div>
+            )}
+          </div>
           <input
+            ref={fileInputRef}
             type="file"
             accept="application/pdf,.pdf"
-            required
-            aria-labelledby="tp-cv-label"
-            aria-describedby="tp-cv-hint"
+            style={{ display: "none" }}
             onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
           />
           {fileError ? (

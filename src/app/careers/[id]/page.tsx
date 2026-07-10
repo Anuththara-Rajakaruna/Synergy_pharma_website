@@ -1,23 +1,86 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { SiteHeader } from "@/components/site-header";
 import { ApplicationForm } from "@/components/careers/application-form";
-import { getJobById } from "@/lib/careers";
+import { getJobById, getPublishedJobs } from "@/lib/careers";
 
 export const dynamic = "force-dynamic";
 
-export default async function CareerDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
   const { id } = await params;
   const job = await getJobById(id);
+  if (!job) return { title: "Job Not Found — Synergy Pharma" };
+
+  const description = job.description.slice(0, 155) + (job.description.length > 155 ? "…" : "");
+  return {
+    title: `${job.title} — Synergy Pharma Careers`,
+    description,
+    openGraph: {
+      title: `${job.title} — Synergy Pharma Careers`,
+      description,
+      url: `https://synergypharma.lk/careers/${job.id}`,
+      siteName: "Synergy Pharma",
+      images: [{ url: "/logo.png", width: 200, height: 200, alt: "Synergy Pharma logo" }],
+      type: "website",
+    },
+    twitter: {
+      card: "summary",
+      title: `${job.title} — Synergy Pharma Careers`,
+      description,
+      images: ["/logo.png"],
+    },
+  };
+}
+
+export default async function CareerDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const [job, allJobs] = await Promise.all([getJobById(id), getPublishedJobs()]);
 
   if (!job) {
     notFound();
   }
 
+  const relatedJobs = allJobs
+    .filter((j) => j.id !== job.id && j.department === job.department)
+    .slice(0, 3);
+
+  const employmentType = job.type === "Full-time" ? "FULL_TIME" : "INTERN";
+
   return (
     <main className="career-detail-page">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org/",
+            "@type": "JobPosting",
+            title: job.title,
+            description: job.description,
+            datePosted: new Date().toISOString().split("T")[0],
+            employmentType,
+            hiringOrganization: {
+              "@type": "Organization",
+              name: "Synergy Pharma",
+              sameAs: "https://synergypharma.lk",
+            },
+            jobLocation: {
+              "@type": "Place",
+              address: {
+                "@type": "PostalAddress",
+                addressLocality: job.location,
+                addressCountry: "LK",
+              },
+            },
+          }),
+        }}
+      />
       <SiteHeader />
       <RevealOnScroll />
 
@@ -34,7 +97,7 @@ export default async function CareerDetailPage({ params }: { params: Promise<{ i
                   <Link href="/careers" className="hover:text-[#1075bd] transition-colors">Careers</Link>
                 </li>
                 <li aria-hidden="true" className="text-[#9db8c8]">/</li>
-                <li aria-current="page" className="font-semibold text-[#2f5a73] truncate max-w-[200px]">
+                <li aria-current="page" className="font-semibold text-[#2f5a73] truncate max-w-50">
                   {job.title}
                 </li>
               </ol>
@@ -79,6 +142,55 @@ export default async function CareerDetailPage({ params }: { params: Promise<{ i
                 ))}
               </ul>
             </ScrollReveal>
+
+            {/* Related jobs */}
+            {relatedJobs.length > 0 && (
+              <ScrollReveal className="career-detail-panel career-detail-panel-soft" delay={0.15}>
+                <p className="inline-flex rounded-full border border-[#cde6f3] bg-white/85 px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#1075bd] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+                  More Opportunities
+                </p>
+                <h2>Similar roles in {job.department}</h2>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginTop: "0.25rem" }}>
+                  {relatedJobs.map((related) => (
+                    <Link
+                      key={related.id}
+                      href={`/careers/${related.id}`}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: "1rem",
+                        padding: "1rem 1.25rem",
+                        borderRadius: "1rem",
+                        border: "1px solid #e0ecf5",
+                        background: "#f7fbfd",
+                        textDecoration: "none",
+                        transition: "all 0.2s",
+                      }}
+                    >
+                      <div>
+                        <p style={{ fontWeight: 700, color: "#0a1f35", fontSize: "0.9rem", margin: 0 }}>{related.title}</p>
+                        <p style={{ color: "#5f89a4", fontSize: "0.78rem", margin: "0.2rem 0 0" }}>{related.location}</p>
+                      </div>
+                      <span style={{
+                        flexShrink: 0,
+                        padding: "0.2rem 0.65rem",
+                        borderRadius: "999px",
+                        fontSize: "0.68rem",
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.1em",
+                        background: "#e8f4fd",
+                        color: "#1075bd",
+                        border: "1px solid #c4dff0",
+                      }}>
+                        {related.type}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </ScrollReveal>
+            )}
           </div>
 
           <aside className="career-detail-summary-column">
@@ -105,7 +217,7 @@ export default async function CareerDetailPage({ params }: { params: Promise<{ i
         </div>
       </section>
 
-      <section className="career-detail-application-zone">
+      <section className="career-detail-application-zone" id="apply">
         <div className="careers-shell career-detail-shell career-detail-application-wrap">
           <ApplicationForm job={job} />
         </div>

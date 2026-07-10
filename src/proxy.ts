@@ -5,16 +5,18 @@ import { ADMIN_SESSION_COOKIE, verifySessionToken } from "@/lib/auth";
 const rateLimitMap = new Map<string, { count: number; windowStart: number }>();
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 const RATE_LIMIT_MAX = 5;
+const LOGIN_RATE_LIMIT_MAX = 10;
 
-function isRateLimited(ip: string): boolean {
+function isRateLimited(ip: string, bucket: string, max: number): boolean {
+  const key = `${ip}:${bucket}`;
   const now = Date.now();
-  const entry = rateLimitMap.get(ip);
+  const entry = rateLimitMap.get(key);
   if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
-    rateLimitMap.set(ip, { count: 1, windowStart: now });
+    rateLimitMap.set(key, { count: 1, windowStart: now });
     return false;
   }
   entry.count += 1;
-  return entry.count > RATE_LIMIT_MAX;
+  return entry.count > max;
 }
 
 function getIp(request: NextRequest): string {
@@ -39,12 +41,23 @@ export async function proxy(request: NextRequest) {
   if (pathname === "/api/apply" || pathname === "/api/talent-pool") {
     if (method === "POST") {
       const ip = getIp(request);
-      if (isRateLimited(ip)) {
+      if (isRateLimited(ip, pathname, RATE_LIMIT_MAX)) {
         return NextResponse.json(
           { error: "Too many requests. Please wait before submitting again." },
           { status: 429, headers: { "Retry-After": "900" } }
         );
       }
+    }
+  }
+
+  // Rate limiting for admin login
+  if (pathname === "/api/admin/login" && method === "POST") {
+    const ip = getIp(request);
+    if (isRateLimited(ip, "/api/admin/login", LOGIN_RATE_LIMIT_MAX)) {
+      return NextResponse.json(
+        { error: "Too many login attempts. Please wait before trying again." },
+        { status: 429, headers: { "Retry-After": "900" } }
+      );
     }
   }
 
@@ -76,6 +89,7 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/careers/admin/:path*",
+    "/api/admin/login",
     "/api/applicants/:path*",
     "/api/jobs",
     "/api/jobs/:path*",
