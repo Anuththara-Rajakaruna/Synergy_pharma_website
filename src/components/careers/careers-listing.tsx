@@ -57,10 +57,11 @@ export function CareersListing({ initialJobs }: CareersListingProps) {
 
       try {
         const response = await fetch("/api/jobs", { cache: "no-store" });
-        const result = (await response.json()) as Job[];
+        const result = (await response.json()) as unknown;
+        const jobList = Array.isArray(result) ? (result as Job[]) : initialJobs;
 
         if (!ignore) {
-          setJobs(result);
+          setJobs(jobList);
         }
       } catch {
         if (!ignore) {

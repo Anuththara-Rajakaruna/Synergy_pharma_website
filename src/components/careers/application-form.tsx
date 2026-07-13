@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, startTransition, useState } from "react";
+import Link from "next/link";
 import { Job } from "@/types/careers";
 
 type ApplicationFormProps = {
@@ -14,6 +15,9 @@ type FormState = {
   position: string;
   coverLetter: string;
   cv: File | null;
+  privacyConsent: boolean;
+  // Honeypot — must stay empty; filled by bots
+  website: string;
 };
 
 const initialState: FormState = {
@@ -23,15 +27,18 @@ const initialState: FormState = {
   position: "",
   coverLetter: "",
   cv: null,
+  privacyConsent: false,
+  website: "",
 };
 
-const stepLabels = ["Details", "Role & CV", "Review"];
+const stepLabels = ["Details", "Role & CV", "Review & Consent"];
 
 export function ApplicationForm({ job }: ApplicationFormProps) {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>({ ...initialState, position: job.title });
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [applicationId, setApplicationId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   function validateCurrentStep(currentStep: number) {
@@ -45,11 +52,13 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
       if (!form.position.trim() || !form.cv) {
         return "Please confirm the position and upload your CV.";
       }
-
       const isPdf = form.cv.type === "application/pdf" || form.cv.name.toLowerCase().endsWith(".pdf");
+      if (!isPdf) return "CV uploads must be provided as PDF files.";
+    }
 
-      if (!isPdf) {
-        return "CV uploads must be provided as PDF files.";
+    if (currentStep === 2) {
+      if (!form.privacyConsent) {
+        return "Please read and accept the Privacy Notice to continue.";
       }
     }
 
@@ -59,10 +68,7 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
   function handleNext() {
     const nextError = validateCurrentStep(step);
     setError(nextError);
-
-    if (!nextError) {
-      setStep((current) => Math.min(current + 1, 2));
-    }
+    if (!nextError) setStep((current) => Math.min(current + 1, 2));
   }
 
   function handlePrevious() {
@@ -72,18 +78,20 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const nextError = validateCurrentStep(1);
 
-    if (nextError) {
-      setError(nextError);
-      setStep(1);
+    // Honeypot check — if filled, silently succeed (it's a bot)
+    if (form.website) {
+      setSuccessMessage("Application submitted successfully.");
       return;
     }
 
-    if (!form.cv) {
-      setError("Please upload your CV before submitting.");
-      return;
-    }
+    const consentError = validateCurrentStep(2);
+    if (consentError) { setError(consentError); return; }
+
+    const cvError = validateCurrentStep(1);
+    if (cvError) { setError(cvError); setStep(1); return; }
+
+    if (!form.cv) { setError("Please upload your CV before submitting."); return; }
 
     const payload = new FormData();
     payload.set("name", form.name);
@@ -96,16 +104,11 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
 
     setIsSubmitting(true);
     setError("");
-    setSuccessMessage("");
 
     startTransition(async () => {
       try {
-        const response = await fetch("/api/apply", {
-          method: "POST",
-          body: payload,
-        });
-
-        const result = (await response.json()) as { error?: string; message?: string };
+        const response = await fetch("/api/apply", { method: "POST", body: payload });
+        const result = (await response.json()) as { error?: string; message?: string; id?: string };
 
         if (!response.ok) {
           setError(result.error ?? "We couldn't submit your application.");
@@ -113,14 +116,36 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
         }
 
         setSuccessMessage(result.message ?? "Application submitted successfully.");
-        setForm({ ...initialState, position: job.title });
-        setStep(0);
+        setApplicationId(result.id ?? "");
       } catch {
         setError("We couldn't submit your application right now. Please try again.");
       } finally {
         setIsSubmitting(false);
       }
     });
+  }
+
+  if (successMessage) {
+    return (
+      <section className="career-apply-section" id="apply">
+        <div className="career-apply-card career-apply-success">
+          <div className="career-success-icon">✓</div>
+          <h2>Application submitted!</h2>
+          <p>{successMessage}</p>
+          {applicationId && (
+            <div className="career-success-reference">
+              <p className="career-success-reference-label">Your reference number</p>
+              <code className="career-success-reference-id">{applicationId}</code>
+              <p className="career-success-hint">
+                Save this — use it with your email at{" "}
+                <Link href="/careers/status">/careers/status</Link> to check your application status.
+              </p>
+            </div>
+          )}
+          <p className="career-success-hint">We&apos;ll be in touch soon. You can close this page or explore other roles.</p>
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -146,54 +171,49 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
         </div>
 
         <form className="career-form" onSubmit={handleSubmit}>
+          {/* Honeypot field — hidden from humans, filled by bots */}
+          <label className="career-honeypot" aria-hidden="true">
+            <span>Leave this blank</span>
+            <input
+              type="text"
+              name="website"
+              value={form.website}
+              onChange={(e) => setForm((c) => ({ ...c, website: e.target.value }))}
+              tabIndex={-1}
+              autoComplete="off"
+            />
+          </label>
+
           {step === 0 ? (
             <div className="career-form-grid">
               <label className="careers-field">
                 <span>Full name</span>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-                />
+                <input type="text" value={form.name}
+                  onChange={(e) => setForm((c) => ({ ...c, name: e.target.value }))} />
               </label>
               <label className="careers-field">
                 <span>Email</span>
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
-                />
+                <input type="email" value={form.email}
+                  onChange={(e) => setForm((c) => ({ ...c, email: e.target.value }))} />
               </label>
               <label className="careers-field">
                 <span>Phone</span>
-                <input
-                  type="tel"
-                  value={form.phone}
-                  onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
-                />
+                <input type="tel" value={form.phone}
+                  onChange={(e) => setForm((c) => ({ ...c, phone: e.target.value }))} />
               </label>
             </div>
           ) : null}
 
           {step === 1 ? (
             <div className="career-form-grid">
-              <label className="careers-field">
+              <div className="careers-field">
                 <span>Position</span>
-                <input
-                  type="text"
-                  value={form.position}
-                  onChange={(event) => setForm((current) => ({ ...current, position: event.target.value }))}
-                />
-              </label>
+                <p className="careers-field-static">{form.position}</p>
+              </div>
               <label className="careers-field">
-                <span>CV upload (PDF)</span>
-                <input
-                  type="file"
-                  accept="application/pdf,.pdf"
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, cv: event.target.files?.[0] ?? null }))
-                  }
-                />
+                <span>CV upload (PDF, max 10 MB)</span>
+                <input type="file" accept="application/pdf,.pdf"
+                  onChange={(e) => setForm((c) => ({ ...c, cv: e.target.files?.[0] ?? null }))} />
               </label>
             </div>
           ) : null}
@@ -202,12 +222,9 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
             <div className="career-form-grid career-form-grid-single">
               <label className="careers-field">
                 <span>Cover letter (optional)</span>
-                <textarea
-                  rows={7}
-                  value={form.coverLetter}
-                  onChange={(event) => setForm((current) => ({ ...current, coverLetter: event.target.value }))}
-                  placeholder="Share a brief introduction, motivation, or relevant experience."
-                />
+                <textarea rows={7} value={form.coverLetter}
+                  onChange={(e) => setForm((c) => ({ ...c, coverLetter: e.target.value }))}
+                  placeholder="Share a brief introduction, motivation, or relevant experience." />
               </label>
               <div className="career-application-review">
                 <div>
@@ -219,23 +236,37 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
                   <span>{form.cv?.name ?? "Not uploaded yet"}</span>
                 </div>
               </div>
+
+              {/* GDPR Consent */}
+              <label className="career-consent-label">
+                <input
+                  type="checkbox"
+                  className="career-consent-checkbox"
+                  checked={form.privacyConsent}
+                  onChange={(e) => setForm((c) => ({ ...c, privacyConsent: e.target.checked }))}
+                  required
+                />
+                <span>
+                  I have read and agree to the{" "}
+                  <Link href="/privacy" target="_blank" rel="noopener noreferrer">
+                    Privacy Notice
+                  </Link>
+                  {" "}and consent to Synergy Pharmaceuticals processing my personal data for recruitment purposes.
+                </span>
+              </label>
             </div>
           ) : null}
 
           {error ? <p className="career-form-message career-form-error">{error}</p> : null}
-          {successMessage ? <p className="career-form-message career-form-success">{successMessage}</p> : null}
 
           <div className="career-form-actions">
             <button type="button" className="career-secondary-button" onClick={handlePrevious} disabled={step === 0}>
               Back
             </button>
-
             {step < 2 ? (
-              <button type="button" onClick={handleNext}>
-                Continue
-              </button>
+              <button type="button" onClick={handleNext}>Continue</button>
             ) : (
-              <button type="submit" disabled={isSubmitting}>
+              <button type="submit" disabled={isSubmitting || !form.privacyConsent}>
                 {isSubmitting ? "Submitting..." : "Submit Application"}
               </button>
             )}

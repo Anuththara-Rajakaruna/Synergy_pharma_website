@@ -1,0 +1,22 @@
+[
+  {
+    "name": "interview_invite",
+    "subject": "Interview Invitation — {{position}} at Synergy Pharmaceuticals",
+    "body": "Dear {{name}},\n\nThank you for your application for the {{position}} role at Synergy Pharmaceuticals.\n\nWe are pleased to invite you to an interview. Please use the link below to select a time that works for you:\n\n{{interviewLink}}\n\nIf you have any questions, please do not hesitate to contact us at hr@synergypharma.lk.\n\nWe look forward to speaking with you.\n\nKind regards,\nHR Team\nSynergy Pharmaceuticals"
+  },
+  {
+    "name": "shortlist",
+    "subject": "Your application for {{position}} — Update",
+    "body": "Dear {{name}},\n\nThank you for your interest in the {{position}} position at Synergy Pharmaceuticals.\n\nWe are pleased to inform you that you have been shortlisted and our HR team will be in touch shortly to discuss next steps.\n\nKind regards,\nHR Team\nSynergy Pharmaceuticals"
+  },
+  {
+    "name": "offer",
+    "subject": "Offer of Employment — {{position}} at Synergy Pharmaceuticals",
+    "body": "Dear {{name}},\n\nFollowing our recent interview process, we are delighted to extend an offer of employment for the {{position}} role at Synergy Pharmaceuticals.\n\nOur HR team will contact you shortly with the formal offer details and next steps.\n\nCongratulations, and we look forward to welcoming you to the team.\n\nKind regards,\nHR Team\nSynergy Pharmaceuticals"
+  },
+  {
+    "name": "rejection",
+    "subject": "Your application for {{position}} at Synergy Pharmaceuticals",
+    "body": "Dear {{name}},\n\nThank you for taking the time to apply for the {{position}} position at Synergy Pharmaceuticals and for your interest in joining our team.\n\nAfter careful consideration, we have decided to proceed with other candidates whose experience more closely matches our current requirements. This was a competitive process and we encourage you to apply for future openings that match your profile.\n\nWe wish you all the best in your job search.\n\nKind regards,\nHR Team\nSynergy Pharmaceuticals"
+  }
+]

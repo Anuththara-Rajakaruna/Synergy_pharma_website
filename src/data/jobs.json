@@ -5,6 +5,8 @@
     "department": "Quality Assurance",
     "location": "Bingiriya, Sri Lanka",
     "type": "Full-time",
+    "salary": "LKR 80,000 – 120,000 / month",
+    "closingDate": "2026-07-31",
     "description": "Lead day-to-day quality assurance execution across our manufacturing campus and support a documentation culture that meets global pharmaceutical expectations.",
     "responsibilities": [
       "Review batch manufacturing records and supporting GMP documentation.",
@@ -17,14 +19,21 @@
       "2+ years of quality assurance experience in a GMP-regulated environment.",
       "Strong understanding of SOP control, deviations, and CAPA workflows.",
       "Clear written communication and disciplined documentation habits."
+    ],
+    "preferredRequirements": [
+      "Experience supporting NMRA or EU-GMP inspections.",
+      "Familiarity with pharmaceutical quality management systems (QMS software).",
+      "Postgraduate qualification in pharmaceutical sciences or quality management."
     ]
   },
   {
     "id": "production-pharmacist",
     "title": "Production Pharmacist",
-    "department": "Manufacturing",
+    "department": "Production",
     "location": "Kurunegala District, Sri Lanka",
     "type": "Full-time",
+    "salary": "LKR 90,000 – 130,000 / month",
+    "closingDate": "2026-07-31",
     "description": "Oversee production line discipline, batch execution, and safe manufacturing practices while helping scale reliable medicine output across multiple dosage formats.",
     "responsibilities": [
       "Supervise daily production activities and enforce schedule adherence.",
@@ -37,14 +46,21 @@
       "Experience in oral solid dosage or general pharmaceutical manufacturing.",
       "Working knowledge of GMP, safety, and process controls.",
       "Ability to manage cross-functional coordination under production timelines."
+    ],
+    "preferredRequirements": [
+      "Experience with OSD (tablets, capsules) or injectable manufacturing.",
+      "Exposure to technology transfer or scale-up activities.",
+      "Supervisory or team-lead experience in a regulated environment."
     ]
   },
   {
     "id": "r-and-d-analyst",
     "title": "R&D Analytical Analyst",
-    "department": "Research & Development",
+    "department": "Analytical Development",
     "location": "Colombo / Bingiriya",
     "type": "Full-time",
+    "salary": "LKR 70,000 – 100,000 / month",
+    "closingDate": "2026-08-15",
     "description": "Support product development and method verification with disciplined analytical work, technical reporting, and close collaboration across R&D and quality functions.",
     "responsibilities": [
       "Execute analytical testing for formulation development and stability studies.",
@@ -57,6 +73,11 @@
       "Hands-on experience with HPLC, UV, dissolution, or similar techniques.",
       "Comfort working within structured lab documentation systems.",
       "Strong attention to accuracy and scientific detail."
+    ],
+    "preferredRequirements": [
+      "Experience with ICH stability studies or method validation.",
+      "Familiarity with 21 CFR Part 11 or equivalent data integrity standards.",
+      "Knowledge of Empower, OpenLAB, or similar HPLC software platforms."
     ]
   },
   {
@@ -65,6 +86,8 @@
     "department": "Regulatory Affairs",
     "location": "Colombo, Sri Lanka",
     "type": "Internship",
+    "salary": "LKR 25,000 – 35,000 / month",
+    "closingDate": "2026-07-15",
     "description": "Join the regulatory team to learn submission workflows, dossier organization, and the operational detail behind compliant market access in the pharmaceutical sector.",
     "responsibilities": [
       "Assist with document preparation and submission trackers.",
@@ -77,6 +100,11 @@
       "Strong organizational skills and confidence with structured documentation.",
       "Clear written English and attention to detail.",
       "Interest in pharmaceutical compliance and market authorization work."
+    ],
+    "preferredRequirements": [
+      "Exposure to CTD/eCTD dossier structure.",
+      "Prior internship or project work in a pharma or regulatory environment.",
+      "Familiarity with NMRA Sri Lanka submission requirements."
     ]
   }
 ]
