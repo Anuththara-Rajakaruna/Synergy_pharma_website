@@ -59,7 +59,7 @@ export default function AboutPage() {
       <Hero
         eyebrow="About Synergy"
         heading="Trust Built. Precision Delivered."
-        description="Synergy Pharmaceutical combines visionary leadership, responsible manufacturing, and quality-first operations to deliver healthcare solutions that matter across the region."
+        description="Synergy Pharmaceuticals combines visionary leadership, responsible manufacturing, and quality-first operations to deliver healthcare solutions that matter across the region."
         className="about-hero-section"
       />
 

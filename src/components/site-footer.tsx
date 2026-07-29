@@ -46,7 +46,7 @@ export function SiteFooter() {
         <div className="footer-col footer-col-wide">
           <h3>Manufacturing and R&amp;D Site Address</h3>
           <address>
-            Synergy Pharmaceutical Corporation Pvt. Ltd.
+            Synergy Pharmaceuticals Corporation Pvt. Ltd.
             <br />
             Bingiria BOI Export processing Zone,
             <br />
@@ -80,7 +80,11 @@ export function SiteFooter() {
         {/* <div className="footer-col">
           <h3>Rank Entertainment</h3>
           <address>
+<<<<<<< Updated upstream
             No. 9, 15th Lane
+=======
+            Synergy Pharmaceuticals Corporation Pvt. Ltd.
+>>>>>>> Stashed changes
             <br />
             Galle Road
             <br />
