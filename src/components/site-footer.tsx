@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 
 const currentYear = new Date().getFullYear();
 
@@ -47,7 +47,7 @@ export function SiteFooter() {
             <br />
             Wathuwaththa,
             <br />
-            Dummalasuriya,
+            Dummalasuriya 60260,
             <br />
             Kurunegala district,
             <br />
@@ -56,15 +56,32 @@ export function SiteFooter() {
         </div>
 
         <div className="footer-col footer-col-wide">
-          <h3>Headoffice</h3>
+          <h3>Head office</h3>
           <address>
             Astoria Colombo
             <br />
-            Level 14, Commercial Tower III
+            Level 14, 
+            <br />
+            Commercial Tower III
             <br />
             422, R. A. De Mel Mawatha
             <br />
             Colombo 3
+            <br />
+            Sri Lanka
+          </address>
+        </div>
+
+        <div className="footer-col footer-col-wide">
+          <h3>Registered Office Address</h3>
+          <address>
+            Synergy Pharmaceutical Corporation Pvt. Ltd.
+            <br />
+            No.: 282/1, 4th floor,
+            <br />
+            CBS Building, Galle Road,
+            <br />
+            Colombo 3,
             <br />
             Sri Lanka
           </address>

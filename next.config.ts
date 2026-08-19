@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
               // Turbopack dev runtime uses eval() for module evaluation; allow it in dev only.
               isDev ? "script-src 'self' 'unsafe-eval'" : "script-src 'self'",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: blob:",
+              "img-src 'self' data: blob: https://images.unsplash.com",
               "font-src 'self' data:",
               // ws: needed for Turbopack HMR WebSocket in dev.
               isDev ? "connect-src 'self' ws:" : "connect-src 'self'",
