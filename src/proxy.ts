@@ -33,18 +33,54 @@ async function isAuthenticated(request: NextRequest): Promise<boolean> {
   return verifySessionToken(token);
 }
 
+const isDev = process.env.NODE_ENV === "development";
+
+function buildCsp(nonce: string): string {
+  return [
+    "default-src 'self'",
+    // 'strict-dynamic' trusts scripts loaded by a nonced script (e.g. Next's chunk
+    // loader); 'self' is kept as a fallback for browsers that don't support it.
+    // Turbopack's dev runtime needs 'unsafe-eval' for module evaluation.
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""}`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob: https://images.unsplash.com",
+    "font-src 'self' data:",
+    // ws: needed for Turbopack HMR WebSocket in dev.
+    `connect-src 'self'${isDev ? " ws:" : ""}`,
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join("; ");
+}
+
+function withCsp(response: NextResponse, csp: string): NextResponse {
+  response.headers.set("Content-Security-Policy", csp);
+  return response;
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const method = request.method;
+
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const csp = buildCsp(nonce);
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("Content-Security-Policy", csp);
+  const nextOptions = { request: { headers: requestHeaders } };
 
   // Rate limiting for public submission endpoints
   if (pathname === "/api/apply" || pathname === "/api/talent-pool") {
     if (method === "POST") {
       const ip = getIp(request);
       if (isRateLimited(ip, pathname, RATE_LIMIT_MAX)) {
-        return NextResponse.json(
-          { error: "Too many requests. Please wait before submitting again." },
-          { status: 429, headers: { "Retry-After": "900" } }
+        return withCsp(
+          NextResponse.json(
+            { error: "Too many requests. Please wait before submitting again." },
+            { status: 429, headers: { "Retry-After": "900" } }
+          ),
+          csp
         );
       }
     }
@@ -54,9 +90,12 @@ export async function proxy(request: NextRequest) {
   if (pathname === "/api/admin/login" && method === "POST") {
     const ip = getIp(request);
     if (isRateLimited(ip, "/api/admin/login", LOGIN_RATE_LIMIT_MAX)) {
-      return NextResponse.json(
-        { error: "Too many login attempts. Please wait before trying again." },
-        { status: 429, headers: { "Retry-After": "900" } }
+      return withCsp(
+        NextResponse.json(
+          { error: "Too many login attempts. Please wait before trying again." },
+          { status: 429, headers: { "Retry-After": "900" } }
+        ),
+        csp
       );
     }
   }
@@ -66,7 +105,7 @@ export async function proxy(request: NextRequest) {
     if (!(await isAuthenticated(request))) {
       const loginUrl = new URL("/careers/admin/login", request.url);
       loginUrl.searchParams.set("from", pathname + search);
-      return NextResponse.redirect(loginUrl);
+      return withCsp(NextResponse.redirect(loginUrl), csp);
     }
   }
 
@@ -79,22 +118,21 @@ export async function proxy(request: NextRequest) {
 
   if (isAdminApi) {
     if (!(await isAuthenticated(request))) {
-      return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+      return withCsp(NextResponse.json({ error: "Authentication required." }, { status: 401 }), csp);
     }
   }
 
-  return NextResponse.next();
+  return withCsp(NextResponse.next(nextOptions), csp);
 }
 
 export const config = {
   matcher: [
-    "/careers/admin/:path*",
-    "/api/admin/login",
-    "/api/applicants/:path*",
-    "/api/jobs",
-    "/api/jobs/:path*",
-    "/api/apply",
-    "/api/talent-pool",
-    "/api/files/:path*",
+    {
+      source: "/((?!_next/static|_next/image|favicon.ico).*)",
+      missing: [
+        { type: "header", key: "next-router-prefetch" },
+        { type: "header", key: "purpose", value: "prefetch" },
+      ],
+    },
   ],
 };
