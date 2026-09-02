@@ -7361,6 +7361,7 @@ button:active {
 .careers-culture-section,
 .careers-benefits-section,
 .careers-jobs-section,
+.careers-hiring-section,
 .careers-talent-section,
 .career-detail-content,
 .careers-admin-section {
@@ -7384,6 +7385,7 @@ button:active {
 .careers-culture-section,
 .careers-benefits-section,
 .careers-jobs-section,
+.careers-hiring-section,
 .careers-talent-section,
 .career-detail-content,
 .careers-admin-section {
@@ -7409,6 +7411,7 @@ button:active {
 .careers-culture-section::before,
 .careers-benefits-section::before,
 .careers-jobs-section::before,
+.careers-hiring-section::before,
 .careers-talent-section::before,
 .career-detail-content::before,
 .careers-admin-section::before {
@@ -7439,6 +7442,7 @@ button:active {
 .careers-culture-section > *,
 .careers-benefits-section > *,
 .careers-jobs-section > *,
+.careers-hiring-section > *,
 .careers-talent-section > *,
 .career-detail-content > *,
 .careers-admin-section > * {

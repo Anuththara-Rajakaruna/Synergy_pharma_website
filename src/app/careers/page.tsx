@@ -188,7 +188,7 @@ export default async function CareersPage() {
       </section>
 
       {/* Hiring Process Timeline */}
-      <section className="reveal-on-scroll" style={{ padding: "4rem 0" }}>
+      <section className="careers-hiring-section reveal-on-scroll">
         <div className="careers-shell">
           <ScrollReveal className="careers-header">
             <p className="careers-eyebrow">Hiring Process</p>
