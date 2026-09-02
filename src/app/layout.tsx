@@ -13,15 +13,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <head>
         <link rel="icon" href="/logo.png" sizes="48x48" type="image/png" />
         <link rel="icon" href="/logo.png" sizes="32x32" type="image/png" />
         <link rel="icon" href="/logo.png" sizes="16x16" type="image/png" />
         <link rel="shortcut icon" href="/logo.png" />
-        <script src="/theme-init.js" />
       </head>
-      <body suppressHydrationWarning>
+      <body>
         {children}
         <SiteFooter />
       </body>
