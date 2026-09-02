@@ -7516,12 +7516,22 @@ button:active {
 
 .careers-culture-card h3,
 .career-benefit-card h3,
-.careers-admin-job-row h3,
 .careers-admin-list h3,
 .career-sticky-card h3,
 .careers-empty-state h3 {
   margin: 0 0 0.75rem;
   color:  #1075bd;
+}
+
+.careers-admin-job-row h3 {
+  margin: 0;
+  color: #0f2740;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.careers-admin-job-row p {
+  font-weight: 500;
 }
 
 .careers-culture-card p,
