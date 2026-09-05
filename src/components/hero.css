@@ -22,7 +22,14 @@
   background-color: #0a1f33;
   isolation: isolate;
   --hero-image: url("/banner3.png");
-  --hero-overlay: linear-gradient(115deg, rgba(2, 18, 32, 0.82) 0%, rgba(2, 45, 69, 0.5) 44%, rgba(166, 221, 230, 0.18) 100%);
+  --hero-image-aspect: 1.5;
+  --hero-overlay: linear-gradient(115deg, rgba(2, 20, 45, 0.28) 0%, rgba(2, 45, 69, 0.32) 50%, rgba(100, 180, 220, 0.06) 100%);
+  --hero-image-anchor-x: 0;
+  --hero-image-anchor-y: 0.5;
+  --hero-text-offset-x: 0px;
+  --hero-text-offset-y: 0px;
+  --hero-transform-origin-x-ratio: 0.125;
+  --hero-transform-origin-y-ratio: 0.5;
   --hero-bg-scale: 1;
   /*
     Pan values are UNITLESS so calc() can multiply by 1vw / 1vh below.
@@ -39,24 +46,53 @@
     a fully transparent window onto the image.
   */
   --hero-tint-alpha: 0.45;
+  --hero-base-image-width: max(100vw, calc(100vh * var(--hero-image-aspect)));
+  --hero-base-image-height: calc(var(--hero-base-image-width) / var(--hero-image-aspect));
+  --hero-base-image-left: calc((100vw - var(--hero-base-image-width)) * var(--hero-image-anchor-x));
+  --hero-base-image-top: calc((100vh - var(--hero-base-image-height)) * var(--hero-image-anchor-y));
+  --hero-transform-origin-x: calc(var(--hero-transform-origin-x-ratio) * 100vw);
+  --hero-transform-origin-y: calc(var(--hero-transform-origin-y-ratio) * 100vh);
+  --hero-current-image-width: calc(var(--hero-base-image-width) * var(--hero-bg-scale));
+  --hero-current-image-height: calc(var(--hero-base-image-height) * var(--hero-bg-scale));
+  --hero-current-image-left: calc(
+    var(--hero-transform-origin-x) * (1 - var(--hero-bg-scale))
+    + var(--hero-bg-scale) * var(--hero-base-image-left)
+    + var(--hero-bg-scale) * var(--hero-bg-pan-x) * 1vw
+  );
+  --hero-current-image-top: calc(
+    var(--hero-transform-origin-y) * (1 - var(--hero-bg-scale))
+    + var(--hero-bg-scale) * var(--hero-base-image-top)
+    + var(--hero-bg-scale) * var(--hero-bg-pan-y) * 1vh
+  );
 }
 
 /* Background Images - Set directly on containers */
 .hero {
-  --hero-image: url("/banner3.png");
+  --hero-image: url("/career.png");
+  --hero-image-aspect: 1.874;
+  --hero-image-anchor-x: 0.5;
+  --hero-image-anchor-y: 0;
+  --hero-overlay: linear-gradient(to bottom, rgba(2, 20, 45, 0.28) 0%, rgba(2, 45, 69, 0.32) 50%, rgba(100, 180, 220, 0.06) 100%);
+}
+
+.hero.careers-hero-section .hero-background-layer {
+  background-position-y: 80px;
 }
 
 .home-hero {
-  --hero-image: url("/banner3.png");
-  --hero-overlay: linear-gradient(125deg, rgba(2, 15, 28, 0.68) 0%, rgba(2, 45, 69, 0.42) 42%, rgba(187, 231, 232, 0.12) 100%);
+  --hero-image: url("/Homepage.png");
+  --hero-overlay: linear-gradient(125deg, rgba(2, 20, 45, 0.28) 0%, rgba(2, 45, 69, 0.32) 50%, rgba(100, 180, 220, 0.06) 100%);
+  --hero-image-anchor-x: 0.78;
+  --hero-image-anchor-y: 0.16;
+  --hero-tint-alpha: 0.92;
 }
 
 .about-hero-section {
-  --hero-image: url("/company.png");
+  --hero-image: url("/Synergy.png");
 }
 
 .facility-hero-section {
-  --hero-image: url("/facilities/manufacturing.jpg");
+  --hero-image: url("/facility.png");
 }
 
 .quality-hero {
@@ -64,7 +100,8 @@
 }
 
 .product-hero {
-  --hero-image: url("/lab.jpeg");
+  --hero-image: url("/product.png");
+  --hero-overlay: linear-gradient(115deg, rgba(2, 20, 45, 0.28) 0%, rgba(2, 45, 69, 0.32) 50%, rgba(100, 180, 220, 0.06) 100%);
 }
 
 .hero-background-layer,
@@ -81,9 +118,10 @@
     banner3.png (the salad / drink cluster) at scroll end.
     At scroll start (scale = 1) the layer sits exactly on the viewport.
   */
-  transform-origin: 12.5% center;
+  transform-origin:
+    calc(var(--hero-transform-origin-x-ratio) * 100%)
+    calc(var(--hero-transform-origin-y-ratio) * 100%);
   will-change: transform, opacity;
-  backface-visibility: hidden;
 }
 
 .hero-background-layer {
@@ -97,10 +135,9 @@
     the section vertically, even when the viewport is more square
     than 1.5:1 (which left a dark band at the top before).
   */
-  background-size: max(100vw, 150vh) auto;
-  background-position: left center;
+  background-size: var(--hero-base-image-width) var(--hero-base-image-height);
+  background-position: var(--hero-base-image-left) var(--hero-base-image-top);
   background-repeat: no-repeat;
-  filter: saturate(1.02) contrast(1.12);
 }
 
 .hero-background-layer::after {
@@ -121,11 +158,12 @@
     var(--hero-overlay);
 }
 
+.home-hero .hero-foreground-layer {
+  background: none;
+}
+
 .home-hero .hero-foreground-layer::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(1, 9, 18, 0.08) 0%, rgba(1, 12, 22, 0.56) 100%);
+  content: none;
 }
 
 /* ========================================
@@ -192,11 +230,10 @@
 
   font-size: clamp(3.4rem, 7.1vw, 7.4rem);
   line-height: 0.94;
-  font-weight: 850;
+  font-weight: 900;
   letter-spacing: 0;
   text-wrap: balance;
   color: transparent;
-
   /*
     Background sized + positioned to track .hero-background-layer at
     EVERY point in the scroll (not just t=0 and t=1).
@@ -226,31 +263,40 @@
   background-image:
     linear-gradient(
       135deg,
-      rgba(2, 18, 32, var(--hero-tint-alpha)) 0%,
-      rgba(4, 38, 60, calc(var(--hero-tint-alpha) * 0.71)) 55%,
-      rgba(8, 60, 86, calc(var(--hero-tint-alpha) * 0.49)) 100%
+      rgba(6, 24, 40, calc(var(--hero-tint-alpha) * 0.52)) 0%,
+      rgba(10, 44, 68, calc(var(--hero-tint-alpha) * 0.34)) 58%,
+      rgba(190, 230, 236, calc(var(--hero-tint-alpha) * 0.12)) 100%
     ),
+    linear-gradient(180deg, rgba(1, 9, 18, 0.08) 0%, rgba(1, 12, 22, 0.56) 100%),
+    radial-gradient(circle at 52% 45%, rgba(255, 255, 255, 0.06), transparent 24%),
+    radial-gradient(circle at 50% 34%, rgba(208, 244, 244, 0.24), transparent 28%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.05), rgba(0, 12, 22, 0.56)),
+    var(--hero-overlay),
     var(--hero-image);
-  /*
-    Image layer mirrors the .hero-background-layer's
-    max(100vw, 150vh) coverage formula, scaled by --hero-bg-scale,
-    so the image-in-text stays size-locked to the image-in-layer
-    at every viewport aspect (not just 1.5:1 or wider).
-  */
   background-size:
     100% 100%,
-    max(calc(100vw * var(--hero-bg-scale)), calc(150vh * var(--hero-bg-scale))) auto;
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    var(--hero-current-image-width) var(--hero-current-image-height);
   background-position:
     0 0,
-    calc(12.5vw * (1 - var(--hero-bg-scale)) + var(--hero-bg-scale) * var(--hero-bg-pan-x) * 1vw)
-    calc(50% + var(--hero-bg-scale) * var(--hero-bg-pan-y) * 1vh);
-  background-repeat: no-repeat, no-repeat;
-  background-attachment: scroll, scroll;
+    0 0,
+    0 0,
+    0 0,
+    0 0,
+    0 0,
+    calc(var(--hero-current-image-left) - var(--hero-text-offset-x))
+    calc(var(--hero-current-image-top) - var(--hero-text-offset-y));
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+  background-attachment: scroll, scroll, scroll, scroll, scroll, scroll, scroll;
 
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: clamp(0.5px, 0.08vw, 1.2px) rgba(236, 250, 252, 0.42);
+  -webkit-text-stroke: clamp(2.5px, 0.2vw, 4.6px) rgba(247, 250, 252, 0.98);
 
   mix-blend-mode: normal;
 
@@ -260,7 +306,7 @@
     toward pure white, which is what made the letters look like solid
     white text at certain zoom frames.
   */
-  filter: drop-shadow(0 22px 48px rgba(0, 9, 20, 0.5));
+  filter: drop-shadow(0 20px 40px rgba(0, 9, 20, 0.48));
   transform: translateZ(0);
   will-change: filter;
 }
@@ -283,6 +329,49 @@
 
 .home-hero .hero-cutout-heading::selection {
   -webkit-text-fill-color: rgba(255, 255, 255, 0.92);
+}
+
+.home-hero .hero-cutout-heading {
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  font-weight: 900;
+  -webkit-text-stroke: clamp(2.5px, 0.2vw, 4.6px) rgba(247, 250, 252, 0.98);
+  padding: 0.14em 0;
+}
+
+.home-hero .hero-cutout-heading::before {
+  background: rgba(220, 247, 249, 0.06);
+  opacity: 0.7;
+}
+
+.home-hero .hero-text-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+
+.hero-mask-foreign-root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-mask-heading {
+  position: absolute;
+  display: grid;
+  justify-items: center;
+  text-wrap: balance;
+  color: #000000;
+}
+
+.hero-mask-heading .hero-heading-line {
+  display: block;
+  white-space: nowrap;
 }
 
 .hero p,
@@ -317,14 +406,6 @@
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.75);
   text-align: center;
-}
-
-/* ========================================
-   FACILITY HERO - 2-LINE HEADING OVERRIDE
-   ======================================== */
-
-.facility-hero-section .hero-content {
-  max-width: 1200px;
 }
 
 /* ========================================
@@ -475,16 +556,7 @@
         1. dark tint gradient → full cover
         2. hero image → height-driven to keep aspect on portrait phones
     */
-    background-size:
-      100% 100%,
-      auto calc(100vh * var(--hero-bg-scale));
-    background-attachment: scroll, scroll;
   }
-
-  .hero-background-layer {
-    background-size: auto 100vh;
-  }
-
   .hero p,
   .home-hero p,
   .about-hero-content p,
@@ -494,8 +566,7 @@
     font-size: clamp(0.85rem, 2vw, 0.95rem);
     max-width: calc(100% - var(--space-md));
     padding: 0 var(--space-sm);
-      font-style: italic !important;
-
+    font-style: italic !important;
   }
 
   .hero .eyebrow,

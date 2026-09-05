@@ -3,10 +3,11 @@
 import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/hero";
 import { ScrollReveal, ScrollRevealContainer, ScrollRevealItem } from "@/components/scroll-reveal";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import { CapabilityCard } from "@/components/capability-card";
 import { useEffect, useRef } from "react";
-import { FlaskConical, Pill, Microscope, ArrowRight } from "lucide-react";
+import { FlaskConical, Pill, Microscope, ArrowRight, ShieldCheck, Package } from "lucide-react";
 
 export default function ProductsPage() {
   const highlightRef = useRef<HTMLElement | null>(null);
@@ -84,35 +85,32 @@ export default function ProductsPage() {
         className="product-hero"
       />
 
-      <br></br>
-
       <section ref={highlightRef} className="product-highlight product-highlight-zoom">
         <div className="highlight-container">
           <ScrollReveal>
             <div className="showcaseContent">
-              <p className="highlight-eyebrow">Product Overview</p>
+              <p className="eyebrow">Product Overview</p>
               <h2>Reliable Pharmaceutical Products for Safer Global Care</h2>
               <p className="highlight-subtitle">
                 Leveraging advanced chemical engineering and rigorous stability protocols to deliver
                 clinical excellence to healthcare providers worldwide.
               </p>
+              <p className="facility-label">CERTIFIED OPERATIONS</p>
             </div>
           </ScrollReveal>
 
           <ScrollReveal delay={0.2}>
             <div className="highlight-layout">
               <div className="highlight-image-card">
-                <div className="highlight-wave-background" aria-hidden="true" />
                 <div className="highlight-image-frame">
                   <Image
-                    src="/facility_1.png"
+                    src="/Overview.png"
                     alt="Certified pharmaceutical facility"
                     width={400}
-                    height={500}
+                    height={400}
                     className="facility-image"
                   />
                 </div>
-                <p className="facility-label">CERTIFIED OPERATIONS</p>
               </div>
 
               <div className="highlight-content">
@@ -131,7 +129,7 @@ export default function ProductsPage() {
           <div className="overview-container">
             <ScrollReveal>
               <div className="capabilities-header">
-                <p className="capabilities-eyebrow">Manufacturing Capabilities</p>
+                <p className="eyebrow">Manufacturing Capabilities</p>
                 <h2>Capabilities & Formulations</h2>
                 <p className="capabilities-subtitle">
                   Our manufacturing platform supports precision pharmaceutical production designed for stability, efficacy, and patient compliance.
@@ -142,11 +140,21 @@ export default function ProductsPage() {
             <ScrollRevealContainer staggerDelay={0.1} className="capabilities-grid">
               <ScrollRevealItem>
                 <div className="capability-card">
-                  <div className="capability-icon">
-                    <FlaskConical size={24} />
-                  </div>
-                  <h3>R&amp;D Laboratory</h3>
-                  <p>
+                  <motion.div
+                    className="facility-capabilityIcon"
+                    animate={{ rotateY: 360 }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                  >
+                    <motion.div
+                      className="facility-capabilityAnimatedIcon"
+                      animate={{ y: [0, -8, 0] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <FlaskConical size={40} strokeWidth={2} />
+                    </motion.div>
+                  </motion.div>
+                  <h3 className="facility-capabilityCardTitle">R&amp;D Laboratory</h3>
+                  <p className="facility-capabilityCardDescription">
                     Advancing pharmaceutical innovation through formulation research, process
                     development, and product optimization.
                   </p>
@@ -154,11 +162,21 @@ export default function ProductsPage() {
               </ScrollRevealItem>
               <ScrollRevealItem>
                 <div className="capability-card">
-                  <div className="capability-icon">
-                    <Pill size={24} />
-                  </div>
-                  <h3>Oral Solid Dosage Forms</h3>
-                  <p>
+                  <motion.div
+                    className="facility-capabilityIcon"
+                    animate={{ rotateY: 360 }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                  >
+                    <motion.div
+                      className="facility-capabilityAnimatedIcon"
+                      animate={{ y: [0, -8, 0] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <Pill size={40} strokeWidth={2} />
+                    </motion.div>
+                  </motion.div>
+                  <h3 className="facility-capabilityCardTitle">Oral Solid Dosage Forms</h3>
+                  <p className="facility-capabilityCardDescription">
                     Specialized in tablet and capsule manufacturing under controlled pharmaceutical
                     processing systems.
                   </p>
@@ -171,11 +189,21 @@ export default function ProductsPage() {
               </ScrollRevealItem>
               <ScrollRevealItem>
                 <div className="capability-card">
-                  <div className="capability-icon">
-                    <Microscope size={24} />
-                  </div>
-                  <h3>Bio-Equivalent Engineering</h3>
-                  <p>
+                  <motion.div
+                    className="facility-capabilityIcon"
+                    animate={{ rotateY: 360 }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                  >
+                    <motion.div
+                      className="facility-capabilityAnimatedIcon"
+                      animate={{ y: [0, -8, 0] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <Microscope size={40} strokeWidth={2} />
+                    </motion.div>
+                  </motion.div>
+                  <h3 className="facility-capabilityCardTitle">Bio-Equivalent Engineering</h3>
+                  <p className="facility-capabilityCardDescription">
                     Supporting therapeutic consistency through formulation precision and validated
                     pharmaceutical technologies.
                   </p>
@@ -191,7 +219,7 @@ export default function ProductsPage() {
           <div className="portfolio-container">
             <ScrollReveal>
               <div className="portfolio-header">
-                <p className="portfolio-eyebrow">Product Lineup</p>
+                <p className="eyebrow">Product Lineup</p>
                 <h2>Current Portfolio</h2>
                 <p className="portfolio-subtitle">Commercialized pharmaceutical solutions across key therapeutic areas.</p>
               </div>
@@ -248,15 +276,12 @@ export default function ProductsPage() {
         </div>
       </section>
 
-      <br></br>
-      <br></br>
-
       <section ref={qualityRef} className="quality-section product-section-zoom">
         <div className="product-section-surface">
           <div className="quality-container">
             <ScrollReveal>
               <div className="quality-header">
-                <p className="quality-eyebrow">Quality Assurance</p>
+                <p className="eyebrow">Quality Assurance</p>
                 <h2>Our Quality Commitment</h2>
                 <p className="quality-subtitle">
                   Every batch undergoes rigorous stability studies under varying climatic zones to
@@ -271,16 +296,16 @@ export default function ProductsPage() {
                 <div className="quality-left">
                   <div className="quality-details">
                     <div>
-                      <h4>Stability Studies</h4>
-                      <p>
+                      <h4 className="facility-capabilityCardTitle">Stability Studies</h4>
+                      <p className="facility-capabilityCardDescription">
                         Conducted in ICH-compliant chambers for real-time and accelerated shelf-life
                         verification.
                       </p>
                     </div>
 
                     <div>
-                      <h4>In-Process QC</h4>
-                      <p>
+                      <h4 className="facility-capabilityCardTitle">In-Process QC</h4>
+                      <p className="facility-capabilityCardDescription">
                         Multi-stage testing including content uniformity, dissolution rates, and
                         microbial limits.
                       </p>
@@ -292,18 +317,30 @@ export default function ProductsPage() {
               <ScrollRevealItem>
                 <div className="quality-right">
                   <div className="quality-card">
-                    <div className="icon-box">🛡️</div>
+                    <div className="corporate-value-icon-wrap">
+                      <div className="corporate-value-blob-1" />
+                      <div className="corporate-value-blob-2" />
+                      <div className="corporate-value-glass">
+                        <ShieldCheck size={22} strokeWidth={1.8} />
+                      </div>
+                    </div>
                     <div>
                       <small>CERTIFICATION</small>
-                      <h3>FDA & GMP Standard Compliance</h3>
+                      <h3 className="facility-capabilityCardTitle">FDA & GMP Standard Compliance</h3>
                     </div>
                   </div>
 
                   <div className="quality-card">
-                    <div className="icon-box">📦</div>
+                    <div className="corporate-value-icon-wrap">
+                      <div className="corporate-value-blob-1" />
+                      <div className="corporate-value-blob-2" />
+                      <div className="corporate-value-glass">
+                        <Package size={22} strokeWidth={1.8} />
+                      </div>
+                    </div>
                     <div>
                       <small>SUPPLY CHAIN</small>
-                      <h3>Secured Cold-Chain Logistics</h3>
+                      <h3 className="facility-capabilityCardTitle">Secured Cold-Chain Logistics</h3>
                     </div>
                   </div>
                 </div>
@@ -318,7 +355,7 @@ export default function ProductsPage() {
           <div className="future-container">
             <ScrollReveal>
               <div className="future-header">
-                <p className="future-eyebrow">Strategic Growth</p>
+                <p className="eyebrow">Strategic Growth</p>
                 <h2>Future Horizons</h2>
                 <p className="future-subtitle">
                   Expanding our therapeutic footprint with advanced biological and oncology solutions.

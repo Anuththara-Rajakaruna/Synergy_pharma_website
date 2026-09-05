@@ -3,34 +3,59 @@
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Job } from "@/types/careers";
 
 type JobQuickViewModalProps = {
   job: Job | null;
   onClose: () => void;
+  triggerRef?: React.RefObject<HTMLElement | null>;
 };
 
-export function JobQuickViewModal({ job, onClose }: JobQuickViewModalProps) {
-  useEffect(() => {
-    if (!job) {
-      return;
-    }
+const FOCUSABLE_SELECTORS =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-    const onKeyDown = (event: KeyboardEvent) => {
+export function JobQuickViewModal({ job, onClose, triggerRef }: JobQuickViewModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!job) return;
+
+    document.body.style.overflow = "hidden";
+
+    const firstFocusable = dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTORS);
+    firstFocusable?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         onClose();
+        return;
+      }
+      if (event.key === "Tab" && dialogRef.current) {
+        const focusable = Array.from(
+          dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS)
+        ).filter((el) => !el.closest("[aria-hidden]"));
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey) {
+          if (document.activeElement === first) { event.preventDefault(); last.focus(); }
+        } else {
+          if (document.activeElement === last) { event.preventDefault(); first.focus(); }
+        }
       }
     };
 
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    // Capture before cleanup to avoid stale ref in teardown
+    const triggerElement = triggerRef?.current ?? null;
 
     return () => {
       document.body.style.overflow = "";
-      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
+      triggerElement?.focus();
     };
-  }, [job, onClose]);
+  }, [job, onClose, triggerRef]);
 
   return (
     <AnimatePresence>
@@ -41,8 +66,13 @@ export function JobQuickViewModal({ job, onClose }: JobQuickViewModalProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
+          aria-hidden="true"
         >
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Quick view: ${job.title}`}
             initial={{ opacity: 0, y: 28, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 18, scale: 0.98 }}
@@ -55,10 +85,12 @@ export function JobQuickViewModal({ job, onClose }: JobQuickViewModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/80 bg-white/85 text-[#295a79] transition-all duration-300 hover:rotate-90 hover:border-[#abd5ea] hover:text-[#1075bd]"
+              className="career-icon-frame absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/80 bg-white/85 text-[#295a79] transition-all duration-300 hover:border-[#abd5ea] hover:text-[#1075bd]"
               aria-label="Close quick view"
             >
-              <X className="h-5 w-5" />
+              <span className="career-icon-glyph">
+                <X className="h-5 w-5" />
+              </span>
             </button>
 
             <div className="p-6 md:p-8">
@@ -81,7 +113,6 @@ export function JobQuickViewModal({ job, onClose }: JobQuickViewModalProps) {
                     {job.type}
                   </span>
                 </div>
-
                 <div>
                   <p className="text-[0.74rem] font-bold uppercase tracking-[0.16em] text-[#42677f]">
                     Key requirements

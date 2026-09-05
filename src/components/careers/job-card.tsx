@@ -31,8 +31,10 @@ export function JobCard({ job, index }: JobCardProps) {
             <span className="inline-flex rounded-full border border-[#cde6f3] bg-white/85 px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#1075bd] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-all duration-300 group-hover:border-[#a8d4ec] group-hover:bg-[#f7fbfe]">
               {job.department}
             </span>
-            <span className="rounded-full bg-[#edf6fb] p-2 text-[#1075bd] transition-all duration-300 group-hover:rotate-6 group-hover:scale-110 group-hover:bg-[#dff0fb] lg:hidden">
-              <ArrowUpRight className="h-4 w-4" />
+            <span className="career-icon-frame rounded-full bg-[#edf6fb] p-2 text-[#1075bd] transition-all duration-300 group-hover:bg-[#dff0fb] lg:hidden">
+              <span className="career-icon-glyph">
+                <ArrowUpRight className="h-4 w-4" />
+              </span>
             </span>
           </div>
 
@@ -53,19 +55,29 @@ export function JobCard({ job, index }: JobCardProps) {
 
           <div className="mt-4 flex flex-wrap gap-3">
             <span className="inline-flex items-center gap-2 rounded-full border border-[#d7e8f1] bg-white/85 px-3.5 py-2 text-sm font-medium text-[#34596f] transition-all duration-300 group-hover:border-[#b6d8ea] group-hover:bg-[#f7fbfe] group-hover:text-[#1075bd]">
-              <MapPin className="h-4 w-4" />
+              <span className="career-icon-frame career-icon-frame-inline">
+                <span className="career-icon-glyph">
+                  <MapPin className="h-4 w-4" />
+                </span>
+              </span>
               {job.location}
             </span>
             <span className="inline-flex items-center gap-2 rounded-full border border-[#d7e8f1] bg-white/85 px-3.5 py-2 text-sm font-medium text-[#34596f] transition-all duration-300 group-hover:border-[#b6d8ea] group-hover:bg-[#f7fbfe] group-hover:text-[#1075bd]">
-              <BriefcaseBusiness className="h-4 w-4" />
+              <span className="career-icon-frame career-icon-frame-inline">
+                <span className="career-icon-glyph">
+                  <BriefcaseBusiness className="h-4 w-4" />
+                </span>
+              </span>
               {job.type}
             </span>
           </div>
         </div>
 
         <div className="flex shrink-0 flex-col gap-3 lg:w-52.5 lg:items-end">
-          <div className="hidden rounded-full bg-[#edf6fb] p-2 text-[#1075bd] transition-all duration-300 group-hover:rotate-6 group-hover:scale-110 group-hover:bg-[#dff0fb] lg:block">
-            <ArrowUpRight className="h-4 w-4" />
+          <div className="career-icon-frame hidden rounded-full bg-[#edf6fb] p-2 text-[#1075bd] transition-all duration-300 group-hover:bg-[#dff0fb] lg:block">
+            <span className="career-icon-glyph">
+              <ArrowUpRight className="h-4 w-4" />
+            </span>
           </div>
           <p className="text-sm font-medium text-[#6a8191] transition-colors duration-300 group-hover:text-[#355b73] lg:text-right">
             Tap to view details

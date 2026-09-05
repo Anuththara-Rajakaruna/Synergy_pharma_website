@@ -106,7 +106,7 @@ export default function FacilityPage() {
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}
             >
-              General OSD
+              Manufacturing Capabilities
             </motion.h2>
             <motion.p
               className="facility-capabilitiesSubtitle facility-subtitle"
@@ -115,27 +115,42 @@ export default function FacilityPage() {
               transition={{ duration: 0.6, delay: 0.3 }}
               viewport={{ once: true }}
             >
-              Synergy Pharmaceuticals operates a 10.5-acre integrated manufacturing campus equipped with
-              state-of-the-art facilities for solid dosage forms, injectables, oncology products, and hormone-based
-              therapeutics.
+              Synergy Pharmaceuticals operates a state-of-the-art 10.5-acre integrated manufacturing campus designed
+              to support a diverse portfolio of pharmaceutical products. Our manufacturing capabilities include oral
+              solid dosage forms, sterile parenterals, oncology products, and hormone-based therapeutics, supported
+              by advanced quality systems and research facilities.
             </motion.p>
           </ScrollReveal>
 
           <ScrollRevealContainer staggerDelay={0.12} className="facility-capabilitiesGrid">
             {[
-              { 
-                title: "NMRA-GMP Certified", 
-                description: "EU-GMP expected Q4 2026",
+              {
+                title: "Tablets & Capsules (General OSD)",
+                description: "Our General Oral Solid Dosage (OSD) manufacturing facility is designed for the large-scale production of tablets and capsules with an annual manufacturing capacity of 5 billion units, meeting international quality standards.",
                 icon: (
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                    <polyline points="22 4 12 14.01 9 11.01" />
+                    <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z" />
+                    <path d="m8.5 8.5 7 7" />
                   </svg>
                 )
               },
-              { 
-                title: "Independent QA", 
-                description: "A robust team ensuring our commitment to transparency and world-class quality.",
+              {
+                title: "Parenterals",
+                description: "Dedicated sterile manufacturing facilities for both Large Volume Parenterals (LVP) and Small Volume Parenterals (SVP), designed to deliver safe, high-quality injectable pharmaceutical products.",
+                icon: (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="m18 2 4 4" />
+                    <path d="m14 4 6 6" />
+                    <path d="M17 7 6 18" />
+                    <path d="m9 11 4 4" />
+                    <path d="m7 15-1.5 1.5" />
+                    <path d="m6 18-4 4" />
+                  </svg>
+                )
+              },
+              {
+                title: "Independent Quality Assurance",
+                description: "An independent Quality Assurance team oversees every stage of manufacturing to ensure full compliance with GMP requirements, regulatory expectations, and the highest quality standards.",
                 icon: (
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M12 2L2 7l10 5 10-5-10-5z" />
@@ -144,19 +159,9 @@ export default function FacilityPage() {
                   </svg>
                 )
               },
-              { 
-                title: "5 billion Tablets & Capsules", 
-                description: "Our three production lines enable efficient scaling while maintaining flexibility in operations.",
-                icon: (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M6 9l12-7-7 12-5-5z" />
-                    <circle cx="12" cy="12" r="1" />
-                  </svg>
-                )
-              },
-              { 
-                title: "In House R&D", 
-                description: "Our 6 Floor R&D centre fuels innovation from concept to completion.",
+              {
+                title: "Research & Development",
+                description: "Our six-floor Research & Development Centre drives innovation from formulation development through process optimization and technology transfer, supporting continuous product development.",
                 icon: (
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="10" />
@@ -681,19 +686,23 @@ export default function FacilityPage() {
                   variants={staggerChildVariants}
                   transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
                 >
-                  <div className="facility-qualityPointIcon">
-                    {point.icon === "shield" ? (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                      </svg>
-                    ) : (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                        <circle cx="9" cy="7" r="4" />
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                      </svg>
-                    )}
+                  <div className="corporate-value-icon-wrap">
+                    <div className="corporate-value-blob-1" />
+                    <div className="corporate-value-blob-2" />
+                    <div className="corporate-value-glass">
+                      {point.icon === "shield" ? (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="22" height="22">
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                      ) : (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="22" height="22">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                          <circle cx="9" cy="7" r="4" />
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </svg>
+                      )}
+                    </div>
                   </div>
                   <div className="facility-qualityPointContent">
                     <h3>{point.title}</h3>

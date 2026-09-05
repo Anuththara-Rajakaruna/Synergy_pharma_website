@@ -124,9 +124,9 @@ export default function Home() {
         heading={
           <>
             <span className="hero-heading-line">
-              Driven by Collaboration.
+              Driven by Collaboration and 
             </span>
-            <span className="hero-heading-line">Focused on Care.</span>
+            <span className="hero-heading-line">Committed to Care.</span>
           </>
         }
         description="Delivering high-quality, affordable medicines manufactured in Sri Lanka for the global healthcare economy."

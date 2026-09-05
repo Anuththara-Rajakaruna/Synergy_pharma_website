@@ -18,7 +18,7 @@ const industries = [
     id: "pharmaceutical",
     label: "Pharmaceutical",
     icon: Pill,
-    image: "/manufacturing-showcase-v2.jpg",
+    image: "/Synergy.png",
     heading: "Healthcare & Pharma",
     description:
       "Delivering trusted healthcare and pharmaceutical solutions focused on quality, innovation, and patient well-being.",

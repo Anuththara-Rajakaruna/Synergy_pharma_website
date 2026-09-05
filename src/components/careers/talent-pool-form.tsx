@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, startTransition, useState } from "react";
+import Link from "next/link";
+import { FormEvent, startTransition, useEffect, useState } from "react";
 import { CAREER_DEPARTMENTS } from "@/components/careers/department-options";
 
 type TalentPoolState = {
@@ -9,37 +10,101 @@ type TalentPoolState = {
   phone: string;
   areaOfInterest: string;
   notes: string;
-  cv: File | null;
+  consentGiven: boolean;
 };
 
-const initialState: TalentPoolState = {
-  name: "",
-  email: "",
-  phone: "",
-  areaOfInterest: "",
-  notes: "",
-  cv: null,
-};
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const STORAGE_KEY = "synergy-talent-draft";
 
 export function TalentPoolForm() {
-  const [form, setForm] = useState<TalentPoolState>(initialState);
+  const [form, setForm] = useState<TalentPoolState>({
+    name: "",
+    email: "",
+    phone: "",
+    areaOfInterest: "",
+    notes: "",
+    consentGiven: false,
+  });
+  const [cv, setCv] = useState<File | null>(null);
+  const [fileError, setFileError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  // Restore autosaved draft on mount
+  useEffect(() => {
+    try {
+      const saved = window.sessionStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as Partial<TalentPoolState>;
+        setForm((c) => ({
+          ...c,
+          name: parsed.name ?? c.name,
+          email: parsed.email ?? c.email,
+          phone: parsed.phone ?? c.phone,
+          areaOfInterest: parsed.areaOfInterest ?? c.areaOfInterest,
+          notes: parsed.notes ?? c.notes,
+        }));
+      }
+    } catch {
+      window.sessionStorage.removeItem(STORAGE_KEY);
+    }
+  }, []);
+
+  // Autosave on field change (exclude File — not serializable)
+  useEffect(() => {
+    try {
+      window.sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          areaOfInterest: form.areaOfInterest,
+          notes: form.notes,
+        })
+      );
+    } catch {
+      // sessionStorage may be unavailable in some environments
+    }
+  }, [form.name, form.email, form.phone, form.areaOfInterest, form.notes]);
+
+  function handleFileChange(file: File | null) {
+    setFileError("");
+    if (!file) {
+      setCv(null);
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      setFileError("File is too large. Please upload a PDF under 10 MB.");
+      setCv(null);
+      return;
+    }
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf) {
+      setFileError("CV uploads must be PDF files.");
+      setCv(null);
+      return;
+    }
+    setCv(file);
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!form.name.trim() || !form.email.trim() || !form.phone.trim() || !form.areaOfInterest.trim() || !form.cv) {
+    if (!form.name.trim() || !form.email.trim() || !form.phone.trim() || !form.areaOfInterest.trim() || !cv) {
       setError("Please complete the required fields and attach your CV.");
       setMessage("");
       return;
     }
 
-    const isPdf = form.cv.type === "application/pdf" || form.cv.name.toLowerCase().endsWith(".pdf");
+    if (fileError) {
+      setError(fileError);
+      return;
+    }
 
-    if (!isPdf) {
-      setError("Talent pool uploads must be provided as PDF files.");
+    if (!form.consentGiven) {
+      setError("Please read and accept the privacy policy to submit your profile.");
       setMessage("");
       return;
     }
@@ -50,7 +115,8 @@ export function TalentPoolForm() {
     payload.set("phone", form.phone);
     payload.set("areaOfInterest", form.areaOfInterest);
     payload.set("notes", form.notes);
-    payload.set("cv", form.cv);
+    payload.set("consentGiven", "true");
+    payload.set("cv", cv);
 
     setIsSubmitting(true);
     setError("");
@@ -58,10 +124,7 @@ export function TalentPoolForm() {
 
     startTransition(async () => {
       try {
-        const response = await fetch("/api/talent-pool", {
-          method: "POST",
-          body: payload,
-        });
+        const response = await fetch("/api/talent-pool", { method: "POST", body: payload });
         const result = (await response.json()) as { error?: string; message?: string };
 
         if (!response.ok) {
@@ -70,7 +133,9 @@ export function TalentPoolForm() {
         }
 
         setMessage(result.message ?? "Talent profile submitted successfully.");
-        setForm(initialState);
+        setForm({ name: "", email: "", phone: "", areaOfInterest: "", notes: "", consentGiven: false });
+        setCv(null);
+        window.sessionStorage.removeItem(STORAGE_KEY);
       } catch {
         setError("We couldn't submit your profile right now. Please try again.");
       } finally {
@@ -83,40 +148,42 @@ export function TalentPoolForm() {
     <form className="talent-pool-form" onSubmit={handleSubmit}>
       <div className="career-form-grid">
         <label className="careers-field">
-          <span>Full name</span>
+          <span>Full name <span aria-hidden="true">*</span></span>
           <input
             type="text"
+            required
             value={form.name}
-            onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+            onChange={(e) => setForm((c) => ({ ...c, name: e.target.value }))}
           />
         </label>
         <label className="careers-field">
-          <span>Email</span>
+          <span>Email <span aria-hidden="true">*</span></span>
           <input
             type="email"
+            required
             value={form.email}
-            onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
+            onChange={(e) => setForm((c) => ({ ...c, email: e.target.value }))}
           />
         </label>
         <label className="careers-field">
-          <span>Phone</span>
+          <span>Phone <span aria-hidden="true">*</span></span>
           <input
             type="tel"
+            required
             value={form.phone}
-            onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
+            onChange={(e) => setForm((c) => ({ ...c, phone: e.target.value }))}
           />
         </label>
         <label className="careers-field">
-          <span>Area of interest</span>
+          <span>Area of interest <span aria-hidden="true">*</span></span>
           <select
+            required
             value={form.areaOfInterest}
-            onChange={(event) => setForm((current) => ({ ...current, areaOfInterest: event.target.value }))}
+            onChange={(e) => setForm((c) => ({ ...c, areaOfInterest: e.target.value }))}
           >
             <option value="">Select a department</option>
-            {CAREER_DEPARTMENTS.map((department) => (
-              <option key={department} value={department}>
-                {department}
-              </option>
+            {CAREER_DEPARTMENTS.map((dept) => (
+              <option key={dept} value={dept}>{dept}</option>
             ))}
           </select>
         </label>
@@ -125,22 +192,45 @@ export function TalentPoolForm() {
           <textarea
             rows={5}
             value={form.notes}
-            onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))}
+            onChange={(e) => setForm((c) => ({ ...c, notes: e.target.value }))}
             placeholder="Tell us what kind of opportunity you're looking for."
           />
         </label>
-        <label className="careers-field careers-field-full">
-          <span>Upload CV (PDF)</span>
+        <div className="careers-field careers-field-full">
+          <span id="tp-cv-label">Upload CV (PDF) <span aria-hidden="true">*</span></span>
+          <span id="tp-cv-hint" className="text-xs text-[#5f89a4]">PDF files only, maximum 10 MB</span>
           <input
             type="file"
             accept="application/pdf,.pdf"
-            onChange={(event) => setForm((current) => ({ ...current, cv: event.target.files?.[0] ?? null }))}
+            required
+            aria-labelledby="tp-cv-label"
+            aria-describedby="tp-cv-hint"
+            onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
           />
+          {fileError ? (
+            <p role="alert" className="career-form-message career-form-error mt-1">{fileError}</p>
+          ) : null}
+        </div>
+        <label className="careers-field careers-field-full careers-field-checkbox">
+          <input
+            type="checkbox"
+            required
+            checked={form.consentGiven}
+            onChange={(e) => setForm((c) => ({ ...c, consentGiven: e.target.checked }))}
+          />
+          <span>
+            I have read and agree to the{" "}
+            <Link href="/privacy-policy" target="_blank" className="underline text-[#1075bd]">
+              Privacy Policy
+            </Link>{" "}
+            and consent to Synergy Pharma processing my personal data for recruitment purposes.{" "}
+            <span aria-hidden="true">*</span>
+          </span>
         </label>
       </div>
 
-      {error ? <p className="career-form-message career-form-error">{error}</p> : null}
-      {message ? <p className="career-form-message career-form-success">{message}</p> : null}
+      {error ? <p role="alert" className="career-form-message career-form-error">{error}</p> : null}
+      {message ? <p role="status" className="career-form-message career-form-success">{message}</p> : null}
 
       <button type="submit" disabled={isSubmitting}>
         {isSubmitting ? "Submitting..." : "Submit to Talent Pool"}

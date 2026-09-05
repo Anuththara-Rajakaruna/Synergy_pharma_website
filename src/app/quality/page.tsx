@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/hero";
 import { Button } from "@/components/button";
@@ -161,11 +162,10 @@ export default function QualityPage() {
       <section ref={showcaseRef} className="showcaseSection qualityZoomSection">
         <div className="showcaseContainer qualityZoomSurface">
           <div className="showcaseVisual">
-            <div className="showcaseWaveBackground" aria-hidden="true" />
             <div className="showcaseRadialGradient" />
             <div className="showcaseImageFrame">
               <Image
-                src="/quality-doctor.png"
+                src="/Quality_Philosophy.jpg"
                 alt="Quality specialist in a pharmaceutical setting"
                 width={520}
                 height={640}
@@ -210,9 +210,19 @@ export default function QualityPage() {
                   key={item.title}
                   className={`highlightStatCard accent${item.accent[0].toUpperCase()}${item.accent.slice(1)}`}
                 >
-                  <div className="highlightStatIcon">
-                    <Icon size={28} strokeWidth={2.2} />
-                  </div>
+                  <motion.div
+                    className="facility-capabilityIcon"
+                    animate={{ rotateY: 360 }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                  >
+                    <motion.div
+                      className="facility-capabilityAnimatedIcon"
+                      animate={{ y: [0, -8, 0] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <Icon size={40} strokeWidth={2} />
+                    </motion.div>
+                  </motion.div>
                   <div className="highlightStatContent">
                     <h3>{item.title}</h3>
                     <p>{item.subtitle}</p>
@@ -247,8 +257,12 @@ export default function QualityPage() {
                   className={`ecosystemCard accent${card.accent[0].toUpperCase()}${card.accent.slice(1)}`}
                 >
                   <div className="ecosystemCardHeader">
-                    <div className="ecosystemCardIcon">
-                      <Icon size={24} strokeWidth={2.2} />
+                    <div className="corporate-value-icon-wrap">
+                      <div className="corporate-value-blob-1" />
+                      <div className="corporate-value-blob-2" />
+                      <div className="corporate-value-glass">
+                        <Icon size={18} strokeWidth={1.8} />
+                      </div>
                     </div>
                     <h3>{card.title}</h3>
                   </div>
@@ -345,8 +359,12 @@ export default function QualityPage() {
 
             <ScrollRevealItem className="trainingCard">
               <div className="trainingHeader">
-                <div className="trainingIcon">
-                  <ShieldCheck size={22} strokeWidth={2.1} />
+                <div className="corporate-value-icon-wrap">
+                  <div className="corporate-value-blob-1" />
+                  <div className="corporate-value-blob-2" />
+                  <div className="corporate-value-glass">
+                    <ShieldCheck size={18} strokeWidth={1.8} />
+                  </div>
                 </div>
                 <h3>Training & Qualification</h3>
               </div>
