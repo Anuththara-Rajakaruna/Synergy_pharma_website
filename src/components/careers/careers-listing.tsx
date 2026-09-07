@@ -27,6 +27,7 @@ export function CareersListing({ initialJobs }: CareersListingProps) {
   const department = searchParams.get("dept") ?? allDepartmentsLabel;
   const jobType = searchParams.get("type") ?? allTypesLabel;
   const location = searchParams.get("loc") ?? allLocationsLabel;
+  const [sortOrder, setSortOrder] = useState<"newest" | "az">("newest");
 
   const deferredSearchTerm = useDeferredValue(searchTerm);
   const isFiltering = deferredSearchTerm !== searchTerm;
@@ -43,12 +44,13 @@ export function CareersListing({ initialJobs }: CareersListingProps) {
 
   function clearFilters() {
     router.replace("?", { scroll: false });
+    setSortOrder("newest");
   }
 
   useEffect(() => {
     let ignore = false;
     async function loadJobs() {
-      setIsLoading(true);
+      // Don't show loading skeletons when we already have SSR data — refresh silently
       try {
         const response = await fetch("/api/jobs", { cache: "no-store" });
         const result = (await response.json()) as Job[];
@@ -75,22 +77,32 @@ export function CareersListing({ initialJobs }: CareersListingProps) {
     return [allLocationsLabel, ...unique.sort((a, b) => a.localeCompare(b))];
   }, [jobs]);
 
+  const jobTypes = useMemo(() => {
+    const unique = Array.from(new Set(jobs.map((j) => j.type)));
+    return [allTypesLabel, ...unique.sort((a, b) => a.localeCompare(b))];
+  }, [jobs]);
+
   const filteredJobs = useMemo(() => {
     const q = deferredSearchTerm.trim().toLowerCase();
-    return jobs.filter((job) => {
+    const filtered = jobs.filter((job) => {
       const matchesSearch = !q || job.title.toLowerCase().includes(q) || job.description.toLowerCase().includes(q);
       const matchesDept = department === allDepartmentsLabel || job.department === department;
       const matchesType = jobType === allTypesLabel || job.type === jobType;
       const matchesLoc = location === allLocationsLabel || job.location === location;
       return matchesSearch && matchesDept && matchesType && matchesLoc;
     });
-  }, [deferredSearchTerm, department, jobType, location, jobs]);
+    if (sortOrder === "az") {
+      return [...filtered].sort((a, b) => a.title.localeCompare(b.title));
+    }
+    return filtered;
+  }, [deferredSearchTerm, department, jobType, location, jobs, sortOrder]);
 
   const hasActiveFilters =
     searchTerm.trim().length > 0 ||
     department !== allDepartmentsLabel ||
     jobType !== allTypesLabel ||
-    location !== allLocationsLabel;
+    location !== allLocationsLabel ||
+    sortOrder !== "newest";
 
   const showSkeleton = isLoading || isFiltering;
 
@@ -101,12 +113,15 @@ export function CareersListing({ initialJobs }: CareersListingProps) {
         department={department}
         departments={departments}
         jobType={jobType}
+        jobTypes={jobTypes}
+        sortOrder={sortOrder}
         location={location}
         locations={locations}
         hasActiveFilters={hasActiveFilters}
         onSearchChange={(v) => updateParam("q", v, "")}
         onDepartmentChange={(v) => updateParam("dept", v, allDepartmentsLabel)}
         onJobTypeChange={(v) => updateParam("type", v, allTypesLabel)}
+        onSortChange={setSortOrder}
         onLocationChange={(v) => updateParam("loc", v, allLocationsLabel)}
         onClear={clearFilters}
       />

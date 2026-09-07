@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createTalentPoolRecord } from "@/lib/careers";
+import { sendMail } from "@/lib/email";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -46,8 +48,24 @@ export async function POST(request: Request) {
   });
 
   if ("error" in result) {
-    return NextResponse.json({ error: result.error ?? "Profile submission failed." }, { status: 500 });
+    const status = result.error?.includes("already in our talent pool") ? 409 : 500;
+    return NextResponse.json({ error: result.error ?? "Profile submission failed." }, { status });
   }
+
+  const hrEmail = process.env.HR_NOTIFICATION_EMAIL;
+  if (hrEmail) {
+    await sendMail({
+      to: hrEmail,
+      subject: `New talent pool profile: ${name}`,
+      text: `${name} joined the talent pool.\n\nEmail: ${email}\nPhone: ${phone}\nArea of interest: ${areaOfInterest}\n\nReview in the admin portal: ${SITE_URL}/careers/admin`,
+    });
+  }
+
+  await sendMail({
+    to: email,
+    subject: `Thanks for joining the ${SITE_NAME} talent pool`,
+    text: `Hi ${name},\n\nThank you for sharing your profile with ${SITE_NAME}. We'll keep your details on file and reach out when a role matching your interests (${areaOfInterest}) opens up.\n\nBest regards,\n${SITE_NAME} Talent Acquisition Team`,
+  });
 
   return NextResponse.json({
     success: true,

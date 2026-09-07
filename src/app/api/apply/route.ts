@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createApplicationRecord, getJobById } from "@/lib/careers";
+import { sendMail } from "@/lib/email";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -13,6 +15,8 @@ export async function POST(request: Request) {
   const position = String(formData.get("position") ?? "").trim().slice(0, 200);
   const jobId = String(formData.get("jobId") ?? "").trim();
   const coverLetter = String(formData.get("coverLetter") ?? "").trim().slice(0, 3000);
+  const linkedIn = String(formData.get("linkedIn") ?? "").trim().slice(0, 300) || undefined;
+  const portfolio = String(formData.get("portfolio") ?? "").trim().slice(0, 300) || undefined;
   const consentGiven = formData.get("consentGiven") === "true";
   const cv = formData.get("cv");
 
@@ -50,6 +54,8 @@ export async function POST(request: Request) {
     coverLetter,
     cv,
     consentGiven,
+    linkedIn,
+    portfolio,
   });
 
   if ("error" in result) {
@@ -57,6 +63,32 @@ export async function POST(request: Request) {
     const status = errorMsg.includes("already submitted") ? 409 : 500;
     return NextResponse.json({ error: errorMsg }, { status });
   }
+
+  const hrEmail = process.env.HR_NOTIFICATION_EMAIL;
+  if (hrEmail) {
+    await sendMail({
+      to: hrEmail,
+      subject: `New application: ${job.title} — ${name}`,
+      text: [
+        `${name} applied for "${job.title}".`,
+        "",
+        `Email: ${email}`,
+        `Phone: ${phone}`,
+        linkedIn ? `LinkedIn: ${linkedIn}` : null,
+        portfolio ? `Portfolio: ${portfolio}` : null,
+        "",
+        `Review in the admin portal: ${SITE_URL}/careers/admin`,
+      ]
+        .filter((line) => line !== null)
+        .join("\n"),
+    });
+  }
+
+  await sendMail({
+    to: email,
+    subject: `We received your application — ${job.title}`,
+    text: `Hi ${name},\n\nThank you for applying to the ${job.title} role at ${SITE_NAME}. Our talent team has received your application and will be in touch if your profile is shortlisted.\n\nBest regards,\n${SITE_NAME} Talent Acquisition Team`,
+  });
 
   return NextResponse.json({
     success: true,

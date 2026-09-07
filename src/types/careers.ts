@@ -28,6 +28,8 @@ export type ApplicationRecord = {
   notes: string;
   consentGiven: boolean;
   createdAt: string;
+  linkedIn?: string;
+  portfolio?: string;
 };
 
 export type TalentPoolRecord = {

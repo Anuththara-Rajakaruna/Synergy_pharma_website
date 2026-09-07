@@ -1,11 +1,13 @@
-﻿"use client";
+import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/metadata";
+import { HomeContent } from "./home-content";
 
-import Image from "next/image";
-import { useEffect, useRef } from "react";
-import { SiteHeader } from "@/components/site-header";
-import { Hero } from "@/components/hero";
-import { ScrollReveal } from "@/components/scroll-reveal";
-import { RankHoldings } from "@/components/rank-holdings";
+export const metadata: Metadata = buildMetadata({
+  title: "Synergy Pharmaceutical Corporation | Sri Lankan Manufacturing, Global Quality",
+  description:
+    "Synergy Pharmaceutical Corporation manufactures high-quality, affordable medicines in Sri Lanka for the global healthcare economy, built on NMRA-GMP and EU-GMP quality standards.",
+  path: "/",
+});
 
 export default function Home() {
   const corporationRef = useRef<HTMLElement | null>(null);

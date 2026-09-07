@@ -121,21 +121,6 @@
   --transition-slow: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-html[data-theme="dark"] {
-  color-scheme: dark;
-  --primary: #7fcae3;
-  --primary-light: #a8def1;
-  --primary-dark: #effaff;
-  --accent: #7faeff;
-  --accent-light: #9bc0ff;
-  --text-dark: #e8f2f8;
-  --text-muted: #b1c1cd;
-  --text-light: #88a0b2;
-  --border-light: #304453;
-  --bg-light: #08131d;
-  --bg-card: #10202b;
-}
-
 /* ========================================
    RESPONSIVE TYPOGRAPHY - TABLET (900px)
    ======================================== */
@@ -925,67 +910,6 @@ a:hover {
   height: 1.05rem;
 }
 
-.theme-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-sm);
-  border: 1px solid rgba(5, 95, 124, 0.18);
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--primary-dark);
-  padding: var(--space-sm) var(--space-md);
-  font-size: 0.72rem;
-  font-weight: var(--font-weight-extrabold);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: transform var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.theme-toggle svg {
-  width: 0.95rem;
-  height: 0.95rem;
-  fill: currentColor;
-}
-
-.theme-toggle:hover {
-  transform: translateY(-1px);
-  border-color: rgba(5, 95, 124, 0.34);
-  background: rgba(5, 95, 124, 0.1);
-  color: var(--primary);
-  box-shadow: 0 10px 24px rgba(16, 49, 73, 0.1);
-}
-
-.theme-toggle[aria-pressed="true"] {
-  background: rgba(5, 95, 124, 0.14);
-  border-color: rgba(5, 95, 124, 0.38);
-  color: var(--primary);
-}
-
-.desktop-theme-toggle {
-  width: 2.5rem;
-  height: 2.5rem;
-  justify-content: center;
-  padding: 0;
-  gap: 0;
-}
-
-.desktop-theme-toggle svg {
-  width: 1rem;
-  height: 1rem;
-}
-
-.desktop-theme-toggle span {
-  display: none;
-}
-
-.mobile-theme-toggle {
-  width: 100%;
-  justify-content: flex-start;
-  padding: 0.9rem 1rem;
-  border-radius: var(--radius-md);
-}
-
 .nav-toggle {
   display: none;
   width: 42px;
@@ -1408,7 +1332,9 @@ button:active {
   border-color: rgba(255, 255, 255, 0.5);
 }
 
-.reveal-on-scroll {
+/* Hidden only when JS has confirmed it's running (data-reveal attribute set by RevealOnScroll).
+   Without JS the element stays visible — prevents blank pages on CSP or JS failures. */
+.reveal-on-scroll[data-reveal="pending"] {
   opacity: 0;
   transform: translateY(28px);
   transition:
@@ -1416,7 +1342,8 @@ button:active {
     transform 0.7s cubic-bezier(0.21, 0.76, 0.28, 1);
 }
 
-.reveal-on-scroll.is-visible {
+.reveal-on-scroll[data-reveal="pending"].is-visible,
+.reveal-on-scroll[data-reveal="visible"] {
   opacity: 1;
   transform: translateY(0);
 }
@@ -1685,7 +1612,7 @@ button:active {
 
 @media (prefers-reduced-motion: reduce) {
   .hero-light,
-  .reveal-on-scroll,
+  .reveal-on-scroll[data-reveal="pending"],
   .about-hero-kicker,
   .about-hero-title,
   .about-hero-copy-line,
@@ -2397,17 +2324,6 @@ button:active {
   box-shadow: 0 10px 24px rgba(16, 49, 73, 0.1);
 }
 
-html[data-theme="dark"] .footer-social-link {
-  border-color: #304453;
-  background: rgba(127, 202, 227, 0.08);
-  color: var(--primary);
-}
-
-html[data-theme="dark"] .footer-social-link:hover {
-  background: rgba(127, 202, 227, 0.16);
-  color: var(--primary-light);
-}
-
 .footer-bottom {
   grid-column: 1 / -1;
   margin-top: 0.2rem;
@@ -2423,22 +2339,6 @@ html[data-theme="dark"] .footer-social-link:hover {
 
 .footer-bottom-muted {
   color: var(--text-light);
-}
-
-html[data-theme="dark"] .footer {
-  border-top-color: #304453;
-  background: linear-gradient(135deg, rgba(16, 32, 43, 0.85) 0%, rgba(8, 18, 28, 0.92));
-}
-
-html[data-theme="dark"] .footer-mark {
-  background: rgba(127, 202, 227, 0.08);
-  border-color: #304453;
-  color: var(--primary);
-}
-
-html[data-theme="dark"] .footer-col p,
-html[data-theme="dark"] .footer-col address {
-  border-left-color: #304453;
 }
 
 @media (max-width: 1100px) {
@@ -3138,37 +3038,8 @@ html[data-theme="dark"] .footer-col address {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(8, 22, 34, 0.02) 34%, rgba(255, 255, 255, 0) 100%);
 }
 
-html[data-theme="dark"] .about-card-body {
-  border-color: rgba(60, 84, 101, 0.95);
-  background: linear-gradient(135deg, rgba(13, 28, 39, 0.94), rgba(10, 22, 32, 0.9));
-  box-shadow: 0 24px 42px rgba(0, 0, 0, 0.24);
-}
-
-html[data-theme="dark"] .about-card-copy p {
-  color: var(--text-muted);
-}
-
-html[data-theme="dark"] .about-card-link {
-  color: var(--primary-light);
-  text-decoration: none;
-}
-
 .about-card:hover .about-card-link {
   text-decoration: none;
-}
-
-html[data-theme="dark"] .about-card-link span {
-  background: rgba(127, 202, 227, 0.12);
-  color: var(--primary-light);
-}
-
-html[data-theme="dark"] .about-card-image {
-  border-color: rgba(57, 77, 93, 0.95);
-  background: linear-gradient(180deg, rgba(17, 31, 42, 0.9), rgba(12, 24, 34, 0.86));
-}
-
-html[data-theme="dark"] .about-card-image-rank {
-  background: linear-gradient(180deg, rgba(17, 31, 42, 0.82), rgba(12, 24, 34, 0.92));
 }
 
 
@@ -3347,37 +3218,6 @@ html[data-theme="dark"] .about-card-image-rank {
 
 .manufacturing-standard-item p {
   max-width: 28ch;
-}
-
-html[data-theme="dark"] .manufacturing-page-redesign {
-  background:
-    radial-gradient(circle at top right, rgba(127, 202, 227, 0.09), transparent 22%),
-    linear-gradient(180deg, #08131d 0%, #0c1b28 46%, #102130 100%);
-}
-
-html[data-theme="dark"] .manufacturing-section-heading h2,
-html[data-theme="dark"] .manufacturing-process-card h3 {
-  color: var(--text-dark);
-}
-
-html[data-theme="dark"] .manufacturing-section-copy,
-html[data-theme="dark"] .manufacturing-process-card p,
-html[data-theme="dark"] .manufacturing-capability-card p,
-html[data-theme="dark"] .manufacturing-portfolio-card p {
-  color: var(--text-muted);
-}
-
-html[data-theme="dark"] .manufacturing-process-card,
-html[data-theme="dark"] .manufacturing-capability-card,
-html[data-theme="dark"] .manufacturing-portfolio-card {
-  border-color: rgba(56, 78, 95, 0.95);
-  background: linear-gradient(165deg, rgba(14, 28, 39, 0.96), rgba(10, 23, 34, 0.92));
-  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.2);
-}
-
-html[data-theme="dark"] .manufacturing-process-step {
-  background: rgba(127, 202, 227, 0.12);
-  color: var(--primary-light);
 }
 
 @media (max-width: 900px) {
@@ -7435,11 +7275,6 @@ html[data-theme="dark"] .manufacturing-process-step {
   filter: blur(2px);
 }
 
-/* Gradient decorators */
-html[data-theme="dark"] .gradient-decorator {
-  opacity: 0.4;
-}
-
 .careers-hero-section,
 .careers-detail-hero,
 .careers-admin-hero {
@@ -7447,7 +7282,16 @@ html[data-theme="dark"] .gradient-decorator {
 }
 
 .careers-hero-actions {
-  margin-top: 0.4rem;
+  margin-top: 1.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.careers-hero-actions .button-link,
+.careers-hero-actions .button-link-secondary {
+  margin-top: 0;
 }
 
 .careers-page,
@@ -7517,6 +7361,7 @@ html[data-theme="dark"] .gradient-decorator {
 .careers-culture-section,
 .careers-benefits-section,
 .careers-jobs-section,
+.careers-hiring-section,
 .careers-talent-section,
 .career-detail-content,
 .careers-admin-section {
@@ -7540,11 +7385,14 @@ html[data-theme="dark"] .gradient-decorator {
 .careers-culture-section,
 .careers-benefits-section,
 .careers-jobs-section,
+.careers-hiring-section,
 .careers-talent-section,
 .career-detail-content,
 .careers-admin-section {
   background: rgba(237, 246, 255, 0.84);
-  overflow: hidden;
+  /* clip instead of hidden: clips decorative overflow without creating a
+     scroll container, so position:sticky inside the section still works */
+  overflow: clip;
 }
 
 .facility-capabilitiesSection::before,
@@ -7563,6 +7411,7 @@ html[data-theme="dark"] .gradient-decorator {
 .careers-culture-section::before,
 .careers-benefits-section::before,
 .careers-jobs-section::before,
+.careers-hiring-section::before,
 .careers-talent-section::before,
 .career-detail-content::before,
 .careers-admin-section::before {
@@ -7593,6 +7442,7 @@ html[data-theme="dark"] .gradient-decorator {
 .careers-culture-section > *,
 .careers-benefits-section > *,
 .careers-jobs-section > *,
+.careers-hiring-section > *,
 .careers-talent-section > *,
 .career-detail-content > *,
 .careers-admin-section > * {
@@ -7670,12 +7520,22 @@ html[data-theme="dark"] .gradient-decorator {
 
 .careers-culture-card h3,
 .career-benefit-card h3,
-.careers-admin-job-row h3,
 .careers-admin-list h3,
 .career-sticky-card h3,
 .careers-empty-state h3 {
   margin: 0 0 0.75rem;
   color:  #1075bd;
+}
+
+.careers-admin-job-row h3 {
+  margin: 0;
+  color: #0f2740;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.careers-admin-job-row p {
+  font-weight: 500;
 }
 
 .careers-culture-card p,
@@ -7987,8 +7847,28 @@ html[data-theme="dark"] .gradient-decorator {
   max-width: 48rem;
 }
 
+/* Wrapper rendered by ApplicationForm — provides scroll target; styling
+   comes from .career-apply-card inside */
+.career-apply-section {
+  display: contents;
+}
+
 .career-apply-header {
   margin-bottom: 1.5rem;
+}
+
+.careers-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.careers-hiring-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  position: relative;
+  margin-top: 2.5rem;
 }
 
 .career-progress {
@@ -8186,6 +8066,10 @@ html[data-theme="dark"] .gradient-decorator {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .careers-hiring-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .careers-culture-grid,
   .careers-talent-layout,
   .career-detail-reference-layout,
@@ -8206,7 +8090,9 @@ html[data-theme="dark"] .gradient-decorator {
   }
 
   .careers-benefits-grid,
-  .careers-jobs-grid {
+  .careers-jobs-grid,
+  .careers-hiring-grid,
+  .careers-stats-grid {
     grid-template-columns: 1fr;
   }
 

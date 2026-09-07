@@ -1,5 +1,9 @@
-const AUTH_SECRET =
-  process.env.AUTH_SECRET ?? "synergy-fallback-secret-change-in-production";
+const AUTH_SECRET = process.env.AUTH_SECRET;
+if (!AUTH_SECRET) {
+  throw new Error(
+    "AUTH_SECRET environment variable is required. Set it in .env.local for development and in your deployment environment for production."
+  );
+}
 
 export const ADMIN_SESSION_COOKIE = "synergy_admin_session";
 export const SESSION_MAX_AGE = 8 * 60 * 60; // 8 hours
@@ -39,7 +43,10 @@ export async function verifySessionToken(token: string): Promise<boolean> {
     const sigBytes = new Uint8Array(
       sigHex.match(/.{2}/g)?.map((h) => parseInt(h, 16)) ?? []
     );
-    return globalThis.crypto.subtle.verify("HMAC", key, sigBytes, encoder.encode(message));
+    const valid = await globalThis.crypto.subtle.verify("HMAC", key, sigBytes, encoder.encode(message));
+    if (!valid) return false;
+    const issuedAt = parseInt(parts[0], 36);
+    return !isNaN(issuedAt) && Date.now() - issuedAt <= SESSION_MAX_AGE * 1000;
   } catch {
     return false;
   }
