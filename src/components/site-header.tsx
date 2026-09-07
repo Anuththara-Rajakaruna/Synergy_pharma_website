@@ -17,7 +17,7 @@ const navItems: NavItem[] = [
   { href: "/quality", label: "Quality" },
   { href: "/products", label: "Products" },
   { href: "/careers", label: "Careers" },
-  { href: "/#locations", label: "Contact", isContact: true },
+  { href: "/contact", label: "Contact", isContact: true },
 ];
 
 export function SiteHeader() {
@@ -69,7 +69,8 @@ export function SiteHeader() {
               (item.href === "/facility" && currentPath === "/facility") ||
               (item.href === "/quality" && currentPath === "/quality") ||
               (item.href === "/products" && currentPath === "/products") ||
-              (item.href === "/careers" && currentPath.startsWith("/careers"));
+              (item.href === "/careers" && currentPath.startsWith("/careers")) ||
+              (item.href === "/contact" && currentPath === "/contact");
 
             return (
               <Link
