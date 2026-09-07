@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { readFile } from "node:fs/promises";
-import { getPrivateFilePath } from "@/lib/careers";
+import { getPrivateFileBuffer } from "@/lib/careers";
 
 export async function GET(
   _: Request,
@@ -25,18 +24,17 @@ export async function GET(
   }
 
   const fileName = rest.join("/");
-  const filePath = await getPrivateFilePath(directory, fileName);
+  const buffer = await getPrivateFileBuffer(directory, fileName);
 
-  try {
-    const buffer = await readFile(filePath);
-    return new NextResponse(buffer, {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${fileName}"`,
-        "Cache-Control": "private, no-store",
-      },
-    });
-  } catch {
+  if (!buffer) {
     return NextResponse.json({ error: "File not found." }, { status: 404 });
   }
+
+  return new NextResponse(new Uint8Array(buffer), {
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="${fileName}"`,
+      "Cache-Control": "private, no-store",
+    },
+  });
 }

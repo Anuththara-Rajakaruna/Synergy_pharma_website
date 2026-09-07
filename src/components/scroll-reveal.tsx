@@ -24,14 +24,14 @@ export function ScrollReveal({
 }: ScrollRevealProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      whileInView={{ opacity: 1, scale: 1 }}
+      initial={{ opacity: 1, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
       transition={{
         duration,
         delay,
         ease: "easeOut",
       }}
-      viewport={{ once: true, margin: "0px 0px -50px 0px" }}
+      viewport={{ once: true, margin: "0px 0px -20px 0px" }}
       className={className}
       {...motionProps}
     >
@@ -62,7 +62,7 @@ export function ScrollRevealContainer({
       whileInView="visible"
       viewport={{ once: true, margin: "0px 0px -50px 0px" }}
       variants={{
-        hidden: { opacity: 0 },
+        hidden: { opacity: 1 },
         visible: {
           opacity: 1,
           transition: {
@@ -96,10 +96,10 @@ export function ScrollRevealItem({
   return (
     <motion.div
       variants={{
-        hidden: { opacity: 0, scale: 0.9 },
+        hidden: { opacity: 1, y: 14 },
         visible: {
           opacity: 1,
-          scale: 1,
+          y: 0,
           transition: {
             duration: 1.0,
             ease: "easeOut",

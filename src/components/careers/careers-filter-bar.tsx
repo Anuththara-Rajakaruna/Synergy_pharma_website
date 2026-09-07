@@ -7,12 +7,15 @@ type CareersFilterBarProps = {
   department: string;
   departments: string[];
   jobType: string;
+  jobTypes: string[];
+  sortOrder: "newest" | "az";
   location: string;
   locations: string[];
   hasActiveFilters: boolean;
   onSearchChange: (value: string) => void;
   onDepartmentChange: (value: string) => void;
   onJobTypeChange: (value: string) => void;
+  onSortChange: (value: "newest" | "az") => void;
   onLocationChange: (value: string) => void;
   onClear: () => void;
 };
@@ -22,12 +25,15 @@ export function CareersFilterBar({
   department,
   departments,
   jobType,
+  jobTypes,
+  sortOrder,
   location,
   locations,
   hasActiveFilters,
   onSearchChange,
   onDepartmentChange,
   onJobTypeChange,
+  onSortChange,
   onLocationChange,
   onClear,
 }: CareersFilterBarProps) {
@@ -92,9 +98,9 @@ export function CareersFilterBar({
                 onChange={(e) => onJobTypeChange(e.target.value)}
                 className="h-14 w-full appearance-none rounded-2xl border border-white/70 bg-white/85 px-4 pr-10 text-[0.98rem] text-[#12334a] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] outline-none transition-all duration-300 focus:border-[#57a6d8] focus:bg-white focus:shadow-[0_0_0_5px_rgba(16,117,189,0.12),0_16px_30px_rgba(16,117,189,0.12)]"
               >
-                <option value="All types">All types</option>
-                <option value="Full-time">Full-time</option>
-                <option value="Internship">Internship</option>
+                {jobTypes.map((item) => (
+                  <option key={item} value={item}>{item}</option>
+                ))}
               </select>
               <span className="pointer-events-none absolute right-4 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rotate-45 border-b-2 border-r-2 border-[#5f89a4]" />
             </div>
@@ -120,6 +126,24 @@ export function CareersFilterBar({
               </div>
             </label>
           ) : null}
+
+          {/* Sort */}
+          <label className="group lg:w-40">
+            <span className="mb-2 block text-[0.72rem] font-bold uppercase tracking-[0.18em] text-[#42677f]">
+              Sort
+            </span>
+            <div className="relative">
+              <select
+                value={sortOrder}
+                onChange={(e) => onSortChange(e.target.value as "newest" | "az")}
+                className="h-14 w-full appearance-none rounded-2xl border border-white/70 bg-white/85 px-4 pr-10 text-[0.98rem] text-[#12334a] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] outline-none transition-all duration-300 focus:border-[#57a6d8] focus:bg-white focus:shadow-[0_0_0_5px_rgba(16,117,189,0.12),0_16px_30px_rgba(16,117,189,0.12)]"
+              >
+                <option value="newest">Newest first</option>
+                <option value="az">A – Z</option>
+              </select>
+              <span className="pointer-events-none absolute right-4 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rotate-45 border-b-2 border-r-2 border-[#5f89a4]" />
+            </div>
+          </label>
 
           {/* Clear */}
           <button
