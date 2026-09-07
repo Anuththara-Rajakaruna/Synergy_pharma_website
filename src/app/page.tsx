@@ -120,7 +120,7 @@ export default function Home() {
       <SiteHeader />
 
       <Hero
-        eyebrow="Synergy Pharmaceutical"
+        eyebrow="Synergy Pharmaceuticals"
         heading={
           <>
             <span className="hero-heading-line">
@@ -139,7 +139,7 @@ export default function Home() {
             <p className="corporation-eyebrow">ABOUT THE CORPORATION</p>
             <h2>Where Sri Lankan Manufacturing Meets Global Excellence</h2>
             <p className="corporation-subtitle">
-              Synergy Pharmaceutical is a trusted manufacturer of a diverse range of finished pharmaceutical products. With an advanced facility built to meet and exceed global quality standards, we are committed to making high-quality medicines accessible to all.
+              Synergy Pharmaceuticals is a trusted manufacturer of a diverse range of finished pharmaceutical products. With an advanced facility built to meet and exceed global quality standards, we are committed to making high-quality medicines accessible to all.
             </p>
           </ScrollReveal>
 

@@ -16,7 +16,7 @@ export default function PrivacyPolicyPage() {
           <div className="rounded-[32px] border border-white/70 bg-white shadow-[0_32px_80px_rgba(7,25,38,0.10)] p-8 md:p-12">
 
             <p className="text-[0.72rem] font-bold uppercase tracking-[0.22em] text-[#1075bd] mb-3">
-              Synergy Pharmaceutical Corporation
+              Synergy Pharmaceuticals Corporation
             </p>
             <h1 className="text-3xl font-bold text-[#0a1f35] mb-2">Privacy Policy</h1>
             <p className="text-sm text-[#5f89a4] mb-10">
@@ -28,7 +28,7 @@ export default function PrivacyPolicyPage() {
               <section>
                 <h2 className="text-xl font-bold text-[#0a1f35] mb-3">1. Who we are</h2>
                 <p>
-                  Synergy Pharmaceutical Corporation Pvt. Ltd. (&ldquo;Synergy Pharma&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;) is the data controller
+                  Synergy Pharmaceuticals Corporation Pvt. Ltd. (&ldquo;Synergy Pharma&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;) is the data controller
                   responsible for personal data collected through this Careers Portal. Our registered address is
                   Astoria Colombo, Level 14, Commercial Tower III, 422 R. A. De Mel Mawatha, Colombo 3, Sri Lanka.
                 </p>
