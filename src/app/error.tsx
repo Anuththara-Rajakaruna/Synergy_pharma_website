@@ -81,7 +81,7 @@ export default function Error({
           marginBottom: "2rem",
         }}
       >
-        We apologise for the inconvenience. Please try again or return to the careers portal.
+        We apologise for the inconvenience. Please try again or return to the homepage.
       </p>
 
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center" }}>
@@ -108,7 +108,7 @@ export default function Error({
           Try again
         </button>
         <Link
-          href="/careers"
+          href="/"
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -125,7 +125,7 @@ export default function Error({
             border: "1.5px solid #c4dff0",
           }}
         >
-          Back to Careers
+          Back to Home
         </Link>
       </div>
     </main>

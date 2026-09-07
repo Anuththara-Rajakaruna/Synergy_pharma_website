@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
+import { buildMetadata } from "@/lib/metadata";
 
-export const metadata = {
-  title: "Privacy Policy — Synergy Pharma Careers",
-  description: "How Synergy Pharmaceutical Corporation collects, uses, and protects your personal data during the recruitment process.",
-};
+export const metadata = buildMetadata({
+  title: "Privacy Policy | Synergy Pharmaceutical Corporation",
+  description:
+    "How Synergy Pharmaceutical Corporation collects, uses, and protects your personal data during the recruitment process.",
+  path: "/privacy-policy",
+});
 
 export default function PrivacyPolicyPage() {
   return (
@@ -166,7 +168,6 @@ export default function PrivacyPolicyPage() {
           </div>
         </div>
       </main>
-      <SiteFooter />
     </>
   );
 }

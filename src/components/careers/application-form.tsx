@@ -322,6 +322,7 @@ export function ApplicationForm({ job }: ApplicationFormProps) {
                   ref={fileInputRef}
                   type="file"
                   accept="application/pdf,.pdf"
+                  aria-labelledby="cv-label"
                   style={{ display: "none" }}
                   onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
                 />

@@ -34,12 +34,12 @@ const socialLinks = [
 
 export function SiteFooter() {
   return (
-    <footer className="footer" aria-label="Site footer">
+    <footer className="footer" aria-label="Site footer" id="locations">
       <div className="container footer-inner">
         <div className="footer-col footer-col-wide">
           <h3>Manufacturing and R&amp;D Site Address</h3>
           <address>
-            Synergy Pharmaceutical Corporation Pvt. Ltd.
+            Synergy Pharmaceutical Corporation Pvt. Ltd,
             <br />
             Bingiria BOI Export processing Zone,
             <br />
@@ -58,15 +58,15 @@ export function SiteFooter() {
         <div className="footer-col footer-col-wide">
           <h3>Head office</h3>
           <address>
-            Astoria Colombo
+            Astoria Colombo,
             <br />
             Level 14, 
             <br />
-            Commercial Tower III
+            Commercial Tower III,
             <br />
-            422, R. A. De Mel Mawatha
+            422, R. A. De Mel Mawatha,
             <br />
-            Colombo 3
+            Colombo 3,
             <br />
             Sri Lanka
           </address>
@@ -75,7 +75,7 @@ export function SiteFooter() {
         <div className="footer-col footer-col-wide">
           <h3>Registered Office Address</h3>
           <address>
-            Synergy Pharmaceutical Corporation Pvt. Ltd.
+            Synergy Pharmaceutical Corporation Pvt. Ltd,
             <br />
             No.: 282/1, 4th floor,
             <br />

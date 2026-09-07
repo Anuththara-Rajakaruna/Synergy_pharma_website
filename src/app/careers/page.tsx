@@ -7,27 +7,16 @@ import { Hero } from "@/components/hero";
 import { CareersListing } from "@/components/careers/careers-listing";
 import { TalentPoolForm } from "@/components/careers/talent-pool-form";
 import { getPublishedJobs } from "@/lib/careers";
+import { buildMetadata } from "@/lib/metadata";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Careers — Synergy Pharma",
-  description: "Join Synergy Pharma and advance human health through precision pharmaceutical manufacturing. Explore open roles across Quality, R&D, Manufacturing, and more.",
-  openGraph: {
-    title: "Careers — Synergy Pharma",
-    description: "Join Synergy Pharma and advance human health through precision pharmaceutical manufacturing. Explore open roles across Quality, R&D, Manufacturing, and more.",
-    url: "https://synergypharma.lk/careers",
-    siteName: "Synergy Pharma",
-    images: [{ url: "/logo.png", width: 200, height: 200, alt: "Synergy Pharma logo" }],
-    type: "website",
-  },
-  twitter: {
-    card: "summary",
-    title: "Careers — Synergy Pharma",
-    description: "Explore career opportunities at Synergy Pharma — Sri Lanka's leading pharmaceutical company.",
-    images: ["/logo.png"],
-  },
-};
+export const metadata: Metadata = buildMetadata({
+  title: "Careers | Synergy Pharmaceutical Corporation",
+  description:
+    "Join Synergy Pharmaceutical Corporation and advance human health through precision pharmaceutical manufacturing. Explore open roles across Quality, R&D, Manufacturing, and more.",
+  path: "/careers",
+});
 
 const benefits = [
   {

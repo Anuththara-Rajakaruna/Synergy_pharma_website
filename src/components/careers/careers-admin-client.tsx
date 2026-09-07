@@ -194,7 +194,13 @@ export function CareersAdminClient({ initialJobs }: CareersAdminClientProps) {
     async function loadApplicants() {
       try {
         const response = await fetch("/api/applicants", { cache: "no-store" });
-        if (response.status === 401) { window.location.href = "/careers/admin/login"; return; }
+        if (response.status === 401) {
+          // Full reload (not router.push) clears any in-memory applicant/admin
+          // state now that the session is invalid.
+          // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+          window.location.href = "/careers/admin/login";
+          return;
+        }
         const result = (await response.json()) as { applications: ApplicationRecord[]; talentPool: TalentPoolRecord[] };
         if (!ignore) { setApplications(result.applications); setTalentPool(result.talentPool); }
       } catch { /* network error */ }
@@ -309,6 +315,8 @@ export function CareersAdminClient({ initialJobs }: CareersAdminClientProps) {
 
   async function handleSignOut() {
     await fetch("/api/admin/logout", { method: "POST" });
+    // Full reload (not router.push) clears any in-memory applicant/admin state.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
     window.location.href = "/careers/admin/login";
   }
 

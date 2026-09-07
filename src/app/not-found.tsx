@@ -69,11 +69,11 @@ export default function NotFound() {
         }}
       >
         The URL you followed may be outdated or the page may have been moved.
-        Head back to our careers portal to explore open opportunities.
+        Head back to our homepage to keep exploring.
       </p>
 
       <Link
-        href="/careers"
+        href="/"
         style={{
           display: "inline-flex",
           alignItems: "center",
@@ -91,7 +91,7 @@ export default function NotFound() {
           transition: "transform 0.2s, box-shadow 0.2s",
         }}
       >
-        Back to Careers
+        Back to Home
       </Link>
     </main>
   );

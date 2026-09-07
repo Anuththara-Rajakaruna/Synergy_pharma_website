@@ -6,6 +6,8 @@ import { ScrollReveal } from "@/components/scroll-reveal";
 import { SiteHeader } from "@/components/site-header";
 import { ApplicationForm } from "@/components/careers/application-form";
 import { getJobById, getPublishedJobs } from "@/lib/careers";
+import { buildMetadata } from "@/lib/metadata";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -16,27 +18,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const job = await getJobById(id);
-  if (!job) return { title: "Job Not Found — Synergy Pharma" };
+  if (!job) return { title: `Job Not Found | ${SITE_NAME}` };
 
   const description = job.description.slice(0, 155) + (job.description.length > 155 ? "…" : "");
-  return {
-    title: `${job.title} — Synergy Pharma Careers`,
+  return buildMetadata({
+    title: `${job.title} | Careers at ${SITE_NAME}`,
     description,
-    openGraph: {
-      title: `${job.title} — Synergy Pharma Careers`,
-      description,
-      url: `https://synergypharma.lk/careers/${job.id}`,
-      siteName: "Synergy Pharma",
-      images: [{ url: "/logo.png", width: 200, height: 200, alt: "Synergy Pharma logo" }],
-      type: "website",
-    },
-    twitter: {
-      card: "summary",
-      title: `${job.title} — Synergy Pharma Careers`,
-      description,
-      images: ["/logo.png"],
-    },
-  };
+    path: `/careers/${job.id}`,
+  });
 }
 
 export default async function CareerDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -67,8 +56,8 @@ export default async function CareerDetailPage({ params }: { params: Promise<{ i
             employmentType,
             hiringOrganization: {
               "@type": "Organization",
-              name: "Synergy Pharma",
-              sameAs: "https://synergypharma.lk",
+              name: SITE_NAME,
+              sameAs: SITE_URL,
             },
             jobLocation: {
               "@type": "Place",

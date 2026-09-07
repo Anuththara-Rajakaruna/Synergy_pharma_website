@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_SESSION_COOKIE, verifySessionToken } from "@/lib/auth";
+import { gaBootstrapScript } from "@/lib/analytics";
 
 // In-memory rate limiter: keyed by IP, stores { count, windowStart }
 const rateLimitMap = new Map<string, { count: number; windowStart: number }>();
@@ -34,19 +35,43 @@ async function isAuthenticated(request: NextRequest): Promise<boolean> {
 }
 
 const isDev = process.env.NODE_ENV === "development";
+const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+const gaEnabled = Boolean(gaMeasurementId);
 
-function buildCsp(nonce: string): string {
+async function sha256Base64(text: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return Buffer.from(digest).toString("base64");
+}
+
+// The GA bootstrap script (src/lib/analytics.ts) is static per deployment, so its
+// CSP hash only needs to be computed once and can be cached for the process lifetime.
+let gaScriptHashPromise: Promise<string> | null = null;
+function getGaScriptHash(): Promise<string> {
+  if (!gaScriptHashPromise) {
+    gaScriptHashPromise = sha256Base64(gaBootstrapScript(gaMeasurementId!));
+  }
+  return gaScriptHashPromise;
+}
+
+async function buildCsp(nonce: string): Promise<string> {
+  const gaScriptSrc = gaEnabled
+    ? ` 'sha256-${await getGaScriptHash()}' https://www.googletagmanager.com`
+    : "";
+
   return [
     "default-src 'self'",
-    // 'strict-dynamic' trusts scripts loaded by a nonced script (e.g. Next's chunk
-    // loader); 'self' is kept as a fallback for browsers that don't support it.
+    // 'strict-dynamic' trusts scripts loaded by a nonced/hashed script (e.g. Next's
+    // chunk loader, or the GA bootstrap script); 'self' is kept as a fallback for
+    // browsers that don't support strict-dynamic.
     // Turbopack's dev runtime needs 'unsafe-eval' for module evaluation.
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""}`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${gaScriptSrc}${isDev ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https://images.unsplash.com",
     "font-src 'self' data:",
-    // ws: needed for Turbopack HMR WebSocket in dev.
-    `connect-src 'self'${isDev ? " ws:" : ""}`,
+    // ws: needed for Turbopack HMR WebSocket in dev. GA4 sends its collection
+    // requests to google-analytics.com, which connect-src must allow explicitly
+    // ('strict-dynamic' only relaxes script-src, not connect-src).
+    `connect-src 'self'${gaEnabled ? " https://www.google-analytics.com https://region1.google-analytics.com" : ""}${isDev ? " ws:" : ""}`,
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -63,7 +88,7 @@ export async function proxy(request: NextRequest) {
   const method = request.method;
 
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
-  const csp = buildCsp(nonce);
+  const csp = await buildCsp(nonce);
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);

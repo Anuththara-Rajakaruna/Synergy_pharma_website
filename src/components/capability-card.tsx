@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { LucideIcon } from "lucide-react";
 
 interface CapabilityCardProps {
   title: string;
@@ -8,7 +7,6 @@ interface CapabilityCardProps {
   image: string;
   imageAlt: string;
   accent?: "blue" | "teal";
-  icon?: LucideIcon;
 }
 
 export function CapabilityCard({
@@ -18,7 +16,6 @@ export function CapabilityCard({
   image,
   imageAlt,
   accent = "blue",
-  icon: Icon,
 }: CapabilityCardProps) {
   return (
     <article
