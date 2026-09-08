@@ -296,10 +296,10 @@ export default function QualityPage() {
             {[
               {
                 title: "Chemistry Section",
-                description: "Equipped with HPLC, GC, and MS for precise molecular characterization and stability testing.",
+                description: "Equipped with advanced HPLC, GC, and MS for precise molecular characterization and stability testing.",
                 label: "Instrumental Excellence",
                 accent: "blue",
-                image: "/Chemistry.png",
+                image: "/Quality/Chem.jpg",
                 imageAlt: "Chemistry instruments and laboratory glassware",
               },
               {
@@ -307,7 +307,7 @@ export default function QualityPage() {
                 description: "Specialized sterility testing, microbial limits, and environmental monitoring in Class A environments.",
                 label: "Biological Integrity",
                 accent: "teal",
-                image: "/Microbiology.png",
+                image: "/Quality/Micro.jpg",
                 imageAlt: "Microbiology laboratory environment",
               },
               {
@@ -315,7 +315,7 @@ export default function QualityPage() {
                 description: "Paperless documentation via eDMS, real-time LMS training tracking, and AI-driven automation.",
                 label: "Automated Precision",
                 accent: "teal",
-                image: "/Digital_Quality.png",
+                image: "/Quality/Digital.jpg",
                 imageAlt: "Digital quality systems visualization",
               },
             ].map((card) => (

@@ -23,7 +23,7 @@ const facilities = [
     id: 3,
     title: "Quality Control Lab",
     description: "Ensuring product integrity through rigorous testing, high class equipment and quality assurance.",
-    image: "/facilities/QC.jpg",
+    image: "/facilities/Quality control.png",
   },
   {
     id: 4,

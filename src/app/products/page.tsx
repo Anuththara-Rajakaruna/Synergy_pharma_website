@@ -240,7 +240,7 @@ export default function ProductsPage() {
                   description: "Essential medications for allergy relief and histamine management.",
                   label: "Antihistamine",
                   accent: "blue",
-                  image: "/Cetrizine.png",
+                  image: "/Products/Cetirizine.jpg",
                   imageAlt: "Cetirizine medication",
                 },
                 {
@@ -248,15 +248,15 @@ export default function ProductsPage() {
                   description: "Comprehensive anticonvulsant formulation for neurological support.",
                   label: "Antiepileptic",
                   accent: "teal",
-                  image: "/Levetiracetam.png",
+                  image: "/Products/Levetiracetam.jpg",
                   imageAlt: "Levetiracetam medication",
                 },
                 {
-                  title: "Pregablin",
+                  title: "Pregabalin",
                   description: "Neuropathic pain management and neurological disorder treatment.",
                   label: "Neuropathic Agent",
                   accent: "blue",
-                  image: "/Pregablin.png",
+                  image: "/Products/Pregabalin.jpg",
                   imageAlt: "Pregablin medication",
                 },
               ].map((product) => (
@@ -365,7 +365,7 @@ export default function ProductsPage() {
 
             <ScrollRevealContainer staggerDelay={0.15} className="future-grid">
               <ScrollRevealItem>
-                <div className="future-card">
+                <div className="future-card future-card-oncology">
                   <h3>Expansion 2026</h3>
                   <p>Oncology & Complex Generics</p>
                   <p>
@@ -377,7 +377,7 @@ export default function ProductsPage() {
               </ScrollRevealItem>
 
               <ScrollRevealItem>
-                <div className="future-card">
+                <div className="future-card future-card-injectables">
                   <h3>Technical Roadmap</h3>
                   <p>Injectables & Sterile Solutions</p>
                   <p>
