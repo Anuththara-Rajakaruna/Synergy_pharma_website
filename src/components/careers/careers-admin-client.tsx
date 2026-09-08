@@ -197,7 +197,6 @@ export function CareersAdminClient({ initialJobs }: CareersAdminClientProps) {
         if (response.status === 401) {
           // Full reload (not router.push) clears any in-memory applicant/admin
           // state now that the session is invalid.
-          // eslint-disable-next-line @next/next/no-location-assign-relative-destination
           window.location.href = "/careers/admin/login";
           return;
         }
@@ -316,7 +315,6 @@ export function CareersAdminClient({ initialJobs }: CareersAdminClientProps) {
   async function handleSignOut() {
     await fetch("/api/admin/logout", { method: "POST" });
     // Full reload (not router.push) clears any in-memory applicant/admin state.
-    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
     window.location.href = "/careers/admin/login";
   }
 

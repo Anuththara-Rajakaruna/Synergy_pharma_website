@@ -75,9 +75,7 @@ export function SiteFooter() {
         <div className="footer-col footer-col-wide">
           <h3>Registered Office Address</h3>
           <address>
-            No. 9, 15th Lane
-
-            Synergy Pharmaceutical Corporation Pvt. Ltd.
+            Synergy Pharmaceuticals Corporation Pvt. Ltd.
 
             <br />
             No.: 282/1, 4th floor,
