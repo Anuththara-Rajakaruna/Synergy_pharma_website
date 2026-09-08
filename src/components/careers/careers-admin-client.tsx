@@ -1,7 +1,6 @@
 "use client";
 
-import { FormEvent, startTransition, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Fragment, FormEvent, startTransition, useEffect, useRef, useState } from "react";
 import { ApplicationRecord, ApplicationStatus, Job, TalentPoolRecord } from "@/types/careers";
 import { CAREER_DEPARTMENTS } from "@/components/careers/department-options";
 
@@ -68,7 +67,6 @@ function ConfirmModal({ message, onConfirm, onCancel }: ConfirmModalProps) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-      aria-hidden="true"
       onClick={onCancel}
     >
       <div
@@ -170,8 +168,6 @@ type CareersAdminClientProps = {
 const PAGE_SIZE = 10;
 
 export function CareersAdminClient({ initialJobs }: CareersAdminClientProps) {
-  const router = useRouter();
-
   const [activeTab, setActiveTab] = useState<Tab>("jobs");
   const [jobs, setJobs] = useState(initialJobs);
   const [applications, setApplications] = useState<ApplicationRecord[]>([]);
@@ -186,7 +182,10 @@ export function CareersAdminClient({ initialJobs }: CareersAdminClientProps) {
   const [applicantSearch, setApplicantSearch] = useState("");
   const [applicantStatusFilter, setApplicantStatusFilter] = useState<ApplicationStatus | "">("");
   const [applicantPage, setApplicantPage] = useState(0);
+  const [talentSearch, setTalentSearch] = useState("");
   const [talentPage, setTalentPage] = useState(0);
+  const [expandedNotes, setExpandedNotes] = useState<string | null>(null);
+  const [noteDraft, setNoteDraft] = useState("");
 
   const [confirm, setConfirm] = useState<{ message: string; onConfirm: () => void } | null>(null);
 
@@ -195,14 +194,20 @@ export function CareersAdminClient({ initialJobs }: CareersAdminClientProps) {
     async function loadApplicants() {
       try {
         const response = await fetch("/api/applicants", { cache: "no-store" });
-        if (response.status === 401) { router.push("/careers/admin/login"); return; }
+        if (response.status === 401) {
+          // Full reload (not router.push) clears any in-memory applicant/admin
+          // state now that the session is invalid.
+          // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+          window.location.href = "/careers/admin/login";
+          return;
+        }
         const result = (await response.json()) as { applications: ApplicationRecord[]; talentPool: TalentPoolRecord[] };
         if (!ignore) { setApplications(result.applications); setTalentPool(result.talentPool); }
       } catch { /* network error */ }
     }
     void loadApplicants();
     return () => { ignore = true; };
-  }, [router]);
+  }, []);
 
   function startEditing(job: Job) {
     setEditingId(job.id);
@@ -279,9 +284,40 @@ export function CareersAdminClient({ initialJobs }: CareersAdminClientProps) {
     setApplications((prev) => prev.map((a) => a.id === id ? { ...a, status } : a));
   }
 
+  async function handleSaveNote(id: string, notes: string) {
+    const response = await fetch(`/api/applicants/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notes }),
+    });
+    if (!response.ok) { setError("Could not save note."); return; }
+    setApplications((prev) => prev.map((a) => a.id === id ? { ...a, notes } : a));
+    setExpandedNotes(null);
+  }
+
+  function exportApplicantsCsv() {
+    const cols = ["Name", "Email", "Phone", "Position", "Status", "Submitted", "LinkedIn", "Portfolio"];
+    const rows = applications.map((a) => [
+      a.name, a.email, a.phone ?? "", a.position, a.status,
+      new Date(a.createdAt).toLocaleDateString("en-GB"),
+      (a as Record<string, unknown>)["linkedIn"] as string ?? "",
+      (a as Record<string, unknown>)["portfolio"] as string ?? "",
+    ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","));
+    const csv = [cols.join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `applicants-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   async function handleSignOut() {
     await fetch("/api/admin/logout", { method: "POST" });
-    router.push("/careers/admin/login");
+    // Full reload (not router.push) clears any in-memory applicant/admin state.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.href = "/careers/admin/login";
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -335,8 +371,14 @@ export function CareersAdminClient({ initialJobs }: CareersAdminClientProps) {
   });
   const appPageCount = Math.ceil(filteredApplications.length / PAGE_SIZE);
   const pagedApplications = filteredApplications.slice(applicantPage * PAGE_SIZE, (applicantPage + 1) * PAGE_SIZE);
-  const talentPageCount = Math.ceil(talentPool.length / PAGE_SIZE);
-  const pagedTalentPool = talentPool.slice(talentPage * PAGE_SIZE, (talentPage + 1) * PAGE_SIZE);
+
+  const filteredTalentPool = talentPool.filter((r) => {
+    if (!talentSearch.trim()) return true;
+    const q = talentSearch.toLowerCase();
+    return [r.name, r.email, r.areaOfInterest].some((v) => v.toLowerCase().includes(q));
+  });
+  const talentPageCount = Math.ceil(filteredTalentPool.length / PAGE_SIZE);
+  const pagedTalentPool = filteredTalentPool.slice(talentPage * PAGE_SIZE, (talentPage + 1) * PAGE_SIZE);
 
   const TAB_ITEMS: { id: Tab; label: string; count?: number }[] = [
     { id: "jobs", label: "Job Postings", count: jobs.length },
@@ -605,7 +647,7 @@ export function CareersAdminClient({ initialJobs }: CareersAdminClientProps) {
                   placeholder="Search name, email, position…"
                   value={applicantSearch}
                   onChange={(e) => { setApplicantSearch(e.target.value); setApplicantPage(0); }}
-                  className="rounded-xl border border-[#d0e4f0] bg-white px-3.5 py-2 text-[0.85rem] outline-none focus:border-[#2f85ba] focus:ring-2 focus:ring-[#2f85ba]/15 min-w-[200px]"
+                  className="rounded-xl border border-[#d0e4f0] bg-white px-3.5 py-2 text-[0.85rem] outline-none focus:border-[#2f85ba] focus:ring-2 focus:ring-[#2f85ba]/15 min-w-50"
                   style={{ fontFamily: "inherit" }}
                 />
                 <select
@@ -621,6 +663,18 @@ export function CareersAdminClient({ initialJobs }: CareersAdminClientProps) {
                   <option value="rejected">Rejected</option>
                   <option value="hired">Hired</option>
                 </select>
+                <button
+                  type="button"
+                  onClick={exportApplicantsCsv}
+                  disabled={applications.length === 0}
+                  className="career-secondary-button flex items-center gap-1.5"
+                  style={{ marginTop: 0, fontSize: "0.76rem" }}
+                >
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                  </svg>
+                  Export CSV
+                </button>
               </div>
             </div>
 
@@ -638,7 +692,7 @@ export function CareersAdminClient({ initialJobs }: CareersAdminClientProps) {
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.84rem" }}>
                   <thead>
                     <tr style={{ background: "#f5fafd", borderBottom: "2px solid #e0ecf5" }}>
-                      {["Name", "Position", "Email", "Submitted", "Status", "CV", ""].map((h) => (
+                      {["Name", "Position", "Email", "Phone", "Submitted", "Status", "CV", ""].map((h) => (
                         <th
                           key={h}
                           style={{
@@ -659,96 +713,172 @@ export function CareersAdminClient({ initialJobs }: CareersAdminClientProps) {
                   </thead>
                   <tbody>
                     {pagedApplications.map((app, i) => (
-                      <tr
-                        key={app.id}
-                        style={{
-                          borderBottom: i < pagedApplications.length - 1 ? "1px solid #edf4f9" : "none",
-                          background: i % 2 === 0 ? "#fff" : "#fafcfe",
-                        }}
-                      >
-                        <td style={{ padding: "0.75rem 0.9rem", fontWeight: 700, color: "#0a1f35", whiteSpace: "nowrap" }}>
-                          <div className="flex items-center gap-2">
-                            {app.name}
-                            <StatusBadge status={app.status} />
-                          </div>
-                        </td>
-                        <td style={{ padding: "0.75rem 0.9rem", color: "#3d6478", maxWidth: "180px" }}>
-                          <span style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {app.position}
-                          </span>
-                        </td>
-                        <td style={{ padding: "0.75rem 0.9rem", color: "#5f89a4", whiteSpace: "nowrap" }}>
-                          {app.email}
-                        </td>
-                        <td style={{ padding: "0.75rem 0.9rem", color: "#8aacbf", whiteSpace: "nowrap", fontSize: "0.78rem" }}>
-                          {new Date(app.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                        </td>
-                        <td style={{ padding: "0.75rem 0.9rem" }}>
-                          <select
-                            value={app.status}
-                            onChange={(e) => void handleStatusChange(app.id, e.target.value as ApplicationStatus)}
-                            aria-label={`Update status for ${app.name}`}
-                            style={{
-                              fontFamily: "inherit",
-                              fontSize: "0.78rem",
-                              fontWeight: 600,
-                              border: "1px solid #d0e4f0",
-                              borderRadius: "0.5rem",
-                              padding: "0.3rem 0.5rem",
-                              background: "#fff",
-                              color: "#2c4a5e",
-                              outline: "none",
-                              cursor: "pointer",
-                            }}
-                          >
-                            <option value="new">New</option>
-                            <option value="reviewing">Reviewing</option>
-                            <option value="shortlisted">Shortlisted</option>
-                            <option value="rejected">Rejected</option>
-                            <option value="hired">Hired</option>
-                          </select>
-                        </td>
-                        <td style={{ padding: "0.75rem 0.9rem" }}>
-                          <a
-                            href={app.cvFilePath}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "0.3rem",
-                              fontSize: "0.75rem",
-                              fontWeight: 700,
-                              color: "#1075bd",
-                              border: "1px solid #c6dce9",
-                              borderRadius: "0.5rem",
-                              padding: "0.3rem 0.65rem",
-                              background: "#fff",
-                              textDecoration: "none",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            <svg style={{ width: "0.75rem", height: "0.75rem", flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                            </svg>
-                            CV
-                          </a>
-                        </td>
-                        <td style={{ padding: "0.75rem 0.6rem", textAlign: "center" }}>
-                          <button
-                            type="button"
-                            onClick={() => void handleDeleteApplication(app.id)}
-                            aria-label={`Delete application from ${app.name}`}
-                            style={{ marginTop: 0, background: "none", boxShadow: "none", padding: "0.3rem", color: "#c0c8d0", cursor: "pointer", border: "none", borderRadius: "0.4rem", display: "inline-flex" }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#dc2626"; (e.currentTarget as HTMLButtonElement).style.background = "#fff0f0"; }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#c0c8d0"; (e.currentTarget as HTMLButtonElement).style.background = "none"; }}
-                          >
-                            <svg style={{ width: "1rem", height: "1rem" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                            </svg>
-                          </button>
-                        </td>
-                      </tr>
+                      <Fragment key={app.id}>
+                        <tr
+                          style={{
+                            borderBottom: expandedNotes === app.id ? "none" : (i < pagedApplications.length - 1 ? "1px solid #edf4f9" : "none"),
+                            background: i % 2 === 0 ? "#fff" : "#fafcfe",
+                          }}
+                        >
+                          <td style={{ padding: "0.75rem 0.9rem", fontWeight: 700, color: "#0a1f35", whiteSpace: "nowrap" }}>
+                            <div className="flex items-center gap-2">
+                              {app.name}
+                              <StatusBadge status={app.status} />
+                            </div>
+                          </td>
+                          <td style={{ padding: "0.75rem 0.9rem", color: "#3d6478", maxWidth: "180px" }}>
+                            <span style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {app.position}
+                            </span>
+                          </td>
+                          <td style={{ padding: "0.75rem 0.9rem", color: "#5f89a4", whiteSpace: "nowrap" }}>
+                            {app.email}
+                          </td>
+                          <td style={{ padding: "0.75rem 0.9rem", color: "#7a9ab0", whiteSpace: "nowrap", fontSize: "0.78rem" }}>
+                            {app.phone ?? "—"}
+                          </td>
+                          <td style={{ padding: "0.75rem 0.9rem", color: "#8aacbf", whiteSpace: "nowrap", fontSize: "0.78rem" }}>
+                            {new Date(app.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                          </td>
+                          <td style={{ padding: "0.75rem 0.9rem" }}>
+                            <select
+                              value={app.status}
+                              onChange={(e) => void handleStatusChange(app.id, e.target.value as ApplicationStatus)}
+                              aria-label={`Update status for ${app.name}`}
+                              style={{
+                                fontFamily: "inherit",
+                                fontSize: "0.78rem",
+                                fontWeight: 600,
+                                border: "1px solid #d0e4f0",
+                                borderRadius: "0.5rem",
+                                padding: "0.3rem 0.5rem",
+                                background: "#fff",
+                                color: "#2c4a5e",
+                                outline: "none",
+                                cursor: "pointer",
+                              }}
+                            >
+                              <option value="new">New</option>
+                              <option value="reviewing">Reviewing</option>
+                              <option value="shortlisted">Shortlisted</option>
+                              <option value="rejected">Rejected</option>
+                              <option value="hired">Hired</option>
+                            </select>
+                          </td>
+                          <td style={{ padding: "0.75rem 0.9rem" }}>
+                            <a
+                              href={app.cvFilePath}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "0.3rem",
+                                fontSize: "0.75rem",
+                                fontWeight: 700,
+                                color: "#1075bd",
+                                border: "1px solid #c6dce9",
+                                borderRadius: "0.5rem",
+                                padding: "0.3rem 0.65rem",
+                                background: "#fff",
+                                textDecoration: "none",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              <svg style={{ width: "0.75rem", height: "0.75rem", flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                              </svg>
+                              CV
+                            </a>
+                          </td>
+                          <td style={{ padding: "0.75rem 0.6rem", textAlign: "center", whiteSpace: "nowrap" }}>
+                            <button
+                              type="button"
+                              title={expandedNotes === app.id ? "Close notes" : "Add/edit note"}
+                              onClick={() => {
+                                if (expandedNotes === app.id) { setExpandedNotes(null); }
+                                else { setExpandedNotes(app.id); setNoteDraft(app.notes ?? ""); }
+                              }}
+                              style={{ marginTop: 0, background: "none", boxShadow: "none", padding: "0.3rem", color: app.notes ? "#1075bd" : "#c0c8d0", cursor: "pointer", border: "none", borderRadius: "0.4rem", display: "inline-flex" }}
+                            >
+                              <svg style={{ width: "1rem", height: "1rem" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                              </svg>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void handleDeleteApplication(app.id)}
+                              aria-label={`Delete application from ${app.name}`}
+                              style={{ marginTop: 0, background: "none", boxShadow: "none", padding: "0.3rem", color: "#c0c8d0", cursor: "pointer", border: "none", borderRadius: "0.4rem", display: "inline-flex" }}
+                              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#dc2626"; (e.currentTarget as HTMLButtonElement).style.background = "#fff0f0"; }}
+                              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#c0c8d0"; (e.currentTarget as HTMLButtonElement).style.background = "none"; }}
+                            >
+                              <svg style={{ width: "1rem", height: "1rem" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                              </svg>
+                            </button>
+                          </td>
+                        </tr>
+                        {expandedNotes === app.id ? (
+                          <tr style={{ background: i % 2 === 0 ? "#f7fbfd" : "#f2f8fc", borderBottom: i < pagedApplications.length - 1 ? "1px solid #edf4f9" : "none" }}>
+                            <td colSpan={8} style={{ padding: "0.5rem 1.25rem 0.75rem" }}>
+                              <p style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#6b8fa8", marginBottom: "0.35rem" }}>
+                                Notes for {app.name}
+                              </p>
+                              <div style={{ display: "flex", gap: "0.5rem", alignItems: "flex-end" }}>
+                                <textarea
+                                  rows={3}
+                                  value={noteDraft}
+                                  onChange={(e) => setNoteDraft(e.target.value)}
+                                  placeholder="Add internal notes about this applicant…"
+                                  style={{
+                                    flex: 1,
+                                    fontFamily: "inherit",
+                                    fontSize: "0.84rem",
+                                    border: "1px solid #d0e4f0",
+                                    borderRadius: "0.75rem",
+                                    padding: "0.6rem 0.8rem",
+                                    resize: "vertical",
+                                    outline: "none",
+                                    background: "#fff",
+                                    color: "#0a1f35",
+                                  }}
+                                />
+                                <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => void handleSaveNote(app.id, noteDraft)}
+                                    style={{
+                                      marginTop: 0,
+                                      padding: "0.45rem 0.9rem",
+                                      fontSize: "0.72rem",
+                                      fontWeight: 700,
+                                      textTransform: "uppercase",
+                                      letterSpacing: "0.1em",
+                                      background: "#055f7c",
+                                      color: "#fff",
+                                      border: "none",
+                                      borderRadius: "0.6rem",
+                                      cursor: "pointer",
+                                      boxShadow: "0 4px 12px rgba(5,95,124,0.2)",
+                                    }}
+                                  >
+                                    Save
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setExpandedNotes(null)}
+                                    className="career-secondary-button"
+                                    style={{ marginTop: 0, padding: "0.45rem 0.9rem", fontSize: "0.72rem" }}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : null}
+                      </Fragment>
                     ))}
                   </tbody>
                 </table>
@@ -768,11 +898,22 @@ export function CareersAdminClient({ initialJobs }: CareersAdminClientProps) {
         {/* ── Talent Pool tab ── */}
         {activeTab === "talent" ? (
           <div className="careers-admin-card" style={{ padding: "1.5rem" }}>
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
               <div>
                 <p className="eyebrow">Talent Pool</p>
-                <h2 style={{ fontSize: "1.2rem", marginBottom: 0 }}>{talentPool.length} entr{talentPool.length !== 1 ? "ies" : "y"}</h2>
+                <h2 style={{ fontSize: "1.2rem", marginBottom: 0 }}>
+                  {filteredTalentPool.length} entr{filteredTalentPool.length !== 1 ? "ies" : "y"}
+                  {filteredTalentPool.length !== talentPool.length ? ` of ${talentPool.length}` : ""}
+                </h2>
               </div>
+              <input
+                type="search"
+                placeholder="Search name, email, area…"
+                value={talentSearch}
+                onChange={(e) => { setTalentSearch(e.target.value); setTalentPage(0); }}
+                className="rounded-xl border border-[#d0e4f0] bg-white px-3.5 py-2 text-[0.85rem] outline-none focus:border-[#2f85ba] focus:ring-2 focus:ring-[#2f85ba]/15 min-w-50"
+                style={{ fontFamily: "inherit" }}
+              />
             </div>
 
             {pagedTalentPool.length === 0 ? (
@@ -780,7 +921,9 @@ export function CareersAdminClient({ initialJobs }: CareersAdminClientProps) {
                 <svg className="mx-auto mb-3 h-8 w-8 text-[#b0cfe0]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
                 </svg>
-                <p className="text-[0.9rem] text-[#7a9ab0]">No talent pool submissions yet.</p>
+                <p className="text-[0.9rem] text-[#7a9ab0]">
+                  {talentSearch.trim() ? "No matches found for your search." : "No talent pool submissions yet."}
+                </p>
               </div>
             ) : (
               <div className="overflow-x-auto rounded-2xl border border-[#e0ecf5]">

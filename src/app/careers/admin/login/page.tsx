@@ -1,10 +1,9 @@
 "use client";
 
 import { FormEvent, Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +29,7 @@ function LoginForm() {
       }
 
       const from = searchParams.get("from") ?? "/careers/admin";
-      router.push(from);
+      window.location.href = from;
     } catch {
       setError("Unable to connect. Please try again.");
     } finally {
@@ -109,6 +108,10 @@ function LoginForm() {
               {isSubmitting ? "Signing in…" : "Sign In"}
             </button>
           </form>
+
+          <p className="mt-6 text-center text-[0.72rem] text-[#8ba8bb]">
+            Password is set via <code className="font-mono text-[#1075bd]">ADMIN_PASSWORD</code> in <code className="font-mono text-[#1075bd]">.env.local</code>
+          </p>
         </div>
       </div>
     </div>

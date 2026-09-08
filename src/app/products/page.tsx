@@ -1,13 +1,13 @@
-"use client";
+import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/metadata";
+import { ProductsPageContent } from "./products-content";
 
-import { SiteHeader } from "@/components/site-header";
-import { Hero } from "@/components/hero";
-import { ScrollReveal, ScrollRevealContainer, ScrollRevealItem } from "@/components/scroll-reveal";
-import { motion } from "framer-motion";
-import Image from "next/image";
-import { CapabilityCard } from "@/components/capability-card";
-import { useEffect, useRef } from "react";
-import { FlaskConical, Pill, Microscope, ArrowRight, ShieldCheck, Package } from "lucide-react";
+export const metadata: Metadata = buildMetadata({
+  title: "Our Products | Synergy Pharmaceutical Corporation",
+  description:
+    "Explore Synergy Pharmaceutical Corporation's portfolio of APIs and finished-dose medicines, manufactured under strict GMP compliance with global-standard quality assurance.",
+  path: "/products",
+});
 
 export default function ProductsPage() {
   const highlightRef = useRef<HTMLElement | null>(null);

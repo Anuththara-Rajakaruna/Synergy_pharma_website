@@ -1,93 +1,13 @@
-"use client";
+import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/metadata";
+import { QualityPageContent } from "./quality-content";
 
-import Image from "next/image";
-import { motion } from "framer-motion";
-import { SiteHeader } from "@/components/site-header";
-import { Hero } from "@/components/hero";
-import { Button } from "@/components/button";
-import { CapabilityCard } from "@/components/capability-card";
-import {
-  ChartNoAxesColumn,
-  CheckCircle2,
-  Globe2,
-  Microscope,
-  Settings2,
-  Share2,
-  ShieldCheck,
-} from "lucide-react";
-import { useEffect, useRef } from "react";
-import { ScrollReveal, ScrollRevealContainer, ScrollRevealItem } from "@/components/scroll-reveal";
-
-const qualityHighlights = [
-  {
-    title: "100%",
-    subtitle: "Independent QA Systems",
-    detail: "Autonomous Oversight",
-    accent: "blue",
-    icon: Share2,
-  },
-  {
-    title: "24/7",
-    subtitle: "Advanced QC Laboratories",
-    detail: "Chemistry & Micro",
-    accent: "teal",
-    icon: Microscope,
-  },
-  {
-    title: "Global",
-    subtitle: "Compliance Standards",
-    detail: "CGMP, USP, PH.EUR",
-    accent: "blue",
-    icon: Globe2,
-  },
-  {
-    title: "Digital",
-    subtitle: "Quality Monitoring",
-    detail: "EDMS & LMS Integration",
-    accent: "teal",
-    icon: ChartNoAxesColumn,
-  },
-];
-
-const ecosystemCards = [
-  {
-    title: "Quality Management System (QMS)",
-    accent: "blue",
-    icon: Settings2,
-    points: [
-      "Integrated Risk Management protocols",
-      "Periodic Product Quality Reviews (PQR)",
-      "Robust CAPA (Corrective and Preventive Action) systems",
-    ],
-  },
-  {
-    title: "Quality Assurance (QA)",
-    accent: "teal",
-    icon: ShieldCheck,
-    points: [
-      "End-to-end process consistency audits",
-      "Stringent Documentation and Data Integrity controls",
-      "Supplier Qualification & Surveillance programs",
-    ],
-  },
-];
-
-const compliancePrinciples = [
-  {
-    title: "cGMP",
-    description: "Current Good Manufacturing Practices adhered across all sites.",
-  },
-  {
-    title: "USP / Ph.Eur",
-    description: "Strict pharmacopoeial compliance for all chemical entities.",
-  },
-];
-
-const trainingItems = [
-  "Continuous personnel certification programs",
-  "Advanced analytical method validation training",
-  "Data integrity and ethics workshops",
-];
+export const metadata: Metadata = buildMetadata({
+  title: "Quality & Compliance | Synergy Pharmaceutical Corporation",
+  description:
+    "See how Synergy Pharmaceutical Corporation embeds quality from design to delivery — GMP compliance, stability studies, and a global quality management ecosystem.",
+  path: "/quality",
+});
 
 export default function QualityPage() {
   const showcaseRef = useRef<HTMLElement | null>(null);
@@ -296,10 +216,10 @@ export default function QualityPage() {
             {[
               {
                 title: "Chemistry Section",
-                description: "Equipped with advanced HPLC, GC, and MS for precise molecular characterization and stability testing.",
+                description: "Equipped with HPLC, GC, and MS for precise molecular characterization and stability testing.",
                 label: "Instrumental Excellence",
                 accent: "blue",
-                image: "/Quality/Chem.jpg",
+                image: "/Chemistry.png",
                 imageAlt: "Chemistry instruments and laboratory glassware",
               },
               {
@@ -307,7 +227,7 @@ export default function QualityPage() {
                 description: "Specialized sterility testing, microbial limits, and environmental monitoring in Class A environments.",
                 label: "Biological Integrity",
                 accent: "teal",
-                image: "/Quality/Micro.jpg",
+                image: "/Microbiology.png",
                 imageAlt: "Microbiology laboratory environment",
               },
               {
@@ -315,7 +235,7 @@ export default function QualityPage() {
                 description: "Paperless documentation via eDMS, real-time LMS training tracking, and AI-driven automation.",
                 label: "Automated Precision",
                 accent: "teal",
-                image: "/Quality/Digital.jpg",
+                image: "/Digital_Quality.png",
                 imageAlt: "Digital quality systems visualization",
               },
             ].map((card) => (

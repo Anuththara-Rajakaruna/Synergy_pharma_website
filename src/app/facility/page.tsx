@@ -1,4 +1,6 @@
-"use client";
+import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/metadata";
+import { FacilityPageContent } from "./facility-content";
 
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -736,4 +738,3 @@ export default function FacilityPage() {
     </main>
   );
 }
-
