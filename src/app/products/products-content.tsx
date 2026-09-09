@@ -240,7 +240,7 @@ export function ProductsPageContent() {
                   description: "Essential medications for allergy relief and histamine management.",
                   label: "Antihistamine",
                   accent: "blue",
-                  image: "/Cetrizine.png",
+                  image: "/Products/Cetirizine.jpg",
                   imageAlt: "Cetirizine medication",
                 },
                 {
@@ -248,15 +248,15 @@ export function ProductsPageContent() {
                   description: "Comprehensive anticonvulsant formulation for neurological support.",
                   label: "Antiepileptic",
                   accent: "teal",
-                  image: "/Levetiracetam.png",
+                  image: "/Products/Levetiracetam.jpg",
                   imageAlt: "Levetiracetam medication",
                 },
                 {
-                  title: "Pregablin",
+                  title: "Pregabalin",
                   description: "Neuropathic pain management and neurological disorder treatment.",
                   label: "Neuropathic Agent",
                   accent: "blue",
-                  image: "/Pregablin.png",
+                  image: "/Products/Pregabalin.jpg",
                   imageAlt: "Pregablin medication",
                 },
               ].map((product) => (
@@ -296,7 +296,7 @@ export function ProductsPageContent() {
                 <div className="quality-left">
                   <div className="quality-details">
                     <div>
-                      <h3 className="facility-capabilityCardTitle">Stability Studies</h3>
+                      <h4 className="facility-capabilityCardTitle">Stability Studies</h4>
                       <p className="facility-capabilityCardDescription">
                         Conducted in ICH-compliant chambers for real-time and accelerated shelf-life
                         verification.
@@ -304,7 +304,7 @@ export function ProductsPageContent() {
                     </div>
 
                     <div>
-                      <h3 className="facility-capabilityCardTitle">In-Process QC</h3>
+                      <h4 className="facility-capabilityCardTitle">In-Process QC</h4>
                       <p className="facility-capabilityCardDescription">
                         Multi-stage testing including content uniformity, dissolution rates, and
                         microbial limits.
@@ -365,7 +365,7 @@ export function ProductsPageContent() {
 
             <ScrollRevealContainer staggerDelay={0.15} className="future-grid">
               <ScrollRevealItem>
-                <div className="future-card">
+                <div className="future-card future-card-oncology">
                   <h3>Expansion 2026</h3>
                   <p>Oncology & Complex Generics</p>
                   <p>
@@ -377,7 +377,7 @@ export function ProductsPageContent() {
               </ScrollRevealItem>
 
               <ScrollRevealItem>
-                <div className="future-card">
+                <div className="future-card future-card-injectables">
                   <h3>Technical Roadmap</h3>
                   <p>Injectables & Sterile Solutions</p>
                   <p>

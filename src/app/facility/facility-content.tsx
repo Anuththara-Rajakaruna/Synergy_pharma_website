@@ -11,43 +11,43 @@ const facilities = [
     id: 1,
     title: "General Oral Solid Dosage",
     description: "Specialized in the reliable manufacturing of tablets and capsules to global standards.",
-    image: "/facilities/manufacturing.jpg",
+    image: "/facilities/specialty-units.jpg",
   },
   {
     id: 2,
     title: "General Injectables ",
     description: "Ensuring precision and sterility in every injectable formulation.",
-    image: "/facilities/osd.jpg",
+    image: "/facilities/inject.jpg",
   },
   {
     id: 3,
     title: "Quality Control Lab",
     description: "Ensuring product integrity through rigorous testing, high class equipment and quality assurance.",
-    image: "/facilities/injectable.jpg",
+    image: "/facilities/Quality control.png",
   },
   {
     id: 4,
     title: "Manufacturing Facilities  ",
     description: "State-of-the-art production lines meeting EU-GMP/ USFDA guidelines with precision, automation, and quality control systems. ",
-    image: "/facilities/oncology.jpg",
+    image: "/facilities/manufacturing_.jpg",
   },
   {
     id: 5,
     title: "Oncology (OSD & Injectables) ",
     description: "Dedicated manufacturing for oncology products with the highest levels of containment and care.",
-    image: "/facilities/research-center.jpg",
+    image: "/facilities/Onco.png",
   },
   {
     id: 6,
     title: "R&D Center",
     description: "An innovation hub dedicated to developing future-ready pharmaceuticals.",
-    image: "/facilities/research.jpg",
+    image: "/facilities/R&D.jpg",
   },
   {
     id: 7,
     title: "Microbiology Laboratory",
     description: "Advanced microbiological testing and environmental monitoring facilities ensuring product safety, sterility, and compliance with international quality standards.",
-    image: "/facilities/manufacturing.jpg",
+    image: "/facilities/micro.png",
   },
 ];
 
@@ -626,7 +626,7 @@ export function FacilityPageContent() {
             viewport={{ once: true, amount: 0.3 }}
           >
             <Image
-              src="/quality-doctor.png"
+              src="/Quality_Compliance.png"
               alt="Quality specialist in pharmaceutical setting"
               width={520}
               height={640}

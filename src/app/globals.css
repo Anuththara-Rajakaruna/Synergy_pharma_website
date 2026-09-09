@@ -5352,12 +5352,12 @@ button:active {
   text-align: center;
 }
 
-.future-card:nth-child(1) {
-  background-image: url("/Oncology.png");
+.future-card-oncology {
+  background-image: url("/Products/future.jpg");
 }
 
-.future-card:nth-child(2) {
-  background-image: url("/Injectables.png");
+.future-card-injectables {
+  background-image: url("/Products/Technical%20roadmap.jpg");
 }
 
 .future-card::before {
