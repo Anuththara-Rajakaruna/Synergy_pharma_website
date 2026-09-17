@@ -7,7 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/hero";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { CorporateVisionMission } from "@/components/corporate-vision-mission";
-import { Building2, Pill, BarChart3, Microscope, Globe } from "lucide-react";
+import { Building2, Pill, BarChart3, Globe, CheckCircle2 } from "lucide-react";
 
 const leaders = [
   { role: "Chairman", name: "Mr.Ravi Wijeratne" },
@@ -37,16 +37,12 @@ const aboutCards = [
     icon: BarChart3,
   },
   {
-    title: "Synergy Diagnostics",
-    description:
-      "A diagnostics-focused extension of the group, supporting faster insights, stronger care pathways, and a broader healthcare footprint.",
-    icon: Microscope,
-  },
-  {
     title: "Global Operations",
     description:
       "Strategic supply chain and logistics network ensuring reliable delivery of healthcare solutions across regional and international markets.",
     icon: Globe,
+    wide: true,
+    extraPoints: ["Contract Manufacturing Operation (CMO)", "Global Marketing"],
   },
 ];
 
@@ -58,8 +54,8 @@ export function AboutPageContent() {
 
       <Hero
         eyebrow="About Synergy"
-        heading="Trust Built. Precision Delivered."
-        description="Synergy Pharmaceutical combines visionary leadership, responsible manufacturing, and quality-first operations to deliver healthcare solutions that matter across the region."
+        heading="Formulating Trust. Delivering Health."
+        description="Synergy Pharmaceuticals combines visionary leadership, responsible manufacturing, and quality-first operations to deliver healthcare solutions that matter across the region."
         className="about-hero-section"
       />
 
@@ -75,13 +71,26 @@ export function AboutPageContent() {
           </ScrollReveal>
 
           <ScrollRevealContainer staggerDelay={0.12} className="leaders">
-            {leaders.map((leader) => (
-              <ScrollRevealItem className="leader reveal-on-scroll" key={`${leader.role}-${leader.name}`}>
-                <div className="avatar" />
-                <p className="leader-role">{leader.role}</p>
-                <h3>{leader.name}</h3>
-              </ScrollRevealItem>
-            ))}
+            <div className="leaders-row leaders-row-primary">
+              {leaders.slice(0, 2).map((leader) => (
+                <ScrollRevealItem className="leader reveal-on-scroll" key={`${leader.role}-${leader.name}`}>
+                  <div className="avatar">
+                    <p className="leader-role">{leader.role}</p>
+                    <h3>{leader.name}</h3>
+                  </div>
+                </ScrollRevealItem>
+              ))}
+            </div>
+            <div className="leaders-row leaders-row-secondary">
+              {leaders.slice(2).map((leader) => (
+                <ScrollRevealItem className="leader reveal-on-scroll" key={`${leader.role}-${leader.name}`}>
+                  <div className="avatar">
+                    <p className="leader-role">{leader.role}</p>
+                    <h3>{leader.name}</h3>
+                  </div>
+                </ScrollRevealItem>
+              ))}
+            </div>
           </ScrollRevealContainer>
         </div>
       </section>
@@ -103,7 +112,7 @@ export function AboutPageContent() {
 
               return (
                 <ScrollRevealItem
-                  className={`ecosystem-card reveal-on-scroll ${isFeatured ? "featured" : "secondary"}`.trim()}
+                  className={`ecosystem-card reveal-on-scroll ${isFeatured ? "featured" : "secondary"}${card.wide ? " ecosystem-card-wide" : ""}`.trim()}
                   key={card.title}
                 >
                   {isFeatured ? (
@@ -124,6 +133,38 @@ export function AboutPageContent() {
                       <h3>{card.title}</h3>
                       <p>{card.description}</p>
                     </div>
+                  ) : card.wide ? (
+                    <>
+                      <motion.span
+                        className="ecosystem-card-icon"
+                        animate={{ rotateY: 360 }}
+                        transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                      >
+                        <motion.span
+                          className="ecosystem-card-icon-animated"
+                          animate={{ y: [0, -8, 0] }}
+                          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                          <Icon size={24} strokeWidth={2.5} aria-hidden="true" />
+                        </motion.span>
+                      </motion.span>
+                      <div className="ecosystem-card-wide-columns">
+                        <div className="ecosystem-card-wide-left">
+                          <h3>{card.title}</h3>
+                          <p>{card.description}</p>
+                        </div>
+                        {card.extraPoints && (
+                          <ul className="ecosystem-card-wide-right">
+                            {card.extraPoints.map((point) => (
+                              <li key={point} className="ecosystem-card-point">
+                                <CheckCircle2 className="ecosystem-card-point-icon" size={18} strokeWidth={1.8} aria-hidden="true" />
+                                <span className="ecosystem-card-point-text">{point}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </>
                   ) : (
                     <>
                       <motion.span

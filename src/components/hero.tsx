@@ -90,6 +90,9 @@ export const Hero: React.FC<HeroProps> = ({
         },
       });
 
+      const isHome = section.classList.contains("home-hero");
+      const maxBgScale = isHome ? 1.3 : 2.5;
+
       timeline.fromTo(
         background,
         {
@@ -97,7 +100,7 @@ export const Hero: React.FC<HeroProps> = ({
           yPercent: 0,
         },
         {
-          scale: 2.6,
+          scale: maxBgScale,
           xPercent: 4,
           yPercent: 18,
           ease: "none",
@@ -123,7 +126,7 @@ export const Hero: React.FC<HeroProps> = ({
       timeline.to(
         section,
         {
-          "--hero-bg-scale": 2.6,
+          "--hero-bg-scale": maxBgScale,
           "--hero-bg-pan-x": 4,
           "--hero-bg-pan-y": 18,
           "--hero-tint-alpha": 0,

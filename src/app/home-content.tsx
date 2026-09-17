@@ -124,9 +124,9 @@ export function HomeContent() {
         heading={
           <>
             <span className="hero-heading-line">
-              Driven by Collaboration and 
+              Driven by Collaboration 
             </span>
-            <span className="hero-heading-line">Committed to Care.</span>
+            <span className="hero-heading-line">and Committed to Care.</span>
           </>
         }
         description="Delivering high-quality, affordable medicines manufactured in Sri Lanka for the global healthcare economy."
@@ -157,7 +157,8 @@ export function HomeContent() {
               <article className="scope-card">
                 <p className="scope-label">CERTIFICATIONS</p>
                 <p className="scope-copy">
-Sri Lankan NMRA-GMP<br />EU-GMP (Q4 2026)                </p>
+                    NMRA GMP Approved<br />
+                    WHO-GMP Approved                </p>
               </article>
             </div>
             <div className="showcase-metrics">

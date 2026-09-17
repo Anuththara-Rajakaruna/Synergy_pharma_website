@@ -21,7 +21,7 @@
   color: white;
   background-color: #0a1f33;
   isolation: isolate;
-  --hero-image: url("/banner3.png");
+  --hero-image: url("/Homepage.png");
   --hero-image-aspect: 1.5;
   --hero-overlay: linear-gradient(115deg, rgba(2, 20, 45, 0.28) 0%, rgba(2, 45, 69, 0.32) 50%, rgba(100, 180, 220, 0.06) 100%);
   --hero-image-anchor-x: 0;
@@ -45,7 +45,7 @@
     by GSAP at scroll end so at maximum zoom the cutout becomes
     a fully transparent window onto the image.
   */
-  --hero-tint-alpha: 0.45;
+  --hero-tint-alpha: 0.25;
   --hero-base-image-width: max(100vw, calc(100vh * var(--hero-image-aspect)));
   --hero-base-image-height: calc(var(--hero-base-image-width) / var(--hero-image-aspect));
   --hero-base-image-left: calc((100vw - var(--hero-base-image-width)) * var(--hero-image-anchor-x));

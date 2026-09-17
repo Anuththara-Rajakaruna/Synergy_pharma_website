@@ -16,7 +16,7 @@ import {
 const industries = [
   {
     id: "pharmaceutical",
-    label: "Pharmaceutical",
+    label: "Pharmaceuticals",
     icon: Pill,
     image: "/Synergy.png",
     heading: "Healthcare & Pharma",
