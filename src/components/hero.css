@@ -68,7 +68,7 @@
 
 /* Background Images - Set directly on containers */
 .hero {
-  --hero-image: url("/career.png");
+  --hero-image: url("/career.webp");
   --hero-image-aspect: 1.874;
   --hero-image-anchor-x: 0.5;
   --hero-image-anchor-y: 0;

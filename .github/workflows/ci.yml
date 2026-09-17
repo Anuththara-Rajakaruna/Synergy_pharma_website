@@ -1,0 +1,126 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  checks:
+    name: Lint, typecheck, unit tests, build, audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js (version from .nvmrc)
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      # The build never connects to these services; the values only satisfy the configuration.
+      - name: Build
+        run: npm run build
+        env:
+          MONGODB_URI: mongodb://127.0.0.1:27017
+          MONGODB_DB_NAME: ci_build
+          NEXT_PUBLIC_SITE_URL: https://www.synergypharma.lk
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+  integration:
+    name: Integration tests (MongoDB + S3-compatible storage)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      mongodb:
+        image: mongo:8
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 30
+    env:
+      # Read by tests/integration/support/env.ts. The database name must end with _test: the suite
+      # drops it before every test file. The bucket is created if missing and emptied.
+      INTEGRATION_MONGODB_URI: mongodb://127.0.0.1:27017
+      INTEGRATION_MONGODB_DB_NAME: synergy_ci_integration_test
+      INTEGRATION_S3_ENDPOINT: http://127.0.0.1:8333
+      INTEGRATION_S3_BUCKET: synergy-ci-integration-test
+      # Credentials of the throwaway storage container below, not a real secret.
+      INTEGRATION_S3_ACCESS_KEY_ID: ci-access-key
+      INTEGRATION_S3_SECRET_ACCESS_KEY: ci-secret-access-key
+    steps:
+      - name: Check out
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js (version from .nvmrc)
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # SeaweedFS runs as a step rather than a service because service containers cannot be given a
+      # command. AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY make it require signed requests, which the
+      # presigned-upload tests rely on (a PUT with a different size or content type must get 403).
+      - name: Start S3-compatible storage (SeaweedFS)
+        run: |
+          docker run --detach --name seaweedfs --publish 8333:8333 \
+            --env AWS_ACCESS_KEY_ID="$INTEGRATION_S3_ACCESS_KEY_ID" \
+            --env AWS_SECRET_ACCESS_KEY="$INTEGRATION_S3_SECRET_ACCESS_KEY" \
+            chrislusf/seaweedfs:4.47 \
+            server -s3 -dir=/data -ip.bind=0.0.0.0 -master.volumeSizeLimitMB=64
+
+      - name: Wait for storage
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl --silent --fail --output /dev/null \
+              --aws-sigv4 "aws:amz:us-east-1:s3" \
+              --user "$INTEGRATION_S3_ACCESS_KEY_ID:$INTEGRATION_S3_SECRET_ACCESS_KEY" \
+              "$INTEGRATION_S3_ENDPOINT/"; then
+              echo "Storage is ready."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Storage did not become ready." >&2
+          docker logs seaweedfs
+          exit 1
+
+      - name: Integration tests
+        run: npm run test:integration
+
+      - name: Storage logs
+        if: failure()
+        run: docker logs seaweedfs

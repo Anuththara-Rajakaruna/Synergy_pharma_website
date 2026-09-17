@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { RevealOnScroll } from "@/components/reveal-on-scroll";
-import { SiteHeader } from "@/components/site-header";
+import { redirect } from "next/navigation";
+import { AdminApp } from "@/components/careers/admin/admin-app";
 import { Hero } from "@/components/hero";
-import { CareersAdminClient } from "@/components/careers/careers-admin-client";
-import { getJobs } from "@/lib/careers";
+import { SiteHeader } from "@/components/site-header";
+import { getAdminFromCookies } from "@/lib/auth/require-admin";
+import { isObjectIdString } from "@/lib/careers/server/ids";
 
 export const dynamic = "force-dynamic";
 
@@ -12,13 +13,43 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function CareersAdminPage() {
-  const jobs = await getJobs();
+const ADMIN_TABS = new Set(["jobs", "applications", "talent", "users", "audit"]);
+
+type SearchParams = Record<string, string | string[] | undefined>;
+
+function single(value: string | string[] | undefined): string | undefined {
+  return typeof value === "string" ? value : undefined;
+}
+
+function readDeepLink(params: SearchParams) {
+  const tab = single(params.tab);
+  const application = single(params.application);
+  const talent = single(params.talent);
+  return {
+    tab: tab && ADMIN_TABS.has(tab) ? tab : undefined,
+    applicationId: application && isObjectIdString(application) ? application : undefined,
+    talentId: talent && isObjectIdString(talent) ? talent : undefined,
+  };
+}
+
+export default async function CareersAdminPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const link = readDeepLink(await searchParams);
+  const user = await getAdminFromCookies();
+
+  if (!user) {
+    // Keep deep links (e.g. from HR notification emails) across the sign-in.
+    const query = new URLSearchParams();
+    if (link.tab) query.set("tab", link.tab);
+    if (link.applicationId) query.set("application", link.applicationId);
+    if (link.talentId) query.set("talent", link.talentId);
+    const queryString = query.toString();
+    const from = queryString ? `/careers/admin?${queryString}` : "/careers/admin";
+    redirect(`/careers/admin/login?from=${encodeURIComponent(from)}`);
+  }
 
   return (
     <main className="careers-admin-page">
       <SiteHeader />
-      <RevealOnScroll />
 
       <Hero
         eyebrow="Careers Admin"
@@ -27,9 +58,14 @@ export default async function CareersAdminPage() {
         className="careers-admin-hero"
       />
 
-      <section className="careers-admin-section reveal-on-scroll">
+      <section className="careers-admin-section">
         <div className="careers-shell">
-          <CareersAdminClient initialJobs={jobs} />
+          <AdminApp
+            currentUser={user}
+            initialTab={link.tab}
+            initialApplicationId={link.applicationId}
+            initialTalentId={link.talentId}
+          />
         </div>
       </section>
     </main>

@@ -5,10 +5,10 @@ import { useEffect } from "react";
 
 export default function Error({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  retry: () => void;
 }) {
   useEffect(() => {
     console.error(error);
@@ -41,7 +41,7 @@ export default function Error({
           boxShadow: "0 12px 28px rgba(192, 57, 43, 0.3)",
         }}
       >
-        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={1.8}>
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={1.8} aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9.303 3.376c.866 1.5-.217 3.374-1.948 3.374H4.645c-1.73 0-2.813-1.874-1.948-3.374L10.051 3.378c.866-1.5 3.032-1.5 3.898 0L21.303 16.126zM12 15.75h.007v.008H12v-.008z" />
         </svg>
       </div>
@@ -78,16 +78,34 @@ export default function Error({
           color: "#4d6578",
           lineHeight: 1.7,
           maxWidth: "420px",
-          marginBottom: "2rem",
+          marginBottom: error.digest ? "0.75rem" : "2rem",
         }}
       >
         We apologise for the inconvenience. Please try again or return to the homepage.
       </p>
 
+      {error.digest ? (
+        <p
+          style={{
+            fontSize: "0.8rem",
+            color: "#6b8fa8",
+            lineHeight: 1.6,
+            maxWidth: "420px",
+            marginBottom: "2rem",
+          }}
+        >
+          If the problem continues, contact us and quote reference{" "}
+          <code style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace", color: "#42677f" }}>
+            {error.digest}
+          </code>
+          .
+        </p>
+      ) : null}
+
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center" }}>
         <button
           type="button"
-          onClick={reset}
+          onClick={() => retry()}
           style={{
             display: "inline-flex",
             alignItems: "center",

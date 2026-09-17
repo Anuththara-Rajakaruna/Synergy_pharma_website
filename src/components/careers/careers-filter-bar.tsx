@@ -2,23 +2,49 @@
 
 import { Search, SlidersHorizontal, X } from "lucide-react";
 
+export type CareersSortOrder = "newest" | "closing" | "az";
+
+export const CAREERS_SORT_OPTIONS: { value: CareersSortOrder; label: string }[] = [
+  { value: "newest", label: "Newest first" },
+  { value: "closing", label: "Closing soon" },
+  { value: "az", label: "A – Z" },
+];
+
 type CareersFilterBarProps = {
   searchTerm: string;
+  // Option lists exclude the "All …" entry, which is rendered with an empty value.
   department: string;
   departments: string[];
   jobType: string;
   jobTypes: string[];
-  sortOrder: "newest" | "az";
   location: string;
   locations: string[];
+  sortOrder: CareersSortOrder;
   hasActiveFilters: boolean;
   onSearchChange: (value: string) => void;
   onDepartmentChange: (value: string) => void;
   onJobTypeChange: (value: string) => void;
-  onSortChange: (value: "newest" | "az") => void;
   onLocationChange: (value: string) => void;
+  onSortChange: (value: CareersSortOrder) => void;
   onClear: () => void;
 };
+
+const labelClass = "mb-2 block text-[0.72rem] font-bold uppercase tracking-[0.18em] text-[#42677f]";
+const controlClass =
+  "h-14 w-full appearance-none rounded-2xl border border-white/70 bg-white/85 text-[0.98rem] text-[#12334a] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] outline-none transition-all duration-300 focus:border-[#57a6d8] focus:bg-white focus:shadow-[0_0_0_5px_rgba(16,117,189,0.12),0_16px_30px_rgba(16,117,189,0.12)]";
+
+function SelectChevron() {
+  return (
+    <span
+      aria-hidden="true"
+      className="pointer-events-none absolute right-4 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rotate-45 border-b-2 border-r-2 border-[#5f89a4]"
+    />
+  );
+}
+
+function isSortOrder(value: string): value is CareersSortOrder {
+  return CAREERS_SORT_OPTIONS.some((option) => option.value === value);
+}
 
 export function CareersFilterBar({
   searchTerm,
@@ -26,136 +52,137 @@ export function CareersFilterBar({
   departments,
   jobType,
   jobTypes,
-  sortOrder,
   location,
   locations,
+  sortOrder,
   hasActiveFilters,
   onSearchChange,
   onDepartmentChange,
   onJobTypeChange,
-  onSortChange,
   onLocationChange,
+  onSortChange,
   onClear,
 }: CareersFilterBarProps) {
   return (
-    <div className="sticky top-24 z-20">
+    // Sticky only on large screens: stacked controls would cover most of a phone viewport.
+    <div className="relative z-20 lg:sticky lg:top-24" role="search" aria-label="Filter open positions">
       <div className="rounded-[28px] border border-white/60 bg-white/60 p-4 shadow-[0_24px_60px_rgba(16,58,84,0.12)] backdrop-blur-2xl supports-backdrop-filter:bg-white/55 md:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
-          {/* Search */}
           <label className="group flex-1">
-            <span className="mb-2 block text-[0.72rem] font-bold uppercase tracking-[0.18em] text-[#42677f]">
-              Search by title
-            </span>
+            <span className={labelClass}>Search roles</span>
             <div className="relative">
               <span className="career-icon-frame career-filter-icon pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#5f89a4] transition-colors group-focus-within:text-[#1075bd]">
                 <span className="career-icon-glyph">
-                  <Search className="h-4 w-4" />
+                  <Search className="h-4 w-4" aria-hidden="true" />
                 </span>
               </span>
               <input
                 type="search"
-                name="search"
-                placeholder="Search open positions"
+                name="q"
+                placeholder="Title, department, location or keyword"
+                autoComplete="off"
+                enterKeyHint="search"
+                maxLength={100}
                 value={searchTerm}
-                onChange={(e) => onSearchChange(e.target.value)}
-                className="h-14 w-full rounded-2xl border border-white/70 bg-white/85 pl-11 pr-4 text-[0.98rem] text-[#12334a] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] outline-none transition-all duration-300 placeholder:text-[#7d97a9] focus:border-[#57a6d8] focus:bg-white focus:shadow-[0_0_0_5px_rgba(16,117,189,0.12),0_16px_30px_rgba(16,117,189,0.12)]"
+                onChange={(event) => onSearchChange(event.target.value)}
+                className={`${controlClass} pl-11 pr-4 placeholder:text-[#587285]`}
               />
             </div>
           </label>
 
-          {/* Department */}
           <label className="group lg:w-56">
-            <span className="mb-2 block text-[0.72rem] font-bold uppercase tracking-[0.18em] text-[#42677f]">
-              Department
-            </span>
+            <span className={labelClass}>Department</span>
             <div className="relative">
               <span className="career-icon-frame career-filter-icon pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#5f89a4] transition-colors group-focus-within:text-[#1075bd]">
                 <span className="career-icon-glyph">
-                  <SlidersHorizontal className="h-4 w-4" />
+                  <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
                 </span>
               </span>
               <select
+                name="dept"
                 value={department}
-                onChange={(e) => onDepartmentChange(e.target.value)}
-                className="h-14 w-full appearance-none rounded-2xl border border-white/70 bg-white/85 pl-11 pr-10 text-[0.98rem] text-[#12334a] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] outline-none transition-all duration-300 focus:border-[#57a6d8] focus:bg-white focus:shadow-[0_0_0_5px_rgba(16,117,189,0.12),0_16px_30px_rgba(16,117,189,0.12)]"
+                onChange={(event) => onDepartmentChange(event.target.value)}
+                className={`${controlClass} pl-11 pr-10`}
               >
+                <option value="">All departments</option>
                 {departments.map((item) => (
-                  <option key={item} value={item}>{item}</option>
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
                 ))}
               </select>
-              <span className="pointer-events-none absolute right-4 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rotate-45 border-b-2 border-r-2 border-[#5f89a4]" />
+              <SelectChevron />
             </div>
           </label>
 
-          {/* Job Type */}
           <label className="group lg:w-40">
-            <span className="mb-2 block text-[0.72rem] font-bold uppercase tracking-[0.18em] text-[#42677f]">
-              Job type
-            </span>
+            <span className={labelClass}>Job type</span>
             <div className="relative">
               <select
+                name="type"
                 value={jobType}
-                onChange={(e) => onJobTypeChange(e.target.value)}
-                className="h-14 w-full appearance-none rounded-2xl border border-white/70 bg-white/85 px-4 pr-10 text-[0.98rem] text-[#12334a] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] outline-none transition-all duration-300 focus:border-[#57a6d8] focus:bg-white focus:shadow-[0_0_0_5px_rgba(16,117,189,0.12),0_16px_30px_rgba(16,117,189,0.12)]"
+                onChange={(event) => onJobTypeChange(event.target.value)}
+                className={`${controlClass} px-4 pr-10`}
               >
+                <option value="">All types</option>
                 {jobTypes.map((item) => (
-                  <option key={item} value={item}>{item}</option>
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
                 ))}
               </select>
-              <span className="pointer-events-none absolute right-4 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rotate-45 border-b-2 border-r-2 border-[#5f89a4]" />
+              <SelectChevron />
             </div>
           </label>
 
-          {/* Location — only shown when there are multiple locations */}
-          {locations.length > 2 ? (
+          {/* Location is only worth filtering when roles span several locations. */}
+          {locations.length > 1 ? (
             <label className="group lg:w-48">
-              <span className="mb-2 block text-[0.72rem] font-bold uppercase tracking-[0.18em] text-[#42677f]">
-                Location
-              </span>
+              <span className={labelClass}>Location</span>
               <div className="relative">
                 <select
+                  name="loc"
                   value={location}
-                  onChange={(e) => onLocationChange(e.target.value)}
-                  className="h-14 w-full appearance-none rounded-2xl border border-white/70 bg-white/85 px-4 pr-10 text-[0.98rem] text-[#12334a] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] outline-none transition-all duration-300 focus:border-[#57a6d8] focus:bg-white focus:shadow-[0_0_0_5px_rgba(16,117,189,0.12),0_16px_30px_rgba(16,117,189,0.12)]"
+                  onChange={(event) => onLocationChange(event.target.value)}
+                  className={`${controlClass} px-4 pr-10`}
                 >
+                  <option value="">All locations</option>
                   {locations.map((item) => (
-                    <option key={item} value={item}>{item}</option>
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
                   ))}
                 </select>
-                <span className="pointer-events-none absolute right-4 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rotate-45 border-b-2 border-r-2 border-[#5f89a4]" />
+                <SelectChevron />
               </div>
             </label>
           ) : null}
 
-          {/* Sort */}
-          <label className="group lg:w-40">
-            <span className="mb-2 block text-[0.72rem] font-bold uppercase tracking-[0.18em] text-[#42677f]">
-              Sort
-            </span>
+          <label className="group lg:w-44">
+            <span className={labelClass}>Sort</span>
             <div className="relative">
               <select
+                name="sort"
                 value={sortOrder}
-                onChange={(e) => onSortChange(e.target.value as "newest" | "az")}
-                className="h-14 w-full appearance-none rounded-2xl border border-white/70 bg-white/85 px-4 pr-10 text-[0.98rem] text-[#12334a] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] outline-none transition-all duration-300 focus:border-[#57a6d8] focus:bg-white focus:shadow-[0_0_0_5px_rgba(16,117,189,0.12),0_16px_30px_rgba(16,117,189,0.12)]"
+                onChange={(event) => {
+                  if (isSortOrder(event.target.value)) onSortChange(event.target.value);
+                }}
+                className={`${controlClass} px-4 pr-10`}
               >
-                <option value="newest">Newest first</option>
-                <option value="az">A – Z</option>
+                {CAREERS_SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
-              <span className="pointer-events-none absolute right-4 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rotate-45 border-b-2 border-r-2 border-[#5f89a4]" />
+              <SelectChevron />
             </div>
           </label>
 
-          {/* Clear */}
-          <button
-            type="button"
-            onClick={onClear}
-            disabled={!hasActiveFilters}
-            className="group relative inline-flex h-14 items-center justify-center gap-2 overflow-hidden rounded-2xl border border-[#d2e4ef] bg-[#edf6fb] px-5 text-[0.76rem] font-bold uppercase tracking-[0.16em] text-[#144564] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#b4d4e8] hover:bg-white hover:shadow-[0_16px_30px_rgba(20,69,100,0.12)] disabled:cursor-not-allowed disabled:opacity-50 lg:min-w-40"
-          >
-            <span className="absolute inset-0 scale-0 rounded-full bg-[#cae7f7] opacity-0 transition-all duration-500 group-hover:scale-[2.3] group-hover:opacity-35" />
+          <button type="button" onClick={onClear} disabled={!hasActiveFilters} className="careers-filter-clear group">
             <span className="career-icon-frame career-icon-frame-inline relative">
               <span className="career-icon-glyph">
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4" aria-hidden="true" />
               </span>
             </span>
             <span className="relative">Clear Filters</span>

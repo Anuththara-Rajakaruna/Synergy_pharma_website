@@ -1,75 +1,42 @@
-import { NextResponse } from "next/server";
-import { createTalentPoolRecord } from "@/lib/careers";
-import { sendMail } from "@/lib/email";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { submitTalentProfile } from "@/lib/careers/server/talent-pool";
+import { normalizeEmail, validateTalentSubmission } from "@/lib/careers/validation";
+import { badRequest } from "@/lib/http/errors";
+import { apiHandler, jsonResponse } from "@/lib/http/handler";
+import { assertSameOrigin, getClientIp, readJsonBody } from "@/lib/http/request";
+import { RATE_LIMITS, enforceRateLimit } from "@/lib/rate-limit";
+import type { SubmissionResponse } from "@/types/careers";
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_REGEX = /^\+?[\d\s\-().]{7,20}$/;
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
-export async function POST(request: Request) {
-  const formData = await request.formData();
-  const name = String(formData.get("name") ?? "").trim().slice(0, 120);
-  const email = String(formData.get("email") ?? "").trim().slice(0, 254);
-  const phone = String(formData.get("phone") ?? "").trim().slice(0, 20);
-  const areaOfInterest = String(formData.get("areaOfInterest") ?? "").trim().slice(0, 100);
-  const notes = String(formData.get("notes") ?? "").trim().slice(0, 1500);
-  const consentGiven = formData.get("consentGiven") === "true";
-  const cv = formData.get("cv");
+const MAX_BODY_BYTES = 1024 * 1024;
+const SUCCESS_MESSAGE = "Talent profile submitted successfully.";
 
-  if (!name || !email || !phone || !areaOfInterest || !(cv instanceof File) || cv.size === 0) {
-    return NextResponse.json({ error: "Please complete the required talent pool fields." }, { status: 400 });
-  }
+// POST /api/talent-pool — public talent pool profile. Files were uploaded directly to storage
+// beforehand (POST /api/uploads); this request references them by upload id.
+export const POST = apiHandler("api.talent_pool", async (request: Request) => {
+  assertSameOrigin(request);
+  const body = await readJsonBody(request, MAX_BODY_BYTES);
 
-  if (!EMAIL_REGEX.test(email)) {
-    return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
-  }
+  const ip = getClientIp(request);
+  await enforceRateLimit(
+    "talent-ip",
+    ip,
+    RATE_LIMITS["talent-ip"],
+    "Too many profiles have been sent from your network. Please try again later."
+  );
 
-  if (!PHONE_REGEX.test(phone)) {
-    return NextResponse.json({ error: "Please enter a valid phone number." }, { status: 400 });
-  }
+  const result = validateTalentSubmission(body);
+  if (!result.ok) throw badRequest(result.message, result.errors);
 
-  if (!consentGiven) {
-    return NextResponse.json({ error: "You must consent to data processing to submit your profile." }, { status: 400 });
-  }
+  await enforceRateLimit(
+    "talent-email",
+    normalizeEmail(result.value.email),
+    RATE_LIMITS["talent-email"],
+    "Too many profiles have been sent for this email address. Please try again tomorrow."
+  );
 
-  if (cv.size > MAX_FILE_SIZE) {
-    return NextResponse.json({ error: "CV file must be under 10 MB." }, { status: 413 });
-  }
-
-  const result = await createTalentPoolRecord({
-    name,
-    email,
-    phone,
-    areaOfInterest,
-    notes,
-    cv,
-    consentGiven,
-  });
-
-  if ("error" in result) {
-    const status = result.error?.includes("already in our talent pool") ? 409 : 500;
-    return NextResponse.json({ error: result.error ?? "Profile submission failed." }, { status });
-  }
-
-  const hrEmail = process.env.HR_NOTIFICATION_EMAIL;
-  if (hrEmail) {
-    await sendMail({
-      to: hrEmail,
-      subject: `New talent pool profile: ${name}`,
-      text: `${name} joined the talent pool.\n\nEmail: ${email}\nPhone: ${phone}\nArea of interest: ${areaOfInterest}\n\nReview in the admin portal: ${SITE_URL}/careers/admin`,
-    });
-  }
-
-  await sendMail({
-    to: email,
-    subject: `Thanks for joining the ${SITE_NAME} talent pool`,
-    text: `Hi ${name},\n\nThank you for sharing your profile with ${SITE_NAME}. We'll keep your details on file and reach out when a role matching your interests (${areaOfInterest}) opens up.\n\nBest regards,\n${SITE_NAME} Talent Acquisition Team`,
-  });
-
-  return NextResponse.json({
-    success: true,
-    id: result.record.id,
-    message: "Talent profile submitted successfully.",
-  });
-}
+  const { reference } = await submitTalentProfile(result.value, { ip });
+  const response: SubmissionResponse = { success: true, reference, message: SUCCESS_MESSAGE };
+  return jsonResponse(response, { status: 201 });
+});

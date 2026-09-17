@@ -70,6 +70,9 @@ web_modules/
 .env.*
 !.env.example
 
+# Private uploads (CVs) — never commit candidate data
+private/
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
@@ -142,3 +145,7 @@ vite.config.ts.timestamp-*
 src/data/applications.json
 src/data/talent-pool.json
 private-uploads/
+
+# Automated test output
+/test-results/
+/playwright-report/
