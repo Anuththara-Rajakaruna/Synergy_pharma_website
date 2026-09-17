@@ -1959,6 +1959,53 @@ button:active {
   line-height: 1.75;
 }
 
+.ecosystem-card.ecosystem-card-wide {
+  grid-column: 2 / span 2;
+  grid-row: 2;
+}
+
+.ecosystem-card-wide-columns {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.ecosystem-card-wide-left,
+.ecosystem-card-wide-right {
+  flex: 1 1 50%;
+  min-width: 0;
+}
+
+.ecosystem-card-wide-right {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.ecosystem-card-point {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ecosystem-card-point-icon {
+  color: #1075bd;
+  flex-shrink: 0;
+  opacity: 0.82;
+  filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.7)) drop-shadow(0 2px 5px rgba(16, 117, 189, 0.28));
+}
+
+.ecosystem-card-point-text {
+  color: #375168;
+  font-size: 0.95rem;
+  line-height: 1.75;
+  font-weight: 600;
+}
+
 .ecosystem-card-icon {
   width: 42px;
   height: 42px;
@@ -2005,10 +2052,15 @@ button:active {
   .ecosystem-cards-grid {
     grid-template-columns: 1fr 1fr;
   }
-  
+
   .ecosystem-card.featured {
     grid-column: 1 / span 2;
     grid-row: 1;
+  }
+
+  .ecosystem-card.ecosystem-card-wide {
+    grid-column: 1 / span 2;
+    grid-row: 3;
   }
 }
 
@@ -2016,11 +2068,24 @@ button:active {
   .ecosystem-cards-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .ecosystem-card.featured {
     grid-column: 1;
     grid-row: auto;
     min-height: 280px;
+  }
+
+  .ecosystem-card.ecosystem-card-wide {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .ecosystem-card-wide-columns {
+    flex-direction: column;
+  }
+
+  .ecosystem-card-wide-right {
+    margin-top: 1rem;
   }
 }
 
@@ -2766,9 +2831,17 @@ button:active {
 
 .leaders {
   margin-top: 2.5rem;
-  display: grid;
-  gap: 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(2rem, 4vw, 3rem);
+}
+
+.leaders-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(2.25rem, 6vw, 4.5rem);
 }
 
 .leader {
@@ -2782,13 +2855,23 @@ button:active {
 }
 
 .avatar {
-  width: 140px;
-  height: 140px;
-  margin: 0 auto 1.5rem;
-  background: linear-gradient(135deg, #4a99b3 0%, #055f7c 50%, #033d52 100%);
-  border: 3px solid var(--primary-light);
+  width: clamp(150px, 18vw, 195px);
+  height: clamp(150px, 18vw, 195px);
+  margin: 0 auto;
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 50%;
-  box-shadow: 0 12px 32px rgba(5, 95, 124, 0.15);
+  box-shadow:
+    0 12px 32px rgba(5, 95, 124, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.04);
   transition: all var(--transition-base);
   position: relative;
   overflow: hidden;
@@ -2796,23 +2879,30 @@ button:active {
 
 .leader:hover .avatar {
   transform: scale(1.08);
-  box-shadow: 0 16px 48px rgba(5, 95, 124, 0.25);
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 16px 48px rgba(5, 95, 124, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.06);
   border-color: var(--accent-light);
 }
 
 .leader-role {
   margin: 0 0 0.35rem;
-  font-size: 0.72rem;
+  max-width: 82%;
+  font-size: 0.68rem;
   font-weight: 800;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #2c7ca0;
+  color: var(--primary-dark);
 }
 
 .leader h3 {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   margin: 0;
-  line-height: 1.4;
+  max-width: 82%;
+  line-height: 1.35;
+  color: var(--text-dark);
 }
 
 @media (max-width: 900px) {
@@ -4883,7 +4973,7 @@ button:active {
 
 /* ABOUT PAGE - LEADERSHIP SECTION */
 .leadership-section {
-  padding: 100px 1.5rem 8rem 1.5rem;
+  padding: 100px 1.5rem 4.5rem 1.5rem;
   position: relative;
   overflow: hidden;
   background: rgba(237, 246, 255, 0.84);

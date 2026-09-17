@@ -1,5 +1,8 @@
-const AUTH_SECRET = process.env.AUTH_SECRET;
-if (!AUTH_SECRET) {
+const DEFAULT_DEV_AUTH_SECRET = "development-local-auth-secret-change-before-production-1234567890";
+const AUTH_SECRET = process.env.AUTH_SECRET ??
+  (process.env.NODE_ENV === "production" ? undefined : DEFAULT_DEV_AUTH_SECRET);
+
+if (!AUTH_SECRET && process.env.NODE_ENV === "production") {
   throw new Error(
     "AUTH_SECRET environment variable is required. Set it in .env.local for development and in your deployment environment for production."
   );
