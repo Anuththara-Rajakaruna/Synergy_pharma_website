@@ -1,40 +1,17 @@
-import { NextRequest, NextResponse } from "next/server";
-import { ADMIN_SESSION_COOKIE, verifySessionToken } from "@/lib/auth";
+import { NextResponse, type NextRequest } from "next/server";
 import { gaBootstrapScript } from "@/lib/analytics";
+import { SESSION_COOKIE_NAME } from "@/lib/auth/cookie-name";
+import { SITE_URL } from "@/lib/site";
+import { getStorageUploadOrigin } from "@/lib/storage-origin";
 
-// In-memory rate limiter: keyed by IP, stores { count, windowStart }
-const rateLimitMap = new Map<string, { count: number; windowStart: number }>();
-const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
-const RATE_LIMIT_MAX = 5;
-const LOGIN_RATE_LIMIT_MAX = 10;
-
-function isRateLimited(ip: string, bucket: string, max: number): boolean {
-  const key = `${ip}:${bucket}`;
-  const now = Date.now();
-  const entry = rateLimitMap.get(key);
-  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
-    rateLimitMap.set(key, { count: 1, windowStart: now });
-    return false;
-  }
-  entry.count += 1;
-  return entry.count > max;
-}
-
-function getIp(request: NextRequest): string {
-  return (
-    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
-    request.headers.get("x-real-ip") ??
-    "unknown"
-  );
-}
-
-async function isAuthenticated(request: NextRequest): Promise<boolean> {
-  const token = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
-  if (!token) return false;
-  return verifySessionToken(token);
-}
+// The proxy only sets the Content-Security-Policy and redirects signed-out visitors away from
+// the admin pages. It is not an access-control boundary: API routes and the admin page check
+// the session themselves, and rate limiting happens in the route handlers.
 
 const isDev = process.env.NODE_ENV === "development";
+// Only for HTTPS deployments: a production build served over plain http (local smoke tests)
+// would otherwise have every script and upload URL rewritten to an https URL that does not exist.
+const upgradeInsecureRequests = process.env.NODE_ENV === "production" && SITE_URL.startsWith("https://");
 const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 const gaEnabled = Boolean(gaMeasurementId);
 
@@ -53,10 +30,27 @@ function getGaScriptHash(): Promise<string> {
   return gaScriptHashPromise;
 }
 
+// Browsers upload CVs straight to object storage with presigned PUT requests, so the bucket
+// origin must be allowed in connect-src. Configuration does not change while the process runs.
+let storageOrigin: string | null | undefined;
+function getStorageOrigin(): string | null {
+  if (storageOrigin === undefined) storageOrigin = getStorageUploadOrigin();
+  return storageOrigin;
+}
+
 async function buildCsp(nonce: string): Promise<string> {
   const gaScriptSrc = gaEnabled
     ? ` 'sha256-${await getGaScriptHash()}' https://www.googletagmanager.com`
     : "";
+
+  const connectSrc = ["'self'"];
+  const uploadOrigin = getStorageOrigin();
+  if (uploadOrigin) connectSrc.push(uploadOrigin);
+  // GA4 sends its collection requests to google-analytics.com, which connect-src must allow
+  // explicitly ('strict-dynamic' only relaxes script-src, not connect-src).
+  if (gaEnabled) connectSrc.push("https://www.google-analytics.com", "https://region1.google-analytics.com");
+  // ws: needed for Turbopack HMR WebSocket in dev.
+  if (isDev) connectSrc.push("ws:");
 
   return [
     "default-src 'self'",
@@ -68,13 +62,12 @@ async function buildCsp(nonce: string): Promise<string> {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https://images.unsplash.com",
     "font-src 'self' data:",
-    // ws: needed for Turbopack HMR WebSocket in dev. GA4 sends its collection
-    // requests to google-analytics.com, which connect-src must allow explicitly
-    // ('strict-dynamic' only relaxes script-src, not connect-src).
-    `connect-src 'self'${gaEnabled ? " https://www.google-analytics.com https://region1.google-analytics.com" : ""}${isDev ? " ws:" : ""}`,
+    `connect-src ${connectSrc.join(" ")}`,
+    "object-src 'none'",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
+    ...(upgradeInsecureRequests ? ["upgrade-insecure-requests"] : []),
   ].join("; ");
 }
 
@@ -83,81 +76,44 @@ function withCsp(response: NextResponse, csp: string): NextResponse {
   return response;
 }
 
+// Admin pages other than the login page. Percent-encoded paths are decoded first so an encoded
+// variant of the URL gets the same redirect (the page itself still enforces authentication).
+function isProtectedAdminPath(pathname: string): boolean {
+  let path = pathname;
+  try {
+    path = decodeURIComponent(pathname);
+  } catch {
+    // Malformed escapes: compare the raw path.
+  }
+  if (path !== "/careers/admin" && !path.startsWith("/careers/admin/")) return false;
+  return path !== "/careers/admin/login" && !path.startsWith("/careers/admin/login/");
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
-  const method = request.method;
 
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const csp = await buildCsp(nonce);
 
+  // Cheap presence check only; the admin page validates the session against the database.
+  if (isProtectedAdminPath(pathname) && !request.cookies.get(SESSION_COOKIE_NAME)?.value) {
+    const loginUrl = new URL("/careers/admin/login", request.url);
+    loginUrl.searchParams.set("from", `${pathname}${search}`);
+    return withCsp(NextResponse.redirect(loginUrl), csp);
+  }
+
+  // Next.js reads the nonce from the request's CSP header and applies it to its own scripts.
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("Content-Security-Policy", csp);
-  const nextOptions = { request: { headers: requestHeaders } };
 
-  // Rate limiting for public submission endpoints
-  if (pathname === "/api/apply" || pathname === "/api/talent-pool") {
-    if (method === "POST") {
-      const ip = getIp(request);
-      if (isRateLimited(ip, pathname, RATE_LIMIT_MAX)) {
-        return withCsp(
-          NextResponse.json(
-            { error: "Too many requests. Please wait before submitting again." },
-            { status: 429, headers: { "Retry-After": "900" } }
-          ),
-          csp
-        );
-      }
-    }
-  }
-
-  // Rate limiting for admin login
-  if (pathname === "/api/admin/login" && method === "POST") {
-    const ip = getIp(request);
-    if (isRateLimited(ip, "/api/admin/login", LOGIN_RATE_LIMIT_MAX)) {
-      return withCsp(
-        NextResponse.json(
-          { error: "Too many login attempts. Please wait before trying again." },
-          { status: 429, headers: { "Retry-After": "900" } }
-        ),
-        csp
-      );
-    }
-  }
-
-  // Admin page routes — redirect to login if not authenticated
-  if (pathname.startsWith("/careers/admin") && !pathname.startsWith("/careers/admin/login")) {
-    if (!(await isAuthenticated(request))) {
-      const loginUrl = new URL("/careers/admin/login", request.url);
-      loginUrl.searchParams.set("from", pathname + search);
-      return withCsp(NextResponse.redirect(loginUrl), csp);
-    }
-  }
-
-  // Admin API routes — return 401 if not authenticated
-  const isAdminApi =
-    pathname.startsWith("/api/applicants") ||
-    pathname.startsWith("/api/files") ||
-    (pathname === "/api/jobs" && method === "POST") ||
-    (pathname.startsWith("/api/jobs/") && (method === "PUT" || method === "DELETE"));
-
-  if (isAdminApi) {
-    if (!(await isAuthenticated(request))) {
-      return withCsp(NextResponse.json({ error: "Authentication required." }, { status: 401 }), csp);
-    }
-  }
-
-  return withCsp(NextResponse.next(nextOptions), csp);
+  return withCsp(NextResponse.next({ request: { headers: requestHeaders } }), csp);
 }
 
 export const config = {
+  // Pages only. No `has`/`missing` conditions: a matcher condition that a client can satisfy
+  // with a request header would let that client skip the proxy entirely.
   matcher: [
-    {
-      source: "/((?!_next/static|_next/image|favicon.ico).*)",
-      missing: [
-        { type: "header", key: "next-router-prefetch" },
-        { type: "header", key: "purpose", value: "prefetch" },
-      ],
-    },
+    "/((?!api/|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|css|js|txt|xml|woff2?|ttf|pdf|mp4|webm)$).*)",
   ],
 };

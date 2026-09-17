@@ -26,6 +26,8 @@ export interface HeroProps {
   heading: string | React.ReactNode;
   description: string | React.ReactNode;
   actions?: React.ReactNode;
+  // Optional navigation (e.g. a breadcrumb) rendered above the eyebrow.
+  breadcrumb?: React.ReactNode;
   showGradients?: boolean;
   className?: string;
   leftGradientSrc?: string;
@@ -37,6 +39,7 @@ export const Hero: React.FC<HeroProps> = ({
   heading,
   description,
   actions,
+  breadcrumb,
   showGradients = true,
   className = "",
   leftGradientSrc = "/left-grad.svg",
@@ -289,6 +292,7 @@ export const Hero: React.FC<HeroProps> = ({
         </>
       )}
       <div className="container hero-content">
+        {breadcrumb}
         <p className="hero-eyebrow">{eyebrow}</p>
         <h1 ref={headingRef} className="hero-cutout-heading">{heading}</h1>
         <p>{description}</p>

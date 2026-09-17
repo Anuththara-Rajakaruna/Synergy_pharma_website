@@ -1092,6 +1092,15 @@ button:active {
   box-shadow: var(--shadow-sm);
 }
 
+button:disabled,
+button:disabled:hover,
+button:disabled:active {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .section {
   padding: var(--space-5xl) 0;
   position: relative;
@@ -7310,58 +7319,8 @@ button:active {
   width: min(100%, 90rem);
 }
 
-.career-detail-top {
-  padding: clamp(7rem, 10vw, 9.5rem) 0 clamp(1.5rem, 4vw, 2.5rem);
-  position: relative;
-}
-
-.career-detail-top::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 0% 20%, rgba(123, 207, 238, 0.18), transparent 34%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0));
-  pointer-events: none;
-}
-
-.career-detail-breadcrumb {
-  display: inline-flex;
-  margin-bottom: 1rem;
-  color: #1075bd;
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.career-detail-breadcrumb:hover {
-  color: #1075bd;
-}
-
-.career-detail-header {
-  position: relative;
-  z-index: 1;
-  max-width: 44rem;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.career-detail-header .career-detail-breadcrumb {
-  justify-content: center;
-}
-
-.career-detail-lead {
-  margin-top: 1.25rem;
-  max-width: 38rem;
-  margin-left: auto;
-  margin-right: auto;
-  color: #456274;
-}
-
 .careers-culture-section,
-.careers-benefits-section,
 .careers-jobs-section,
-.careers-hiring-section,
 .careers-talent-section,
 .career-detail-content,
 .careers-admin-section {
@@ -7383,9 +7342,7 @@ button:active {
 .laboratoryServicesSection,
 .complianceFrameworkSection,
 .careers-culture-section,
-.careers-benefits-section,
 .careers-jobs-section,
-.careers-hiring-section,
 .careers-talent-section,
 .career-detail-content,
 .careers-admin-section {
@@ -7409,9 +7366,7 @@ button:active {
 .laboratoryServicesSection::before,
 .complianceFrameworkSection::before,
 .careers-culture-section::before,
-.careers-benefits-section::before,
 .careers-jobs-section::before,
-.careers-hiring-section::before,
 .careers-talent-section::before,
 .career-detail-content::before,
 .careers-admin-section::before {
@@ -7440,9 +7395,7 @@ button:active {
 .laboratoryServicesSection > *,
 .complianceFrameworkSection > *,
 .careers-culture-section > *,
-.careers-benefits-section > *,
 .careers-jobs-section > *,
-.careers-hiring-section > *,
 .careers-talent-section > *,
 .career-detail-content > *,
 .careers-admin-section > * {
@@ -7483,7 +7436,6 @@ button:active {
 }
 
 .careers-culture-grid,
-.careers-benefits-grid,
 .careers-jobs-grid {
   display: grid;
   gap: 1.5rem;
@@ -7493,12 +7445,7 @@ button:active {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.careers-benefits-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
 .careers-culture-card,
-.career-benefit-card,
 .career-job-card,
 .career-detail-panel,
 .career-apply-card,
@@ -7513,13 +7460,11 @@ button:active {
   box-shadow: 0 18px 42px rgba(17, 58, 83, 0.08);
 }
 
-.careers-culture-card,
-.career-benefit-card {
+.careers-culture-card {
   padding: 1.8rem;
 }
 
 .careers-culture-card h3,
-.career-benefit-card h3,
 .careers-admin-list h3,
 .career-sticky-card h3,
 .careers-empty-state h3 {
@@ -7539,7 +7484,6 @@ button:active {
 }
 
 .careers-culture-card p,
-.career-benefit-card p,
 .career-job-card p,
 .careers-empty-state p,
 .career-detail-panel p,
@@ -7625,7 +7569,7 @@ button:active {
   filter: drop-shadow(0 2px 8px rgba(16, 117, 189, 0.12));
 }
 
-.careers-field span {
+.careers-field > span:first-child {
   font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -7652,6 +7596,50 @@ button:active {
   outline: none;
   border-color: #2f85ba;
   box-shadow: 0 0 0 4px rgba(47, 133, 186, 0.14);
+}
+
+/* Consent checkbox: box beside normal-case text instead of a full-width styled input. */
+.careers-field-checkbox {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  column-gap: 0.75rem;
+  cursor: pointer;
+}
+
+.careers-field-checkbox input[type="checkbox"] {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0.2rem 0 0;
+  padding: 0;
+  border-radius: 0.3rem;
+  background: none;
+  box-shadow: none;
+  accent-color: #1075bd;
+  cursor: pointer;
+}
+
+.careers-field-checkbox input[type="checkbox"]:focus {
+  box-shadow: none;
+}
+
+.careers-field-checkbox input[type="checkbox"]:focus-visible {
+  outline: 2px solid #2f85ba;
+  outline-offset: 2px;
+}
+
+.careers-field-checkbox input[type="checkbox"][aria-invalid="true"] {
+  outline: 2px solid #c0392b;
+  outline-offset: 2px;
+}
+
+.careers-field-checkbox > span {
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.6;
+  text-transform: none;
+  color: #42677f;
 }
 
 .careers-results-meta p {
@@ -7857,20 +7845,6 @@ button:active {
   margin-bottom: 1.5rem;
 }
 
-.careers-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-}
-
-.careers-hiring-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
-  position: relative;
-  margin-top: 2.5rem;
-}
-
 .career-progress {
   display: flex;
   align-items: center;
@@ -7936,6 +7910,26 @@ button:active {
 
 .career-progress-step.active p {
   color: #0e2f74;
+}
+
+/* Narrow screens: three nowrap labels overflow into each other, so only the current step keeps
+   a visible label (the others stay available to screen readers). */
+@media (max-width: 520px) {
+  .career-progress-step:not([aria-current="step"]) p {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .career-progress-connector {
+    margin: 0 0.5rem;
+  }
 }
 
 .career-form {
@@ -8061,13 +8055,8 @@ button:active {
 }
 
 @media (max-width: 1024px) {
-  .careers-benefits-grid,
   .careers-jobs-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .careers-hiring-grid {
-    grid-template-columns: repeat(2, 1fr);
   }
 
   .careers-culture-grid,
@@ -8089,18 +8078,7 @@ button:active {
     grid-template-columns: 1fr;
   }
 
-  .careers-benefits-grid,
-  .careers-jobs-grid,
-  .careers-hiring-grid,
-  .careers-stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .career-detail-top {
-    padding-top: 6.5rem;
-  }
-
-  .career-progress {
+  .careers-jobs-grid {
     grid-template-columns: 1fr;
   }
 

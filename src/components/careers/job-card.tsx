@@ -1,26 +1,53 @@
 "use client";
 
 import Link from "next/link";
-import { MapPin, BriefcaseBusiness, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, BriefcaseBusiness, CalendarClock, GraduationCap, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
-import { Job } from "@/types/careers";
+import type { ReactNode } from "react";
+import { deadlineLabel, formatRelativeDays } from "@/lib/careers/format";
+import type { Job } from "@/types/careers";
 
 type JobCardProps = {
   job: Job;
   index: number;
+  // Reference time for relative labels; comes from the server render so the server HTML and
+  // the hydrated client output agree.
+  now: Date;
 };
 
-export function JobCard({ job, index }: JobCardProps) {
+const pillClass =
+  "inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition-all duration-300";
+const neutralPillClass = `${pillClass} border-[#d7e8f1] bg-white/85 text-[#34596f] group-hover:border-[#b6d8ea] group-hover:bg-[#f7fbfe] group-hover:text-[#1075bd]`;
+const urgentPillClass = `${pillClass} border-[#f1d49a] bg-[#fff7e6] text-[#8a5a00]`;
+
+function PillIcon({ children }: { children: ReactNode }) {
+  return (
+    <span className="career-icon-frame career-icon-frame-inline" aria-hidden="true">
+      <span className="career-icon-glyph">{children}</span>
+    </span>
+  );
+}
+
+function postedText(publishedAt: string | null, now: Date): string | null {
+  if (!publishedAt) return null;
+  const relative = formatRelativeDays(publishedAt, now);
+  return `Posted ${relative === "Today" || relative === "Yesterday" ? relative.toLowerCase() : relative}`;
+}
+
+export function JobCard({ job, index, now }: JobCardProps) {
+  const deadline = deadlineLabel(job.applicationDeadline, now);
+  const posted = postedText(job.publishedAt, now);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 22 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, delay: index * 0.06, ease: "easeOut" }}
+      transition={{ duration: 0.45, delay: Math.min(index, 10) * 0.06, ease: "easeOut" }}
       whileHover={{ y: -3 }}
       style={{ backgroundColor: "#fff" }}
       className="group relative flex w-full overflow-hidden rounded-[28px] border border-[#dceaf3] bg-white px-6 py-5 text-left shadow-[0_16px_34px_rgba(17,58,83,0.08)] outline-none transition-all duration-300 hover:border-[#87c3e5] hover:bg-[linear-gradient(180deg,#ffffff_0%,#f8fcff_100%)] hover:shadow-[0_24px_42px_rgba(17,58,83,0.14)] focus-within:border-[#57a6d8] focus-within:shadow-[0_0_0_5px_rgba(16,117,189,0.12)] md:px-7 md:py-5"
     >
-      <Link href={`/careers/${job.id}`} className="absolute inset-0 z-10 rounded-[28px]">
+      <Link href={`/careers/${encodeURIComponent(job.id)}`} className="absolute inset-0 z-10 rounded-[28px]">
         <span className="sr-only">View details for {job.title}</span>
       </Link>
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(71,154,210,0.10),transparent_28%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
@@ -31,7 +58,7 @@ export function JobCard({ job, index }: JobCardProps) {
             <span className="inline-flex rounded-full border border-[#cde6f3] bg-white/85 px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#1075bd] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-all duration-300 group-hover:border-[#a8d4ec] group-hover:bg-[#f7fbfe]">
               {job.department}
             </span>
-            <span className="career-icon-frame rounded-full bg-[#edf6fb] p-2 text-[#1075bd] transition-all duration-300 group-hover:bg-[#dff0fb] lg:hidden">
+            <span className="career-icon-frame careers-card-arrow-mobile rounded-full bg-[#edf6fb] p-2 text-[#1075bd] transition-all duration-300 group-hover:bg-[#dff0fb]" aria-hidden="true">
               <span className="career-icon-glyph">
                 <ArrowUpRight className="h-4 w-4" />
               </span>
@@ -53,36 +80,52 @@ export function JobCard({ job, index }: JobCardProps) {
             {job.description}
           </p>
 
-          <div className="mt-4 flex flex-wrap gap-3">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#d7e8f1] bg-white/85 px-3.5 py-2 text-sm font-medium text-[#34596f] transition-all duration-300 group-hover:border-[#b6d8ea] group-hover:bg-[#f7fbfe] group-hover:text-[#1075bd]">
-              <span className="career-icon-frame career-icon-frame-inline">
-                <span className="career-icon-glyph">
-                  <MapPin className="h-4 w-4" />
-                </span>
-              </span>
+          <ul className="mt-4 flex flex-wrap gap-3" aria-label="Role details">
+            <li className={neutralPillClass}>
+              <PillIcon>
+                <MapPin className="h-4 w-4" />
+              </PillIcon>
               {job.location}
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#d7e8f1] bg-white/85 px-3.5 py-2 text-sm font-medium text-[#34596f] transition-all duration-300 group-hover:border-[#b6d8ea] group-hover:bg-[#f7fbfe] group-hover:text-[#1075bd]">
-              <span className="career-icon-frame career-icon-frame-inline">
-                <span className="career-icon-glyph">
-                  <BriefcaseBusiness className="h-4 w-4" />
-                </span>
-              </span>
+            </li>
+            <li className={neutralPillClass}>
+              <PillIcon>
+                <BriefcaseBusiness className="h-4 w-4" />
+              </PillIcon>
               {job.type}
-            </span>
-          </div>
+            </li>
+            {job.experience ? (
+              <li className={neutralPillClass}>
+                <PillIcon>
+                  <GraduationCap className="h-4 w-4" />
+                </PillIcon>
+                <span className="sr-only">Experience: </span>
+                {job.experience}
+              </li>
+            ) : null}
+            {deadline && job.applicationDeadline ? (
+              <li className={deadline.urgent ? urgentPillClass : neutralPillClass}>
+                <PillIcon>
+                  <CalendarClock className="h-4 w-4" />
+                </PillIcon>
+                <time dateTime={job.applicationDeadline}>{deadline.text}</time>
+                {deadline.urgent ? <span className="sr-only"> (closing soon)</span> : null}
+              </li>
+            ) : null}
+          </ul>
         </div>
 
         <div className="flex shrink-0 flex-col gap-3 lg:w-52.5 lg:items-end">
-          <div className="career-icon-frame hidden rounded-full bg-[#edf6fb] p-2 text-[#1075bd] transition-all duration-300 group-hover:bg-[#dff0fb] lg:block">
+          <div className="career-icon-frame careers-card-arrow-desktop rounded-full bg-[#edf6fb] p-2 text-[#1075bd] transition-all duration-300 group-hover:bg-[#dff0fb]" aria-hidden="true">
             <span className="career-icon-glyph">
               <ArrowUpRight className="h-4 w-4" />
             </span>
           </div>
-          <p className="text-sm font-medium text-[#6a8191] transition-colors duration-300 group-hover:text-[#355b73] lg:text-right">
-            Tap to view details
-          </p>
-          <div className="pointer-events-none w-full translate-y-0.5 opacity-100 transition-all duration-300 lg:opacity-95 lg:group-hover:-translate-y-0.5 lg:group-hover:opacity-100">
+          {posted && job.publishedAt ? (
+            <p className="careers-card-posted">
+              <time dateTime={job.publishedAt}>{posted}</time>
+            </p>
+          ) : null}
+          <div className="pointer-events-none w-full translate-y-0.5 opacity-100 transition-all duration-300 lg:opacity-95 lg:group-hover:-translate-y-0.5 lg:group-hover:opacity-100" aria-hidden="true">
             <span className="relative inline-flex w-full items-center justify-center overflow-hidden rounded-2xl bg-[#1075bd] px-4 py-3 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-white shadow-[0_12px_24px_rgba(16,117,189,0.24)] transition-all duration-300 group-hover:bg-[#0e6dac] group-hover:shadow-[0_16px_32px_rgba(16,117,189,0.30)]">
               <span className="absolute inset-0 scale-0 rounded-full bg-white/30 transition-transform duration-500 group-hover:scale-[2.5]" />
               <span className="relative">View Details</span>

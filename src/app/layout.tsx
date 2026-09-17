@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { connection } from "next/server";
 import "./globals.css";
 import { SiteFooter } from "@/components/site-footer";
 import { GoogleAnalytics } from "@/components/google-analytics";
+import { serializeJsonLd } from "@/lib/json-ld";
 import { buildMetadata } from "@/lib/metadata";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
@@ -42,20 +44,30 @@ const organizationJsonLd = {
   ],
 };
 
-export default function RootLayout({
+// Hidden-until-revealed content must stay readable when JavaScript is disabled or blocked.
+const NO_SCRIPT_REVEAL_CSS = ".reveal-on-scroll{opacity:1!important;transform:none!important}";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Every page is rendered per request so Next.js can attach the proxy's CSP nonce to its
+  // scripts. Prerendered HTML carries no nonce, and the browser would block hydration.
+  await connection();
+
   return (
     <html lang="en">
       <head>
-        {/* type="application/ld+json" is exempt from the script-src CSP (it never
-            executes as JS), so this needs no nonce and doesn't force dynamic rendering. */}
+        {/* type="application/ld+json" is exempt from the script-src CSP (it never executes as JS),
+            so it needs no nonce. */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(organizationJsonLd) }}
         />
+        <noscript>
+          <style>{NO_SCRIPT_REVEAL_CSS}</style>
+        </noscript>
       </head>
       <body>
         {children}

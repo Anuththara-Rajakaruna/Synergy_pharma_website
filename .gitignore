@@ -142,3 +142,7 @@ vite.config.ts.timestamp-*
 src/data/applications.json
 src/data/talent-pool.json
 private-uploads/
+
+# Automated test output
+/test-results/
+/playwright-report/

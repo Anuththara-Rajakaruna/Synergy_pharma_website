@@ -1,9 +1,14 @@
 # Production Deployment Guide — Synergy Pharmaceutical Corporation Website
 
 This is a Next.js 16 (App Router) application. The public marketing pages
-(home, about, products, quality, facility) are statically generated; the
-careers portal (job listings, applications, talent pool, admin CMS) is
-server-rendered and backed by PostgreSQL + S3-compatible object storage.
+(home, about, products, quality, facility, contact) and the careers portal
+(job listings, applications, talent pool, admin portal) run in one
+deployment. Careers data lives in MongoDB (via Mongoose); CVs and supporting
+documents live in a private S3-compatible bucket; email goes out over SMTP
+through a MongoDB-backed outbox.
+
+`PRODUCTION_DEPLOYMENT.md` covers the www.synergypharma.lk cut-over (current
+DNS, what to change, what not to touch). This guide covers everything else.
 
 ---
 
@@ -11,242 +16,329 @@ server-rendered and backed by PostgreSQL + S3-compatible object storage.
 
 Before deploying, have accounts ready for:
 
-- **GitHub** — source control (you already have this: `origin` points at
+- **GitHub** — source control (`origin` points at
   `github.com/Anuththara-Rajakaruna/Synergy_Final`).
-- **Vercel or Netlify** — frontend/app hosting.
-- **A managed Postgres provider** — e.g. [Neon](https://neon.tech),
-  [Supabase](https://supabase.com), or Vercel Postgres. Any standard
-  `postgresql://` connection string works.
-- **An S3-compatible object storage provider** — e.g.
-  [Cloudflare R2](https://developers.cloudflare.com/r2/) (no egress fees,
-  recommended), AWS S3, or Backblaze B2 — for storing uploaded CV PDFs.
-- **An SMTP provider** — e.g. Google Workspace, Microsoft 365, Postmark,
-  SendGrid, or Amazon SES — for application confirmation emails and HR
-  notifications.
-- **A domain registrar / DNS provider** for `synergypharma.lk` (or wherever
-  the domain is currently registered).
-- **Google Search Console** and **Google Analytics** accounts (optional but
-  recommended — see §12).
+- **Vercel** (recommended) or another Node.js 20.19+ host.
+- **MongoDB 6.0+** — [MongoDB Atlas](https://www.mongodb.com/atlas) is
+  recommended (a dedicated M10+ cluster for continuous backups).
+- **An S3-compatible object storage provider** — Cloudflare R2 (no egress
+  fees, recommended), AWS S3, Backblaze B2 or MinIO — for applicant documents.
+- **An SMTP provider** — Microsoft 365 SMTP AUTH (company email already runs
+  on Microsoft 365), Postmark, SendGrid or Amazon SES.
+- **DNS access** for `synergypharma.lk` (DreamHost, see `PRODUCTION_DEPLOYMENT.md`).
+- **Google Search Console** and optionally **Google Analytics** (§12).
 
 ---
 
 ## 2. GitHub setup
 
-The repo already has a remote at
-`https://github.com/Anuththara-Rajakaruna/Synergy_Final.git`. Before going
-live:
-
-1. Decide which branch is production (`main` is the default branch here).
-   Merge your `UI` branch work into `main` via a pull request once reviewed.
-2. **Confirm the repository's visibility** (Settings → General → Danger
-   Zone → visibility) matches your expectations. If applicant data or
-   internal notes were ever committed to history, keep the repo **private**.
-3. Add branch protection on `main` (Settings → Branches) requiring PR review
-   before merge, once you have collaborators.
+1. `main` is the production branch. Merge feature branches through pull requests.
+2. **Keep the repository private** if applicant data or internal notes were
+   ever committed to its history.
+3. Add branch protection on `main` requiring the **CI** workflow
+   (`.github/workflows/ci.yml`: lint, typecheck, unit tests, build, dependency
+   audit, and integration tests against MongoDB + S3-compatible storage) to pass.
 
 ---
 
 ## 3. Hosting setup (Vercel — recommended)
 
-1. Go to [vercel.com](https://vercel.com) → **Add New → Project** → import
-   `Anuththara-Rajakaruna/Synergy_Final` from GitHub.
-2. Framework preset: **Next.js** (auto-detected). Build command
-   `npm run build`, output is auto-detected — no changes needed.
+1. [vercel.com](https://vercel.com) → **Add New → Project** → import the repository.
+2. Framework preset **Next.js** (auto-detected); build command `npm run build`.
 3. Set the **Production Branch** to `main`.
-4. Add all environment variables from §4 in **Project Settings →
-   Environment Variables** (scope: Production, and add safe equivalents for
-   Preview if you want PR previews to work).
-5. Deploy. Vercel gives you a `*.vercel.app` URL immediately — verify the
-   site works there before attaching the custom domain.
+4. Add every variable from §4 in **Project Settings → Environment Variables**
+   (Production scope). Preview deployments must use a separate database and
+   bucket, never production data.
+5. **Plan and cron schedule.** `vercel.json` runs `/api/cron/maintenance` every
+   6 hours (§8). Vercel's Hobby plan only allows cron jobs that run once a day
+   and rejects the deployment otherwise; on Hobby change the schedule to a
+   daily one (e.g. `0 2 * * *`), on Pro keep it.
+6. Deploy, then verify on the `*.vercel.app` URL (§13) before attaching the
+   custom domain.
 
-**Netlify** works the same way (`next build`, the official Next.js Runtime
-plugin handles the rest) — the environment variables and everything else in
-this guide are identical either way.
+Other Node.js hosts work too (`npm ci && npm run build && npm run start`).
+Behind your own reverse proxy set `TRUSTED_IP_HEADER` (§4), and call the
+maintenance endpoint from an external scheduler (§8).
 
 ---
 
 ## 4. Environment variables
 
-Set these in your hosting provider's dashboard (never commit real values —
-`.env.example` documents the same list with placeholders).
+`.env.example` documents every variable with examples. The server validates
+the configuration at start-up and logs each problem as a `config.problem`
+event; `npm run db:check` prints the same report. Only the two `NEXT_PUBLIC_`
+variables reach the browser (they are compiled into the build: redeploy after
+changing them).
 
-| Variable | Purpose | Required | Notes |
-|---|---|---|---|
-| `NEXT_PUBLIC_SITE_URL` | Canonical production URL, used in sitemap, canonical tags, OG tags, JSON-LD | Yes | `https://synergypharma.lk` (no trailing slash) |
-| `DATABASE_URL` | Postgres connection string | Yes | From your DB provider |
-| `S3_BUCKET` | Object storage bucket name for CV uploads | Yes | |
-| `S3_REGION` | Storage region | Yes | `auto` works for R2 |
-| `S3_ENDPOINT` | Custom endpoint for non-AWS S3-compatible storage | Only for R2/B2/etc | Leave unset for real AWS S3 |
-| `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | Storage credentials | Yes | Scope to only this bucket |
-| `AUTH_SECRET` | Signs admin session cookies (HMAC-SHA256) | Yes | Generate with `openssl rand -hex 32`. **Must differ from the dev value in git history.** |
-| `ADMIN_PASSWORD` | Careers admin panel password | Yes | Must be changed from any dev/test value |
-| `HR_NOTIFICATION_EMAIL` | Inbox that receives new application/talent-pool alerts | Yes | e.g. `hr@synergypharma.lk` |
-| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` | Outbound email for confirmations + HR alerts | Yes | Real SMTP provider, not the dev maildev capture |
-| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | GA4 measurement ID | Optional | Starts with `G-`. Leave unset to disable analytics entirely |
+| Variable | Required | Production value / notes |
+|---|---|---|
+| `NEXT_PUBLIC_SITE_URL` | Yes | `https://www.synergypharma.lk` (https, no trailing slash). Canonical URLs, sitemap, email links and the same-origin check on form submissions derive from it. |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | No | GA4 ID `G-…`; empty disables analytics (§12). |
+| `MONGODB_URI` | Yes | Atlas SRV string of a user with `readWrite` on `MONGODB_DB_NAME` only. |
+| `MONGODB_DB_NAME` | Yes | e.g. `synergy_website`. There is no default. |
+| `MONGODB_MAX_POOL_SIZE` | No | 1-200, default 10 per server instance. |
+| `S3_BUCKET` | Yes | Private bucket for applicant documents (§9). |
+| `S3_REGION` | AWS only | Real region for AWS S3 (e.g. `ap-south-1`); defaults to `auto` when `S3_ENDPOINT` is set. |
+| `S3_ENDPOINT` | R2/MinIO/B2 | Provider endpoint, e.g. `https://<account-id>.r2.cloudflarestorage.com`. Empty for AWS S3. |
+| `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | Yes | A key limited to this bucket (GetObject, PutObject, DeleteObject, ListBucket). |
+| `S3_PUBLIC_ENDPOINT` | No | Only when browsers must use a different endpoint than the server. |
+| `S3_FORCE_PATH_STYLE` | No | Defaults to true with `S3_ENDPOINT`, false for AWS S3. |
+| `S3_SERVER_SIDE_ENCRYPTION` | No | AWS S3 only: `AES256`, `aws:kms` or `aws:kms:dsse`. |
+| `SMTP_HOST` / `SMTP_PORT` | Yes | Provider host; port 587 (STARTTLS, enforced) or 465 with `SMTP_SECURE=true`. |
+| `SMTP_SECURE` | No | `true` for implicit TLS on 465. |
+| `SMTP_USER` / `SMTP_PASS` | Usually | Leave both empty only for a relay that authenticates by IP. |
+| `SMTP_FROM` | Yes | e.g. `Synergy Careers <careers@synergypharma.lk>` — an address the SMTP account may send as. |
+| `SMTP_ALLOW_INSECURE_LOCAL` | **Never** | Local development only; remove in production. |
+| `HR_NOTIFICATION_EMAIL` | Yes | New-application and talent-pool alerts, e.g. `hr@synergypharma.lk` (comma-separated, up to 10). |
+| `CONTACT_NOTIFICATION_EMAIL` | No | Contact form recipients, e.g. `info@synergypharma.lk`; defaults to `HR_NOTIFICATION_EMAIL`. |
+| `CRON_SECRET` | Yes | At least 32 characters (`openssl rand -hex 32`). Authorizes `/api/cron/maintenance` (§8); Vercel Cron sends it automatically. Empty disables maintenance. |
+| `HEALTHCHECK_TOKEN` | Recommended | At least 32 characters. Unlocks the deep checks of `/api/health` (bucket access, indexes) for uptime monitoring. |
+| `TRUSTED_IP_HEADER` | Non-Vercel hosts | Header your proxy sets and overwrites (`x-real-ip` for nginx, `cf-connecting-ip` for Cloudflare). Not needed on Vercel. Rate limits and audit logs use the client IP. |
+| `TRUSTED_PROXY_COUNT` | No | 1-10, default 1: proxies to skip in `X-Forwarded-For` when `TRUSTED_IP_HEADER` is unset. |
+| `DATA_RETENTION_MONTHS` | No | 1-120, default 12 (the privacy policy promises 12 months). |
+| `RETENTION_AUTO_PURGE` | No | `false` (default) only reports overdue records; `true` deletes them. Read §8 first. |
+| `DATABASE_URL` / `PGSSLROOTCERT` | Migration only | Legacy PostgreSQL source for `npm run db:migrate:postgres` (§9). Remove afterwards. |
 
-Nothing above is exposed to the browser except the two `NEXT_PUBLIC_`
-variables, which are safe to expose by design (a URL and a public analytics
-ID, not secrets).
+`AUTH_SECRET` and `ADMIN_PASSWORD` from the previous release are **no longer
+used**: administrators sign in with individual accounts (§9). Delete them from
+the hosting dashboard; the start-up check warns while they are still set.
 
 ---
 
 ## 5. Domain configuration
 
-1. In Vercel: **Project Settings → Domains → Add** → enter `synergypharma.lk`
-   (and `www.synergypharma.lk` if you want the www variant redirected).
-2. Vercel will show you the exact DNS records to add (§6) and auto-issues
-   SSL once DNS propagates (§7).
-3. Decide the canonical form (`synergypharma.lk` vs `www.synergypharma.lk`)
-   — the codebase currently assumes the bare apex domain
-   (`NEXT_PUBLIC_SITE_URL=https://synergypharma.lk`). Set up a redirect from
-   the other form to this one in Vercel's domain settings.
+1. In Vercel: **Project Settings → Domains** → add `www.synergypharma.lk` and
+   `synergypharma.lk`, with the apex redirecting to `www`.
+2. `NEXT_PUBLIC_SITE_URL` must be exactly the canonical form
+   (`https://www.synergypharma.lk`). Form submissions from any other origin
+   are rejected as cross-site.
+3. The DNS changes and what must not be touched (Microsoft 365 MX/SPF) are in
+   `PRODUCTION_DEPLOYMENT.md` §4.
 
 ---
 
 ## 6. DNS records
 
-Exact records are shown by Vercel/Netlify once you add the domain, but
-typically:
-
-| Type | Host | Value | Purpose |
-|---|---|---|---|
-| A | `@` | Vercel's IP (shown in dashboard) | Apex domain |
-| CNAME | `www` | `cname.vercel-dns.com` | www subdomain |
-| TXT | `@` or provider-specified | Verification token | Domain ownership verification |
-| MX / TXT | per your SMTP provider's instructions | — | So `@synergypharma.lk` email keeps working / SPF for outbound mail deliverability |
-
-**Action required from you:** log into your domain registrar's DNS panel
-(wherever `synergypharma.lk` is registered) and add the records your hosting
-provider gives you. This is not something that can be done from the
-codebase.
-
-Also add an **SPF record** (and DKIM, provided by your SMTP host) for
-`synergypharma.lk` so application-confirmation emails sent via the
-`SMTP_FROM` address don't land in spam.
+Vercel shows the exact records once the domains are added; typically an `A`
+record for the apex and a `CNAME` (`cname.vercel-dns.com`) for `www`. Do not
+change the MX or SPF records of company email. Ask the SMTP provider for its
+SPF include and DKIM records so confirmation emails from `SMTP_FROM` are not
+marked as spam.
 
 ---
 
 ## 7. SSL / HTTPS
 
-- Vercel and Netlify both provision and renew free TLS certificates
-  (Let's Encrypt) automatically once DNS points at them — no manual
-  certificate management needed.
-- HTTP → HTTPS redirect is automatic on both platforms.
-- The app already sends `Strict-Transport-Security` (HSTS, `max-age=2 years`,
-  `includeSubDomains`, `preload`) — see `next.config.ts`. Once you confirm
-  HTTPS works correctly end-to-end, you can submit the domain to the
-  [HSTS preload list](https://hstspreload.org) for extra protection (optional).
-- The admin session cookie is already marked `secure` in production
-  (`src/lib/auth.ts`), so it will only ever be sent over HTTPS.
-- No mixed-content risk was found — all internal assets are relative paths
-  and the only external asset host (`images.unsplash.com`) is loaded over
-  HTTPS and explicitly allow-listed in the CSP.
+- Vercel provisions and renews certificates automatically and redirects HTTP to HTTPS.
+- `next.config.ts` sends `Strict-Transport-Security: max-age=63072000;
+  includeSubDomains` (deliberately without `preload`, which would force HTTPS
+  on every current and future subdomain), plus `X-Frame-Options`,
+  `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` and
+  `Cross-Origin-Opener-Policy`. `src/proxy.ts` sets a nonce-based
+  Content-Security-Policy on every page.
+- The admin session cookie is `__Host-synergy_admin`: `Secure`, `HttpOnly`,
+  `SameSite=Strict`, 8-hour absolute and 1-hour idle lifetime, stored hashed
+  in MongoDB (`src/lib/auth/session.ts`).
+- The start-up check reports an error when `NEXT_PUBLIC_SITE_URL` is not https
+  in production.
 
 ---
 
-## 8. Backend deployment
+## 8. Backend, scheduled maintenance and data retention
 
-There is no separate backend — the careers portal's API routes
-(`src/app/api/**`) run as part of the same Next.js deployment (Vercel
-serverless functions / Netlify functions). No separate service to deploy.
+The API routes (`src/app/api/**`) run in the same deployment; there is no
+separate backend service.
+
+### Scheduled maintenance
+
+`GET/POST /api/cron/maintenance` with `Authorization: Bearer <CRON_SECRET>`:
+
+1. deletes browser uploads under `incoming/` that were never submitted (older than 24 hours),
+2. applies the data retention rules below,
+3. delivers queued email and retries failed deliveries (back-off 1 min, 5 min,
+   30 min, 2 h, 6 h; a message is marked failed after 6 attempts).
+
+On Vercel, `vercel.json` schedules it (see §3 for the Hobby plan limit). Elsewhere
+call it from any scheduler, e.g.
+`curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://www.synergypharma.lk/api/cron/maintenance`,
+or run `npm run jobs:maintenance` on a machine with the production environment.
+Without it, emails that failed on the first attempt are never retried.
+
+### Data retention
+
+Applications and talent profiles are due for deletion `DATA_RETENTION_MONTHS`
+after they were **submitted** (`createdAt`). With `RETENTION_AUTO_PURGE=false`
+the maintenance job only logs how many records are overdue. With `true` it
+permanently deletes overdue records, their documents in storage and their
+queued emails, and writes a `retention.purge` audit entry for each.
+
+**Before enabling auto-purge on a database with migrated PostgreSQL data:**
+imported records keep their original submission dates, so every record older
+than the retention period is deleted on the next run. Export anything HR must
+keep (Admin → Activity Log → candidate data export, or the CSV exports) and
+agree the purge with HR first.
+
+### Monitoring
+
+- `GET /api/health` → `200 {"status":"ok"|"degraded"}` (503 when the database is down).
+- With `Authorization: Bearer <HEALTHCHECK_TOKEN>` it also verifies bucket access and indexes.
+- Logs are one JSON object per line (`level`, `event`, ids only — never
+  applicant names, emails or file names). Alert on `level:"error"`, especially
+  `email.failed`, `retention.purge_failed` and `config.problem`.
 
 ---
 
-## 9. Database setup & backup
+## 9. Database, storage and administrator setup
 
-### Setup
+### MongoDB
 
-1. Create a Postgres database with your chosen provider (Neon/Supabase/etc).
-2. Copy its connection string into `DATABASE_URL`.
-3. Run the schema + seed script **once**, from a machine with `DATABASE_URL`
-   pointed at production:
+1. Create the cluster (Atlas **M10 or larger** for continuous backups).
+2. **Database Access**: a dedicated user with `readWrite` on the one database
+   (e.g. `synergy_website`) — not `atlasAdmin` or `readWriteAnyDatabase`.
+3. **Network Access**: Vercel functions have no fixed egress IPs, so allow
+   `0.0.0.0/0` with a strong password, or use the Vercel–Atlas integration.
+4. From a machine whose environment points at production, run:
    ```
-   npm run db:setup
+   npm run db:setup -- --no-env-files --confirm=synergy_website
+   npm run db:check -- --no-env-files
    ```
-   This applies `db/schema.sql` (creates `jobs`, `applications`,
-   `talent_pool` tables — safe to re-run, every statement is idempotent) and
-   seeds the `jobs` table from `src/data/jobs.json` **only if it's currently
-   empty** (so it never clobbers live edits made from the admin panel).
+   `db:setup` applies pending data migrations, then creates every collection
+   and index (unique constraints and TTL indexes included). It is safe to
+   re-run and must be re-run after any release that changes `src/models/` or
+   adds a migration: production builds do not create indexes. It never seeds
+   jobs unless you pass `--seed-sample-jobs` (drafts, empty collection only).
+   `db:check` is read-only and exits non-zero on configuration problems,
+   missing indexes, pending migrations or when no active administrator exists.
+   `--no-env-files` makes sure a local `.env.local` is not used by mistake.
+
+### Object storage bucket
+
+1. Create a **private** bucket (no public access, no public URL) and enable **versioning**.
+2. Create an access key limited to that bucket.
+3. Add a **CORS rule**. Browsers upload documents straight to the bucket with
+   short-lived presigned URLs; without this rule every application fails at the
+   upload step:
+   ```json
+   [
+     {
+       "AllowedOrigins": ["https://www.synergypharma.lk"],
+       "AllowedMethods": ["PUT"],
+       "AllowedHeaders": ["content-type"],
+       "ExposeHeaders": ["etag"],
+       "MaxAgeSeconds": 3000
+     }
+   ]
+   ```
+   (Cloudflare R2: bucket → Settings → CORS policy. AWS S3: bucket →
+   Permissions → CORS.) Add preview origins only to preview buckets.
+4. Layout: `incoming/` holds uploads until the form is submitted; accepted files
+   are copied to `applications/<id>/` or `talent-pool/<id>/`. Documents are
+   only ever served through `/api/admin/documents/<id>`, which requires an
+   admin session, records the download in the audit log and redirects to a
+   60-second presigned URL that forces a download.
+
+### First administrator
+
+```
+npm run admin:user -- create --email hr.manager@synergypharma.lk --name "Full Name" --role admin --no-env-files
+```
+
+It prints a temporary password once; the user must choose a new one at first
+sign-in. Further accounts are created in the admin portal (**Team** tab) or with
+the same command (`--role hr` for recruiters, who cannot manage accounts, view
+the activity log or permanently delete records). Other commands: `list`,
+`reset-password`, `deactivate`, `activate`, `set-role`. The last active
+administrator can never be deactivated or demoted.
+
+### Migrating existing data from PostgreSQL
+
+If the site previously ran on the PostgreSQL release, import its data **before**
+opening the new deployment to traffic:
+
+1. Take a fresh backup of the PostgreSQL database and run `npm run db:setup` (above).
+2. Dry run (validates every record, reports conflicts, writes nothing):
+   ```
+   npm run db:migrate:postgres -- --dry-run --check-files --no-env-files
+   ```
+3. Import:
+   ```
+   npm run db:migrate:postgres -- --backup-dir ./pg-backup --confirm=synergy_website --no-env-files
+   ```
+   PostgreSQL is read in one read-only transaction. `--backup-dir` first saves
+   every row read (NDJSON plus a checksummed manifest). Every document is
+   validated before anything is written; afterwards the script checks that each
+   source row maps to exactly one record. Re-running skips records that were
+   already imported. Duplicate submissions (same email and job, differing only in
+   letter case) are merged into one record with the extra details kept as notes.
+4. Run `npm run db:check`, spot-check the admin portal (including CV downloads),
+   then switch traffic. Keep PostgreSQL read-only as a fallback until you are
+   satisfied, then remove `DATABASE_URL`.
+
+Job IDs (URL slugs) are unchanged. Applications and talent profiles get new ids;
+their PostgreSQL ids are kept in `legacyIds`. CV files are not copied: the
+imported documents reference the existing `cvs/…` and `talent-pool/…` keys, so
+keep using the same bucket.
 
 ### Backups
 
-- **Neon / Supabase / Vercel Postgres**: all three take automatic daily
-  backups with point-in-time recovery on paid tiers — enable this in your
-  provider's dashboard (Settings → Backups). Recommended retention: **30
-  days** minimum for applicant records (balances storage cost against
-  recruitment-cycle length).
-- **Frequency**: daily automated snapshot at minimum; point-in-time recovery
-  (if your provider offers it) is strictly better and needs no extra setup
-  once enabled.
-- **Restore procedure**: use your provider's dashboard "restore to point in
-  time" / "restore snapshot" flow, which creates a new database instance —
-  point a *staging* `DATABASE_URL` at it and verify data before switching
-  production traffic over. Never restore directly on top of the live
-  database without a fresh snapshot of the current (pre-restore) state first.
-- **Verify restores actually work**: schedule a recurring (e.g. quarterly)
-  drill — restore the latest backup into a scratch database and run
-  `SELECT count(*) FROM jobs; SELECT count(*) FROM applications;` to confirm
-  the data is intact and queryable. An untested backup is not a backup.
-
-### Object storage (CV uploads) backup
-
-Most S3-compatible providers (R2, S3, B2) support **versioning** — enable it
-on the bucket so accidental deletes/overwrites are recoverable. This is a
-one-time toggle in the bucket settings, not something this codebase controls.
+- **MongoDB Atlas**: enable **Continuous Cloud Backup** (point-in-time
+  recovery), 30-day retention recommended. Self-hosted: schedule
+  `mongodump --uri "$MONGODB_URI" --db synergy_website --gzip --archive=…` to
+  off-site storage at least daily.
+- **Restore** into a **separate** cluster, point a staging deployment at it,
+  run `npm run db:check`, and only then repoint production. Never restore on top
+  of the live database without a fresh snapshot of its current state.
+- **Drill** quarterly: restore the latest backup into a scratch cluster and run
+  `npm run db:check` against it. An untested backup is not a backup.
+- **Documents**: bucket versioning makes deletes and overwrites recoverable;
+  enable cross-region replication once the portal has real applicant volume.
+  A database restore and the bucket must be restored to the same point in time
+  for document links to match.
 
 ---
 
-## 10. Contact email / SMTP setup
+## 10. Email (SMTP)
 
-The site has two lead-generating forms — the job **application form** and
-the **talent pool** form (there is no separate generic "Contact Us" form;
-general business inquiries go to `info@synergypharma.lk` via the `mailto:`
-link in the footer).
+Messages sent by the site:
 
-1. Get SMTP credentials from your provider (an app password for Google
-   Workspace, an API-key-as-password for SendGrid/Postmark, SES SMTP
-   credentials, etc).
-2. Set `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` in
-   your hosting provider's environment variables.
-3. Set `HR_NOTIFICATION_EMAIL` to the real inbox that should receive new
-   application/talent-pool alerts.
-4. **Test after deploying**: submit a real test application on the live
-   site and confirm (a) the HR inbox receives the notification, and (b) the
-   applicant's own email receives the confirmation. Both are sent from
-   `src/app/api/apply/route.ts` and `src/app/api/talent-pool/route.ts` via
-   `src/lib/email.ts`.
-5. If `SMTP_HOST`/`SMTP_USER`/`SMTP_PASS` are missing, email sending is
-   silently skipped (logged as a warning) rather than breaking the
-   submission — the application/profile is still saved to the database
-   either way, so a misconfigured SMTP setup degrades gracefully rather than
-   blocking candidates.
+| Trigger | Recipients |
+|---|---|
+| Job application | Applicant (confirmation with reference) and `HR_NOTIFICATION_EMAIL` (link to the application) |
+| Talent pool profile | Applicant and `HR_NOTIFICATION_EMAIL` |
+| Status change with "Email the candidate" ticked | Applicant |
+| Contact form | `CONTACT_NOTIFICATION_EMAIL` (Reply-To: the sender) |
 
-**Spam/abuse protection already in place:** rate limiting on both endpoints
-(5 submissions per IP per 15 minutes — `src/proxy.ts`), server-side
-validation of all fields, PDF magic-byte verification on uploads (rejects
-renamed non-PDF files), a 10 MB upload cap, and a required consent checkbox.
+1. Create SMTP credentials (Microsoft 365: an SMTP AUTH-enabled mailbox such
+   as `careers@synergypharma.lk`) and set the `SMTP_*` variables (§4).
+2. Every message is first stored in the `email_outbox` collection, sent right
+   after the response, and retried by maintenance (§8). A slow or failing mail
+   server never fails a submission, and nothing is lost while SMTP is down.
+   `/api/health` reports `email: missing` when SMTP is not configured.
+3. **After deploying, submit a real test application** and confirm that the HR
+   inbox and the applicant's inbox both receive their messages, then check the
+   delivery status in the application's detail view.
+
+Abuse protection: per-IP and per-email rate limits stored in MongoDB (applications
+10/h per IP and 5/h per email; talent profiles 5/h per IP and 3/day per email;
+contact 5 per 15 min; uploads 40 per 15 min; sign-in 20 per 15 min per IP plus
+account lockout), same-origin checks on every form endpoint, server-side
+validation, PDF-only uploads (10 MB CV, up to 3 supporting documents of 5 MB)
+verified by size and PDF structure before they are accepted, and a required
+consent checkbox.
 
 ---
 
 ## 11. SEO setup
 
-Already implemented in the codebase:
+Already implemented:
 
-- Per-page `<title>`/meta description/canonical/Open Graph/Twitter card tags
-  on every real page (`src/lib/metadata.ts` + each `page.tsx`).
-- `sitemap.xml` (`src/app/sitemap.ts`) covering all marketing pages, the
-  careers listing, and every published job — rendered dynamically so it
-  always reflects current job postings.
-- `robots.txt` (`src/app/robots.ts`) disallowing `/careers/admin` and `/api/`.
-- Organization JSON-LD on every page (root layout) and JobPosting JSON-LD on
-  each job detail page.
-- Square favicon/apple-touch-icon/manifest generated from the logo.
+- Per-page title, description, canonical, Open Graph and Twitter tags (`src/lib/metadata.ts`).
+- `sitemap.xml` (`src/app/sitemap.ts`) with the marketing pages and every open job, rendered per request.
+- `robots.txt` disallowing `/careers/admin` and `/api/`; admin pages and API responses also send `X-Robots-Tag: noindex`.
+- Organization JSON-LD on every page and `JobPosting` JSON-LD on each job page.
+- Closed, draft and expired jobs return 404 and drop out of the sitemap.
 
-**Your action after deploying:**
-1. Set `NEXT_PUBLIC_SITE_URL=https://synergypharma.lk` in production env vars
-   (the sitemap/canonical/OG URLs all derive from this).
-2. Once live, submit `https://synergypharma.lk/sitemap.xml` in Google Search
-   Console (see §12).
+After deploying, submit `https://www.synergypharma.lk/sitemap.xml` in Search Console (§12).
 
 ---
 
@@ -254,99 +346,99 @@ Already implemented in the codebase:
 
 ### Analytics (optional)
 
-1. Create a GA4 property at [analytics.google.com](https://analytics.google.com).
-2. Copy the Measurement ID (`G-XXXXXXX`).
-3. Set `NEXT_PUBLIC_GA_MEASUREMENT_ID` in your hosting provider's env vars.
-4. Redeploy. The site's Content-Security-Policy automatically allows the GA
-   scripts only when this variable is set (see `src/proxy.ts`) — no other
-   changes needed, and the site works identically with analytics disabled.
+1. Create a GA4 property and copy the Measurement ID (`G-XXXXXXX`).
+2. Set `NEXT_PUBLIC_GA_MEASUREMENT_ID` and redeploy. The Content-Security-Policy
+   allows the GA scripts only when this variable is set (`src/proxy.ts`).
 
 ### Search Console
 
-1. Go to [search.google.com/search-console](https://search.google.com/search-console).
-2. Add property → Domain property → `synergypharma.lk` → verify via the DNS
-   TXT record method (add the record at your DNS provider, §6).
-3. Once verified, submit the sitemap: **Sitemaps → Add a new sitemap** →
-   `sitemap.xml`.
-4. Use **URL Inspection** to request indexing for the homepage once live.
+1. Add a Domain property for `synergypharma.lk`, verified with a DNS TXT record (§6).
+2. **Sitemaps → Add a new sitemap** → `sitemap.xml`.
+3. Use **URL Inspection** to request indexing of the home and careers pages.
 
 ---
 
-## 13. Final QA checklist
+## 13. Automated tests and final QA checklist
 
-Run before every production deploy:
+### Automated tests
 
-- [ ] `npm run lint` — passes with zero errors
-- [ ] `npx tsc --noEmit` — passes with zero errors
-- [ ] `npm run build` — completes successfully
-- [ ] All pages load: `/`, `/about`, `/products`, `/quality`, `/facility`,
-      `/careers`, `/careers/[a real job id]`, `/privacy-policy`
-- [ ] 404 page renders for a nonexistent URL and its "Back to Home" link works
-- [ ] Careers admin: login works, a wrong password is rejected, logout works,
-      job create/edit/delete works, applicant list loads
-- [ ] Application form: submits successfully, rejects a non-PDF file,
-      rejects a duplicate application for the same job+email, HR + applicant
-      emails arrive
-- [ ] Talent pool form: same checks
-- [ ] Resize the browser (or use device toolbar) at 375px, 768px, and
-      1440px+ widths on every page — no horizontal scroll, no overlapping text
-- [ ] Response headers on the live URL include `Strict-Transport-Security`,
-      `Content-Security-Policy`, `X-Frame-Options: DENY`,
-      `X-Content-Type-Options: nosniff`, `Referrer-Policy`
-- [ ] `https://synergypharma.lk/sitemap.xml` and `/robots.txt` load and
-      reference the production domain, not localhost
-- [ ] Run the site through Chrome DevTools Lighthouse (Performance,
-      Accessibility, SEO tabs) on the deployed URL and address anything below
-      ~90
+| Command | Needs | Covers |
+|---|---|---|
+| `npm run lint`, `npm run typecheck` | — | Static checks |
+| `npm test` | — | Unit tests (validation, templates, logger, env checks, migration mapping) |
+| `npm run test:integration` | MongoDB and an S3-compatible server | Services against real databases; see `tests/integration/support/env.ts` (`INTEGRATION_*` variables; the database name must end in `_test` because it is dropped) |
+| `npm run test:e2e` | A running production build (below) | API, desktop and mobile UI, accessibility, security and regression tests with Playwright |
+
+End-to-end tests run against a deployment that uses a **dedicated** database,
+bucket and SMTP capture server — never production:
+
+1. Start the SMTP capture server: `npm run test:smtp-sink -- --port 2626 --dir test-results/mailbox`.
+2. Create a test bucket with the CORS rule from §9 for the test origin.
+3. Export the site variables for the test services (`NEXT_PUBLIC_SITE_URL=http://localhost:3400`,
+   `SMTP_PORT=2626`, `SMTP_ALLOW_INSECURE_LOCAL=true`, `TRUSTED_IP_HEADER=x-real-ip`,
+   `CRON_SECRET`, `HEALTHCHECK_TOKEN`, …), then run `npm run db:setup`, create an
+   `admin` and an `hr` account with `npm run admin:user -- create … --password-stdin`,
+   and `npm run build && npm run start -- -p 3400`.
+4. Run the suite with `E2E_BASE_URL=http://localhost:3400`, `E2E_ADMIN_EMAIL`,
+   `E2E_ADMIN_PASSWORD`, `E2E_HR_EMAIL`, `E2E_HR_PASSWORD`,
+   `E2E_MAILBOX_DIR=test-results/mailbox`, `E2E_CLIENT_IP_HEADER=x-real-ip`,
+   `E2E_CRON_SECRET`, `E2E_HEALTHCHECK_TOKEN`, `E2E_MONGODB_URI` and
+   `E2E_MONGODB_DB_NAME`: `npm run test:e2e`.
+
+### Final QA checklist (on the deployed URL)
+
+- [ ] CI is green; `npm run db:check` against production reports 0 errors
+- [ ] `/api/health` with the health-check token reports `ok` for database, storage, email and indexes
+- [ ] All pages load: `/`, `/about`, `/products`, `/quality`, `/facility`, `/contact`,
+      `/careers`, a job page, `/privacy-policy`; an unknown URL shows the 404 page
+- [ ] Admin: sign-in, wrong password rejected, forced password change for new accounts, sign-out
+- [ ] Publish a test job → it appears on `/careers` and in `sitemap.xml`
+- [ ] Apply with a real PDF → success reference shown; applicant and HR emails arrive;
+      the application appears in the admin portal; the CV downloads; a status change
+      with "Email the candidate" sends the update email; close the test job afterwards
+- [ ] Talent pool form and contact form: submissions arrive
+- [ ] 375px, 768px and 1440px widths: no horizontal scrolling on public and admin pages
+- [ ] Response headers include `Strict-Transport-Security`, `Content-Security-Policy`,
+      `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`
+- [ ] `sitemap.xml` and `robots.txt` reference the production domain
+- [ ] The first maintenance run appears in the logs (`maintenance.completed`)
+- [ ] Remove the test job, application and talent profile (archive, then delete permanently)
 
 ---
 
 ## 14. How to update the website after deployment
 
-Standard Git-based workflow — no manual server steps:
-
-1. Create a branch, make changes, open a PR against `main`.
-2. Vercel/Netlify automatically builds a **preview deployment** for every PR
-   — review it before merging.
-3. Merge to `main` → production redeploys automatically within ~1-2 minutes.
-4. If you added/changed a job posting directly via `src/data/jobs.json` in
-   code (rather than the admin panel), remember the seed script only inserts
-   rows when the table is empty — edit jobs through the **admin panel**
-   (`/careers/admin`) in production, not by editing the JSON file, since the
-   JSON file is only a one-time initial seed.
+1. Branch, change, open a PR against `main`; CI must pass.
+2. Vercel builds a preview deployment per PR (preview environment variables, never production data).
+3. Merge → production redeploys automatically.
+4. If the release adds indexes or a migration (`src/models/`, `scripts/migrations/`),
+   run `npm run db:setup` against production right after it deploys.
+5. Manage job postings in the admin portal (`/careers/admin`), not in `src/data/jobs.json`
+   (that file only provides optional sample drafts for empty development databases).
 
 ---
 
 ## 15. How to rollback
 
-- **Vercel**: Project → Deployments → find the last known-good deployment →
-  **⋯ → Promote to Production**. Instant, no rebuild needed.
-- **Netlify**: Site → Deploys → select a prior deploy → **Publish deploy**.
-- **Git-level rollback**: `git revert <bad-commit>` and push — triggers a
-  fresh deploy of the reverted code. Prefer this over `git reset --hard` so
-  history stays intact.
-- **Database rollback**: if a bad deploy also corrupted data, restore the
-  most recent good database snapshot per §9 into a new instance, verify it,
-  then repoint `DATABASE_URL` at it.
+- **Vercel**: Deployments → last known-good deployment → **⋯ → Promote to Production**.
+- **Git**: `git revert <bad-commit>` and push (keeps history intact).
+- **Database**: rolling back the code across a release that ran a data migration is not
+  supported without a restore: take a snapshot before running `db:setup` for such a
+  release. If a bad deploy corrupted data, restore a snapshot into a new cluster per §9,
+  verify it with `npm run db:check`, then repoint `MONGODB_URI`.
 
 ---
 
 ## 16. Backup and disaster recovery procedure
 
-1. **Source code**: already safe — it's in Git/GitHub. To fully rebuild from
-   scratch: clone the repo, run `npm install`, set all env vars from §4,
-   run `npm run db:setup`, deploy.
-2. **Database**: automated provider snapshots per §9. In a full-loss
-   scenario, restore the latest snapshot to a new instance and repoint
-   `DATABASE_URL`.
-3. **Uploaded CVs**: stored in your S3-compatible bucket — enable bucket
-   versioning (§9) so accidental deletes are recoverable; for full
-   disaster recovery, enable cross-region replication if your provider
-   supports it (recommended once the portal has real applicant volume).
-4. **Secrets** (`AUTH_SECRET`, `ADMIN_PASSWORD`, SMTP/DB/S3 credentials):
-   keep a copy in a password manager (e.g. 1Password/Bitwarden shared
-   vault) outside of the hosting dashboard, so you're not locked out if you
-   lose access to Vercel/Netlify itself.
-5. **Recovery time estimate**: with secrets backed up and the DB snapshot
-   restore taking a few minutes, a full redeploy from zero should take well
-   under an hour.
+1. **Source code**: in GitHub. To rebuild from scratch: clone, `npm ci`, set the §4
+   variables, `npm run db:setup`, create an administrator (§9), deploy.
+2. **Database**: Atlas continuous backups (§9). In a full-loss scenario restore the
+   latest snapshot to a new cluster, run `npm run db:check`, repoint `MONGODB_URI`.
+3. **Documents**: bucket versioning and, for disaster recovery, replication (§9).
+4. **Secrets** (`MONGODB_URI`, S3 keys, SMTP credentials, `CRON_SECRET`,
+   `HEALTHCHECK_TOKEN`): keep a copy in the company password manager, outside the
+   hosting dashboard. Administrator passwords are personal; a lost one is reset by
+   another administrator or with `npm run admin:user -- reset-password`.
+5. **Recovery time**: with secrets available and a snapshot restore of a few minutes,
+   a full redeploy from zero takes well under an hour.
