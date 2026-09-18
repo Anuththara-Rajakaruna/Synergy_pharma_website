@@ -5,9 +5,8 @@ import { Hero } from "@/components/hero";
 import { ScrollReveal, ScrollRevealContainer, ScrollRevealItem } from "@/components/scroll-reveal";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { CapabilityCard } from "@/components/capability-card";
 import { useEffect, useRef } from "react";
-import { FlaskConical, Pill, Microscope, ArrowRight, ShieldCheck, Package } from "lucide-react";
+import { FlaskConical, Syringe, Droplet, Ribbon, ShieldCheck, Package } from "lucide-react";
 
 export function ProductsPageContent() {
   const highlightRef = useRef<HTMLElement | null>(null);
@@ -150,40 +149,23 @@ export function ProductsPageContent() {
                       animate={{ y: [0, -8, 0] }}
                       transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                     >
-                      <FlaskConical size={40} strokeWidth={2} />
+                      <Syringe size={40} strokeWidth={2} />
                     </motion.div>
                   </motion.div>
-                  <h3 className="facility-capabilityCardTitle">R&amp;D Laboratory</h3>
-                  <p className="facility-capabilityCardDescription">
-                    Advancing pharmaceutical innovation through formulation research, process
-                    development, and product optimization.
-                  </p>
-                </div>
-              </ScrollRevealItem>
-              <ScrollRevealItem>
-                <div className="capability-card">
-                  <motion.div
-                    className="facility-capabilityIcon"
-                    animate={{ rotateY: 360 }}
-                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-                  >
-                    <motion.div
-                      className="facility-capabilityAnimatedIcon"
-                      animate={{ y: [0, -8, 0] }}
-                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    >
-                      <Pill size={40} strokeWidth={2} />
-                    </motion.div>
-                  </motion.div>
-                  <h3 className="facility-capabilityCardTitle">Oral Solid Dosage Forms</h3>
-                  <p className="facility-capabilityCardDescription">
-                    Specialized in tablet and capsule manufacturing under controlled pharmaceutical
-                    processing systems.
-                  </p>
+                  <h3 className="facility-capabilityCardTitle">General Injections</h3>
                   <ul className="capability-list">
-                    <li>Dry Granulation</li>
-                    <li>Aqueous Film Coating</li>
-                    <li>Direct Compression</li>
+                    <li>
+                      <span className="capability-list-label">Pre-filled Syringes (PFS)</span>
+                      <span className="capability-list-value">9 million</span>
+                    </li>
+                    <li>
+                      <span className="capability-list-label">Small Volume Parenterals (SVP)</span>
+                      <span className="capability-list-value">35 million</span>
+                    </li>
+                    <li>
+                      <span className="capability-list-label">Large Volume Parenterals (LVP)</span>
+                      <span className="capability-list-value">5 million</span>
+                    </li>
                   </ul>
                 </div>
               </ScrollRevealItem>
@@ -199,14 +181,84 @@ export function ProductsPageContent() {
                       animate={{ y: [0, -8, 0] }}
                       transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                     >
-                      <Microscope size={40} strokeWidth={2} />
+                      <Droplet size={40} strokeWidth={2} />
                     </motion.div>
                   </motion.div>
-                  <h3 className="facility-capabilityCardTitle">Bio-Equivalent Engineering</h3>
-                  <p className="facility-capabilityCardDescription">
-                    Supporting therapeutic consistency through formulation precision and validated
-                    pharmaceutical technologies.
-                  </p>
+                  <h3 className="facility-capabilityCardTitle">Hormone</h3>
+                  <ul className="capability-list">
+                    <li>
+                      <span className="capability-list-label">Oral Solid Dosage (OSD)</span>
+                      <span className="capability-list-value">200 million</span>
+                    </li>
+                    <li>
+                      <span className="capability-list-label">Injections</span>
+                      <span className="capability-list-value">15 million</span>
+                    </li>
+                    <li>
+                      <span className="capability-list-label">Ointment Tubes</span>
+                      <span className="capability-list-value">10 million</span>
+                    </li>
+                  </ul>
+                </div>
+              </ScrollRevealItem>
+              <ScrollRevealItem>
+                <div className="capability-card">
+                  <motion.div
+                    className="facility-capabilityIcon"
+                    animate={{ rotateY: 360 }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                  >
+                    <motion.div
+                      className="facility-capabilityAnimatedIcon"
+                      animate={{ y: [0, -8, 0] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <Ribbon size={40} strokeWidth={2} />
+                    </motion.div>
+                  </motion.div>
+                  <h3 className="facility-capabilityCardTitle">Onco</h3>
+                  <ul className="capability-list">
+                    <li>
+                      <span className="capability-list-label">Oral Solid Dosage (OSD)</span>
+                      <span className="capability-list-value">2.2 billion</span>
+                    </li>
+                    <li>
+                      <span className="capability-list-label">Injections</span>
+                      <span className="capability-list-value">15 million</span>
+                    </li>
+                  </ul>
+                </div>
+              </ScrollRevealItem>
+              <ScrollRevealItem className="capability-card-wide-item">
+                <div className="capability-card capability-card-wide">
+                  <div className="capability-card-wide-image">
+                    <Image
+                      src="/lab.png"
+                      alt="Pharmaceutical R&D laboratory"
+                      width={760}
+                      height={570}
+                    />
+                  </div>
+                  <div className="capability-card-wide-content">
+                    <motion.div
+                      className="facility-capabilityIcon"
+                      animate={{ rotateY: 360 }}
+                      transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                    >
+                      <motion.div
+                        className="facility-capabilityAnimatedIcon"
+                        animate={{ y: [0, -8, 0] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                      >
+                        <FlaskConical size={40} strokeWidth={2} />
+                      </motion.div>
+                    </motion.div>
+                    <h3 className="facility-capabilityCardTitle">R&amp;D Laboratory</h3>
+                    <p className="facility-capabilityCardDescription">
+                      A dedicated pharmaceutical R&D laboratory focused on transforming scientific ideas into innovative, high-quality products.
+                      Driving pharmaceutical innovation through advanced formulation development, process optimization, analytical research, and product development.
+                    </p>
+                  </div>
                 </div>
               </ScrollRevealItem>
             </ScrollRevealContainer>
@@ -214,6 +266,7 @@ export function ProductsPageContent() {
         </div>
       </section>
 
+      {/* Product Lineup / Current Portfolio section — temporarily disabled
       <section ref={portfolioRef} className="current-portfolio product-section-zoom">
         <div className="product-section-surface">
           <div className="portfolio-container">
@@ -275,6 +328,7 @@ export function ProductsPageContent() {
           </div>
         </div>
       </section>
+      */}
 
       <section ref={qualityRef} className="quality-section product-section-zoom">
         <div className="product-section-surface">
@@ -284,7 +338,7 @@ export function ProductsPageContent() {
                 <p className="eyebrow">Quality Assurance</p>
                 <h2>Our Quality Commitment</h2>
                 <p className="quality-subtitle">
-                  Every batch undergoes rigorous stability studies under varying climatic zones to
+                  Every product undergoes rigorous Process Validation(PV), Cleaning Validation(CV),Hold Time Studies(HTS) and Stability Studies under varying climatic zones to
                   ensure the final product exceeds GMP standards. We don&apos;t just follow
                   guidelines; we define the precision that healthcare providers rely on.
                 </p>
@@ -292,28 +346,6 @@ export function ProductsPageContent() {
             </ScrollReveal>
 
             <ScrollRevealContainer staggerDelay={0.1} className="quality-grid">
-              <ScrollRevealItem>
-                <div className="quality-left">
-                  <div className="quality-details">
-                    <div>
-                      <h4 className="facility-capabilityCardTitle">Stability Studies</h4>
-                      <p className="facility-capabilityCardDescription">
-                        Conducted in ICH-compliant chambers for real-time and accelerated shelf-life
-                        verification.
-                      </p>
-                    </div>
-
-                    <div>
-                      <h4 className="facility-capabilityCardTitle">In-Process QC</h4>
-                      <p className="facility-capabilityCardDescription">
-                        Multi-stage testing including content uniformity, dissolution rates, and
-                        microbial limits.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </ScrollRevealItem>
-
               <ScrollRevealItem>
                 <div className="quality-right">
                   <div className="quality-card">
@@ -350,6 +382,7 @@ export function ProductsPageContent() {
         </div>
       </section>
 
+      {/* Strategic Growth / Future Horizons section — temporarily disabled
       <section ref={futureRef} className="future-horizons product-section-zoom">
         <div className="product-section-surface">
           <div className="future-container">
@@ -391,6 +424,7 @@ export function ProductsPageContent() {
           </div>
         </div>
       </section>
+      */}
     </main>
   );
 }
