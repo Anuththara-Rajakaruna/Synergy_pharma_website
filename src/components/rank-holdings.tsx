@@ -27,7 +27,7 @@ const industries = [
     id: "infrastructure",
     label: "Infrastructure Development",
     icon: Building2,
-    image: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=80",
+    image: "/Home/infrastructure.png",
     heading: "Infrastructure Development",
     description:
       "Developing modern infrastructure projects that support economic growth and long-term sustainability.",
@@ -36,7 +36,7 @@ const industries = [
     id: "hospitality",
     label: "Hospitality & Entertainment",
     icon: Hotel,
-    image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80",
+    image: "/Home/Hospitality.png",
     heading: "Hospitality & Entertainment",
     description:
       "Creating premium hospitality and entertainment experiences through innovation and service excellence.",
@@ -45,7 +45,7 @@ const industries = [
     id: "energy",
     label: "Power, Energy & Property",
     icon: Zap,
-    image: "https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=800&q=80",
+    image: "/Home/power.png",
     heading: "Power, Energy & Property",
     description:
       "Investing in sustainable energy and property solutions for future-ready development.",
@@ -54,7 +54,7 @@ const industries = [
     id: "realestate",
     label: "Real Estate Development",
     icon: Home,
-    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80",
+    image: "/Home/realestate.png",
     heading: "Real Estate Development",
     description:
       "Building modern residential and commercial spaces designed for evolving communities.",
@@ -63,7 +63,7 @@ const industries = [
     id: "agribusiness",
     label: "Agribusiness",
     icon: Leaf,
-    image: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=800&q=80",
+    image: "/Home/agri.png",
     heading: "Agribusiness",
     description:
       "Supporting agricultural innovation and sustainable farming solutions across regional markets.",
@@ -72,7 +72,7 @@ const industries = [
     id: "container",
     label: "Container Terminal Services",
     icon: Container,
-    image: "https://images.unsplash.com/photo-1578575437130-527eed3abbec?w=800&q=80",
+    image: "/Home/container.png",
     heading: "Container Terminal Services",
     description:
       "Providing efficient logistics and container terminal operations enabling global trade connectivity.",
