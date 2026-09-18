@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { listAuditLogs, type AuditLogFilters } from "@/lib/careers/server/audit";
-import { isObjectIdString, toObjectId } from "@/lib/careers/server/ids";
+import { isRecordId } from "@/lib/careers/server/ids";
 import { parseDateFilter, parsePagination, type FieldErrors } from "@/lib/careers/validation";
 import { badRequest } from "@/lib/http/errors";
 import { apiHandler, jsonResponse } from "@/lib/http/handler";
@@ -42,7 +42,7 @@ export const GET = apiHandler("api.admin.audit.list", async (request: Request) =
   }
   const actorId = readParam(params, "actorId");
   if (actorId) {
-    if (isObjectIdString(actorId)) filters.actorId = toObjectId(actorId);
+    if (isRecordId(actorId)) filters.actorId = actorId;
     else errors.actorId = "Invalid user filter.";
   }
   for (const [key, bound] of [["from", "start"], ["to", "end"]] as const) {

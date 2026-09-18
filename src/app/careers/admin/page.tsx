@@ -4,7 +4,7 @@ import { AdminApp } from "@/components/careers/admin/admin-app";
 import { Hero } from "@/components/hero";
 import { SiteHeader } from "@/components/site-header";
 import { getAdminFromCookies } from "@/lib/auth/require-admin";
-import { isObjectIdString } from "@/lib/careers/server/ids";
+import { isRecordId } from "@/lib/careers/server/ids";
 
 export const dynamic = "force-dynamic";
 
@@ -27,8 +27,8 @@ function readDeepLink(params: SearchParams) {
   const talent = single(params.talent);
   return {
     tab: tab && ADMIN_TABS.has(tab) ? tab : undefined,
-    applicationId: application && isObjectIdString(application) ? application : undefined,
-    talentId: talent && isObjectIdString(talent) ? talent : undefined,
+    applicationId: application && isRecordId(application) ? application : undefined,
+    talentId: talent && isRecordId(talent) ? talent : undefined,
   };
 }
 

@@ -1,7 +1,6 @@
 import "./support/env";
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
-import { Types } from "mongoose";
 import type { AdminContext } from "@/lib/auth/session";
 import {
   changeJobStatus,
@@ -17,22 +16,35 @@ import {
   openJobFilter,
   updateJob,
 } from "@/lib/careers/server/jobs";
+import { newId } from "@/lib/careers/server/ids";
+import type { ApplicationRecord, JobRecord } from "@/lib/careers/server/records";
 import type { JobStatusAction } from "@/lib/careers/constants";
-import { ApplicationModel } from "@/models/application";
-import { JobModel } from "@/models/job";
+import { encodeDate } from "@/lib/sheets-db/codec";
+import { updateRecord } from "@/lib/sheets-db";
+import { insertApplication as insertApplicationRow, listAllApplications } from "@/lib/sheets-db/repositories/applications";
+import { findJobById, listAllJobs, patchJob } from "@/lib/sheets-db/repositories/jobs";
+import { suiteSkip } from "./support/env";
 import { adminContext, auditEntries, expectAppError, jobInput, publishedJob, uniqueSuffix } from "./support/fixtures";
 import { startIntegration, type Integration } from "./support/harness";
 
 const MINUTE = 60 * 1000;
 const DAY = 24 * 60 * MINUTE;
 
-async function insertApplication(slug: string, overrides: { archivedAt?: Date | null } = {}): Promise<void> {
+async function jobBySlug(slug: string): Promise<JobRecord> {
   const job = await getJobDocumentBySlug(slug);
-  assert.ok(job);
+  assert.ok(job, `job ${slug} not found`);
+  return job;
+}
+
+// Writes an application row straight to the tab, for the states the service cannot produce on
+// demand (an application on an archived job, an already-archived application).
+async function insertApplication(slug: string, overrides: { archivedAt?: Date | null } = {}): Promise<string> {
+  const job = await jobBySlug(slug);
   const now = new Date();
   const suffix = uniqueSuffix();
-  await ApplicationModel.create({
-    job: job._id,
+  const record: ApplicationRecord = {
+    id: newId(now),
+    job: job.id,
     jobSlug: job.slug,
     jobTitle: job.title,
     department: job.department,
@@ -40,14 +52,38 @@ async function insertApplication(slug: string, overrides: { archivedAt?: Date | 
     email: `saman.${suffix}@example.com`,
     emailNormalized: `saman.${suffix}@example.com`,
     phone: "0771234567",
+    coverLetter: "",
+    linkedIn: null,
+    portfolio: null,
     consentGiven: true,
     consentAt: now,
+    documents: [],
+    status: "submitted",
     statusChangedAt: now,
+    statusHistory: [],
+    notes: [],
+    source: "website",
+    talentPoolEntry: null,
     archivedAt: overrides.archivedAt ?? null,
-  });
+    archivedBy: null,
+    archivedByName: null,
+    archiveReason: "",
+    supersededBy: null,
+    createdAt: now,
+    updatedAt: now,
+  };
+  await insertApplicationRow(record);
+  return record.id;
 }
 
-describe("jobs service", { timeout: 120_000 }, () => {
+// createdAt is not patchable through the repository (a job's creation date is immutable), so
+// ageing a row for a sort test writes the cell directly.
+async function setJobCreatedAt(slug: string, createdAt: Date): Promise<void> {
+  const job = await jobBySlug(slug);
+  await updateRecord("Jobs", job.id, { createdAt: encodeDate(createdAt) });
+}
+
+describe("jobs service", { timeout: 300_000, skip: suiteSkip() }, () => {
   let integration: Integration;
   let ctx: AdminContext;
 
@@ -78,6 +114,17 @@ describe("jobs service", { timeout: 120_000 }, () => {
       assert.equal(audit.ip, "203.0.113.10");
     });
 
+    it("stores the job as one row whose id is separate from its slug", async () => {
+      const input = jobInput();
+      await createJob(input, "draft", ctx);
+      const record = await jobBySlug(input.slug);
+      assert.match(record.id, /^[a-f0-9]{24}$/, "rows are addressed by id, the slug stays the public identifier");
+      assert.equal(record.slug, input.slug);
+      assert.deepEqual(record.responsibilities, input.responsibilities, "list fields round-trip through one cell each");
+      assert.equal(record.origin, "admin");
+      assert.equal((await listAllJobs({ maxAgeMs: 0 })).filter((job) => job.slug === input.slug).length, 1);
+    });
+
     it("publishes immediately when requested and the job meets the requirements", async () => {
       const before = Date.now();
       const job = await publishedJob(ctx);
@@ -103,9 +150,10 @@ describe("jobs service", { timeout: 120_000 }, () => {
       await createJob(input, "draft", ctx);
       const err = await expectAppError(createJob({ ...input, title: "Another title" }, "draft", ctx), 409, "duplicate_slug");
       assert.ok(err.fields?.slug);
+      assert.equal((await listAllJobs({ maxAgeMs: 0 })).filter((job) => job.slug === input.slug).length, 1, "no second row was appended");
     });
 
-    it("rejects invalid slugs before touching the database", async () => {
+    it("rejects invalid slugs before touching the store", async () => {
       await expectAppError(createJob(jobInput({ slug: "Not A Slug" }), "draft", ctx), 400, "invalid_input");
     });
   });
@@ -150,10 +198,7 @@ describe("jobs service", { timeout: 120_000 }, () => {
       const actions = (await auditEntries({ entityId: slug })).map((entry) => entry.action);
       assert.deepEqual(actions, ["job.create", "job.publish", "job.close", "job.reopen", "job.unpublish", "job.archive", "job.restore", "job.publish"]);
       const archiveAudit = (await auditEntries({ action: "job.archive", entityId: slug }))[0];
-      assert.deepEqual(
-        { from: archiveAudit.meta.from, to: archiveAudit.meta.to },
-        { from: "draft", to: "archived" }
-      );
+      assert.deepEqual({ from: archiveAudit.meta.from, to: archiveAudit.meta.to }, { from: "draft", to: "archived" });
     });
 
     it("rejects transitions that are not allowed from the current status with 409 invalid_transition", async () => {
@@ -198,7 +243,7 @@ describe("jobs service", { timeout: 120_000 }, () => {
     it("enforces publish requirements when reopening a closed job whose deadline has passed", async () => {
       const job = await publishedJob(ctx, { applicationDeadline: new Date(Date.now() + DAY) });
       await changeJobStatus(job.id, "close", ctx);
-      await JobModel.updateOne({ slug: job.id }, { $set: { applicationDeadline: new Date(Date.now() - DAY) } });
+      await patchJob((await jobBySlug(job.id)).id, { applicationDeadline: new Date(Date.now() - DAY) });
       await expectAppError(changeJobStatus(job.id, "reopen", ctx), 400, "publish_requirements");
       assert.equal((await getAdminJob(job.id))?.status, "closed");
     });
@@ -217,13 +262,16 @@ describe("jobs service", { timeout: 120_000 }, () => {
       assert.ok(Array.isArray(audit.meta.changedFields));
       assert.ok((audit.meta.changedFields as string[]).includes("title"));
       assert.ok((audit.meta.changedFields as string[]).includes("location"));
+      assert.equal((await jobBySlug(job.id)).slug, job.id, "the slug cell is never rewritten");
     });
 
     it("does not write or audit when nothing changed", async () => {
       const input = jobInput();
       const job = await createJob(input, "draft", ctx);
+      const before = await jobBySlug(job.id);
       await updateJob(job.id, input, ctx);
       assert.equal((await auditEntries({ action: "job.update", entityId: job.id })).length, 0);
+      assert.deepEqual((await jobBySlug(job.id)).updatedAt, before.updatedAt, "the row was not touched at all");
     });
 
     it("keeps published jobs publishable", async () => {
@@ -237,6 +285,7 @@ describe("jobs service", { timeout: 120_000 }, () => {
       const job = await createJob(jobInput(), "draft", ctx);
       const updated = await updateJob(job.id, jobInput({ responsibilities: [], requirements: [] }), ctx);
       assert.deepEqual(updated.responsibilities, []);
+      assert.deepEqual((await jobBySlug(job.id)).responsibilities, [], "an empty list is an empty cell");
     });
 
     it("returns 404 for unknown jobs", async () => {
@@ -250,12 +299,13 @@ describe("jobs service", { timeout: 120_000 }, () => {
       const exact = await publishedJob(ctx, { applicationDeadline: now });
       const later = await publishedJob(ctx, { applicationDeadline: new Date(now.getTime() + 1) });
       const earlier = await publishedJob(ctx, { applicationDeadline: new Date(now.getTime() + DAY) });
-      await JobModel.updateOne({ slug: earlier.id }, { $set: { applicationDeadline: new Date(now.getTime() - 1) } });
+      await patchJob((await jobBySlug(earlier.id)).id, { applicationDeadline: new Date(now.getTime() - 1) });
       const noDeadline = await publishedJob(ctx);
       const draft = await createJob(jobInput(), "draft", ctx);
 
-      const slugs = [exact.id, later.id, earlier.id, noDeadline.id, draft.id];
-      const matched = await JobModel.find({ ...openJobFilter(now), slug: { $in: slugs } }).distinct("slug");
+      const slugs = new Set([exact.id, later.id, earlier.id, noDeadline.id, draft.id]);
+      const isOpen = openJobFilter(now);
+      const matched = (await listAllJobs({ maxAgeMs: 0 })).filter((job) => slugs.has(job.slug) && isOpen(job)).map((job) => job.slug);
       assert.deepEqual([...matched].sort(), [exact.id, later.id, noDeadline.id].sort());
     });
 
@@ -263,7 +313,7 @@ describe("jobs service", { timeout: 120_000 }, () => {
       const department = `Dept ${uniqueSuffix()}`;
       const open = await publishedJob(ctx, { department, applicationDeadline: new Date(Date.now() + DAY) });
       const expired = await publishedJob(ctx, { department, applicationDeadline: new Date(Date.now() + DAY) });
-      await JobModel.updateOne({ slug: expired.id }, { $set: { applicationDeadline: new Date(Date.now() - MINUTE) } });
+      await patchJob((await jobBySlug(expired.id)).id, { applicationDeadline: new Date(Date.now() - MINUTE) });
       const closed = await publishedJob(ctx, { department });
       await changeJobStatus(closed.id, "close", ctx);
       const archived = await publishedJob(ctx, { department });
@@ -295,9 +345,9 @@ describe("jobs service", { timeout: 120_000 }, () => {
       const a = await publishedJob(ctx, { department });
       const b = await publishedJob(ctx, { department });
       const c = await createJob(jobInput({ department }), "draft", ctx);
-      await JobModel.updateOne({ slug: a.id }, { $set: { publishedAt: new Date(Date.now() - 1 * DAY) } });
-      await JobModel.updateOne({ slug: b.id }, { $set: { publishedAt: new Date(Date.now() - 3 * DAY) } });
-      await JobModel.collection.updateOne({ slug: c.id }, { $set: { createdAt: new Date(Date.now() - 2 * DAY) } });
+      await patchJob((await jobBySlug(a.id)).id, { publishedAt: new Date(Date.now() - 1 * DAY) });
+      await patchJob((await jobBySlug(b.id)).id, { publishedAt: new Date(Date.now() - 3 * DAY) });
+      await setJobCreatedAt(c.id, new Date(Date.now() - 2 * DAY));
 
       const adminOrder = (await listAdminJobs({ department, status: "all" })).map((job) => job.id);
       assert.deepEqual(adminOrder, [a.id, c.id, b.id]);
@@ -333,19 +383,35 @@ describe("jobs service", { timeout: 120_000 }, () => {
   });
 
   describe("deleteJob", () => {
-    it("hard-deletes a draft without applications and audits it", async () => {
+    it("removes the row of a draft without applications and audits it", async () => {
       const draft = await createJob(jobInput(), "draft", ctx);
       await deleteJob(draft.id, ctx);
       assert.equal(await getJobDocumentBySlug(draft.id), null);
+      assert.equal((await listAllJobs({ maxAgeMs: 0 })).some((job) => job.slug === draft.id), false, "the row is gone, not hidden");
       const [audit] = await auditEntries({ action: "job.delete", entityId: draft.id });
       assert.ok(audit);
     });
 
-    it("hard-deletes an archived job without applications", async () => {
+    it("removes the row of an archived job without applications", async () => {
       const job = await publishedJob(ctx);
       await changeJobStatus(job.id, "archive", ctx);
       await deleteJob(job.id, ctx);
       assert.equal(await getJobDocumentBySlug(job.id), null);
+    });
+
+    it("keeps every other job addressable after a row is deleted", async () => {
+      // Deleting a row renumbers everything below it, so the read cache is dropped. A job read
+      // afterwards must still resolve, and a write to it must land on its own row.
+      const keep = await createJob(jobInput({ title: "Kept Role" }), "draft", ctx);
+      const remove = await createJob(jobInput(), "draft", ctx);
+      const after = await createJob(jobInput({ title: "Later Role" }), "draft", ctx);
+      await deleteJob(remove.id, ctx);
+
+      assert.equal((await getAdminJob(keep.id))?.title, "Kept Role");
+      assert.equal((await getAdminJob(after.id))?.title, "Later Role");
+      const renamed = await updateJob(after.id, jobInput({ title: "Renamed Later Role" }), ctx);
+      assert.equal(renamed.title, "Renamed Later Role");
+      assert.equal((await jobBySlug(keep.id)).title, "Kept Role", "the write landed on the right row");
     });
 
     it("refuses to delete published or closed jobs", async () => {
@@ -362,16 +428,17 @@ describe("jobs service", { timeout: 120_000 }, () => {
       await expectAppError(deleteJob(draft.id, ctx), 409, "job_has_applications");
 
       const archived = await publishedJob(ctx);
-      await insertApplication(archived.id);
+      const applicationId = await insertApplication(archived.id);
       await changeJobStatus(archived.id, "archive", ctx);
       await expectAppError(deleteJob(archived.id, ctx), 409, "job_has_applications");
       assert.ok(await getJobDocumentBySlug(archived.id));
       assert.equal((await auditEntries({ action: "job.delete", entityId: archived.id })).length, 0);
+      assert.ok((await listAllApplications({ maxAgeMs: 0 })).some((application) => application.id === applicationId));
     });
 
     it("returns 404 for unknown jobs", async () => {
       await expectAppError(deleteJob(`missing-${uniqueSuffix()}`, ctx), 404, "job_not_found");
-      assert.equal(await JobModel.exists({ _id: new Types.ObjectId() }), null);
+      assert.equal(await findJobById(newId(), { maxAgeMs: 0 }), null);
     });
   });
 });

@@ -2,7 +2,6 @@ import { NextResponse, type NextRequest } from "next/server";
 import { gaBootstrapScript } from "@/lib/analytics";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/cookie-name";
 import { SITE_URL } from "@/lib/site";
-import { getStorageUploadOrigin } from "@/lib/storage-origin";
 
 // The proxy only sets the Content-Security-Policy and redirects signed-out visitors away from
 // the admin pages. It is not an access-control boundary: API routes and the admin page check
@@ -30,22 +29,14 @@ function getGaScriptHash(): Promise<string> {
   return gaScriptHashPromise;
 }
 
-// Browsers upload CVs straight to object storage with presigned PUT requests, so the bucket
-// origin must be allowed in connect-src. Configuration does not change while the process runs.
-let storageOrigin: string | null | undefined;
-function getStorageOrigin(): string | null {
-  if (storageOrigin === undefined) storageOrigin = getStorageUploadOrigin();
-  return storageOrigin;
-}
-
 async function buildCsp(nonce: string): Promise<string> {
   const gaScriptSrc = gaEnabled
     ? ` 'sha256-${await getGaScriptHash()}' https://www.googletagmanager.com`
     : "";
 
+  // CVs are uploaded to this application's own origin (/api/uploads), which then writes them to
+  // Google Drive server-side, so connect-src needs no third-party upload origin.
   const connectSrc = ["'self'"];
-  const uploadOrigin = getStorageOrigin();
-  if (uploadOrigin) connectSrc.push(uploadOrigin);
   // GA4 sends its collection requests to google-analytics.com, which connect-src must allow
   // explicitly ('strict-dynamic' only relaxes script-src, not connect-src).
   if (gaEnabled) connectSrc.push("https://www.google-analytics.com", "https://region1.google-analytics.com");

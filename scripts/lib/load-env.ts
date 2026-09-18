@@ -4,7 +4,8 @@
 //
 // Pass --no-env-files (or set SCRIPTS_NO_ENV_FILES=1) to use only the process environment.
 // Do this when running a script against production with exported variables: otherwise a
-// variable you forgot to export (e.g. MONGODB_DB_NAME) is silently taken from .env.local.
+// variable you forgot to export (e.g. GOOGLE_SHEETS_SPREADSHEET_ID) is silently taken from
+// .env.local, which would point the script at the wrong spreadsheet.
 import { loadEnvConfig } from "@next/env";
 
 export const envFilesDisabled =

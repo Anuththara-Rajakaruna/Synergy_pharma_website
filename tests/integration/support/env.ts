@@ -1,55 +1,90 @@
 // Environment for the integration suite. Import this module FIRST in every integration test file:
 // application modules read some variables when they are loaded (site URL, cookie name).
 //
-// The suite talks to real services. Defaults match a local development setup and can be
-// overridden with INTEGRATION_* variables (CI):
-//   INTEGRATION_MONGODB_URI          default mongodb://127.0.0.1:27017
-//   INTEGRATION_MONGODB_DB_NAME      default synergy_integration_test (must end with _test; it is dropped)
-//   INTEGRATION_S3_ENDPOINT          default http://127.0.0.1:18333 (S3-compatible server, e.g. SeaweedFS/MinIO)
-//   INTEGRATION_S3_BUCKET            default synergy-integration-test (created if missing, emptied at start)
-//   INTEGRATION_S3_ACCESS_KEY_ID / INTEGRATION_S3_SECRET_ACCESS_KEY
-// Variables of the application itself (MONGODB_DB_NAME, S3_BUCKET, ...) are always overwritten so
-// the suite can never write to a development or production database by accident.
+// The suite talks to the real Google Sheets and Google Drive APIs. There is no local server to
+// start, so it needs a spreadsheet and a Drive folder that exist and are shared with a service
+// account as an Editor:
+//
+//   INTEGRATION_GOOGLE_SHEETS_SPREADSHEET_ID   the test spreadsheet (required, never inherited)
+//   INTEGRATION_GOOGLE_DRIVE_FOLDER_ID         the test Drive folder (required, never inherited)
+//   INTEGRATION_GOOGLE_SERVICE_ACCOUNT_EMAIL   \
+//   INTEGRATION_GOOGLE_PRIVATE_KEY              |  credentials; each falls back to the
+//   INTEGRATION_GOOGLE_PRIVATE_KEY_ID           |  GOOGLE_* variable of the same name
+//   INTEGRATION_GOOGLE_SERVICE_ACCOUNT_JSON    /
+//   INTEGRATION_GOOGLE_DRIVE_SHARED_DRIVE_ID   optional, and recommended: a service account has
+//                                              no Drive storage quota of its own
+//   INTEGRATION_GOOGLE_IMPERSONATE_USER        optional alternative to a Shared Drive
+//
+// Two rules keep a production spreadsheet safe:
+//
+//   1. The spreadsheet id and the folder id are only ever read from an INTEGRATION_ variable.
+//      A developer's GOOGLE_SHEETS_SPREADSHEET_ID is deliberately NOT a fallback, so the suite
+//      cannot be pointed at the live sheet by having the application configured locally.
+//   2. The harness refuses to touch a spreadsheet whose Settings tab does not carry
+//      `test.spreadsheet` = `true` (see harness.ts). That row has to be typed in by hand.
+//
+// When the required variables are absent the whole suite skips rather than fails, so
+// `npm test` and a checkout without Google credentials stay green.
 
 function setEnv(name: string, value: string | undefined): void {
   if (value === undefined) delete process.env[name];
   else process.env[name] = value;
 }
 
-function setting(name: string, fallback: string): string {
-  const value = process.env[name]?.trim();
-  return value ? value : fallback;
+function read(name: string): string {
+  return (process.env[name] ?? "").trim();
+}
+
+// An INTEGRATION_ variable, falling back to the plain application variable of the same name.
+// Only used for credentials, never for the ids that decide which documents are written to.
+function credential(suffix: string): string {
+  return read(`INTEGRATION_${suffix}`) || read(suffix);
+}
+
+const spreadsheetId = read("INTEGRATION_GOOGLE_SHEETS_SPREADSHEET_ID");
+const driveFolderId = read("INTEGRATION_GOOGLE_DRIVE_FOLDER_ID");
+const serviceAccountEmail = credential("GOOGLE_SERVICE_ACCOUNT_EMAIL");
+const privateKey = credential("GOOGLE_PRIVATE_KEY");
+const serviceAccountJson = credential("GOOGLE_SERVICE_ACCOUNT_JSON");
+
+const missing: string[] = [];
+if (!spreadsheetId) missing.push("INTEGRATION_GOOGLE_SHEETS_SPREADSHEET_ID");
+if (!driveFolderId) missing.push("INTEGRATION_GOOGLE_DRIVE_FOLDER_ID");
+if (!serviceAccountJson && !(serviceAccountEmail && privateKey)) {
+  missing.push("INTEGRATION_GOOGLE_SERVICE_ACCOUNT_JSON (or INTEGRATION_GOOGLE_SERVICE_ACCOUNT_EMAIL and INTEGRATION_GOOGLE_PRIVATE_KEY)");
 }
 
 export const integrationConfig = {
-  mongoUri: setting("INTEGRATION_MONGODB_URI", "mongodb://127.0.0.1:27017"),
-  dbName: setting("INTEGRATION_MONGODB_DB_NAME", "synergy_integration_test"),
-  s3Endpoint: setting("INTEGRATION_S3_ENDPOINT", "http://127.0.0.1:18333"),
-  s3Bucket: setting("INTEGRATION_S3_BUCKET", "synergy-integration-test"),
-  s3AccessKeyId: setting("INTEGRATION_S3_ACCESS_KEY_ID", "verifykey"),
-  s3SecretAccessKey: setting("INTEGRATION_S3_SECRET_ACCESS_KEY", "verifysecret"),
+  enabled: missing.length === 0,
+  missing,
+  spreadsheetId,
+  driveFolderId,
+  sharedDriveId: read("INTEGRATION_GOOGLE_DRIVE_SHARED_DRIVE_ID") || credential("GOOGLE_DRIVE_SHARED_DRIVE_ID"),
+  impersonateUser: read("INTEGRATION_GOOGLE_IMPERSONATE_USER") || credential("GOOGLE_IMPERSONATE_USER"),
   hrEmail: "hr.integration@example.com",
   smtpFrom: "Synergy Careers Integration <careers.integration@example.com>",
 } as const;
 
-if (!integrationConfig.dbName.endsWith("_test")) {
-  throw new Error(`Refusing to run integration tests against database "${integrationConfig.dbName}": the name must end with _test.`);
+// The reason to skip, or false to run. Pass it as the `skip` option of the suite's describe():
+//   describe("jobs service", { timeout: 120_000, skip: suiteSkip() }, () => { ... });
+export function suiteSkip(): string | false {
+  if (integrationConfig.enabled) return false;
+  return `Set ${missing.join(", ")} to a test spreadsheet and Drive folder to run the integration suite.`;
 }
 
+// Variables of the application itself are always overwritten, so the suite can never read or
+// write a development or production spreadsheet by accident.
 const baseline: Record<string, string | undefined> = {
   NODE_ENV: "test",
-  MONGODB_URI: integrationConfig.mongoUri,
-  MONGODB_DB_NAME: integrationConfig.dbName,
-  MONGODB_MAX_POOL_SIZE: "10",
+  GOOGLE_SHEETS_SPREADSHEET_ID: spreadsheetId || undefined,
+  GOOGLE_DRIVE_FOLDER_ID: driveFolderId || undefined,
+  GOOGLE_SERVICE_ACCOUNT_EMAIL: serviceAccountEmail || undefined,
+  GOOGLE_PRIVATE_KEY: privateKey || undefined,
+  GOOGLE_PRIVATE_KEY_ID: credential("GOOGLE_PRIVATE_KEY_ID") || undefined,
+  GOOGLE_SERVICE_ACCOUNT_JSON: serviceAccountJson || undefined,
+  GOOGLE_DRIVE_SHARED_DRIVE_ID: integrationConfig.sharedDriveId || undefined,
+  GOOGLE_IMPERSONATE_USER: integrationConfig.impersonateUser || undefined,
   NEXT_PUBLIC_SITE_URL: undefined,
-  S3_BUCKET: integrationConfig.s3Bucket,
-  S3_ENDPOINT: integrationConfig.s3Endpoint,
-  S3_REGION: undefined,
-  S3_PUBLIC_ENDPOINT: undefined,
-  S3_FORCE_PATH_STYLE: "true",
-  S3_ACCESS_KEY_ID: integrationConfig.s3AccessKeyId,
-  S3_SECRET_ACCESS_KEY: integrationConfig.s3SecretAccessKey,
-  S3_SERVER_SIDE_ENCRYPTION: undefined,
   // SMTP_PORT is set by the harness once the capture server has a free port.
   SMTP_HOST: "127.0.0.1",
   SMTP_PORT: undefined,
@@ -62,6 +97,7 @@ const baseline: Record<string, string | undefined> = {
   CONTACT_NOTIFICATION_EMAIL: undefined,
   DATA_RETENTION_MONTHS: undefined,
   RETENTION_AUTO_PURGE: undefined,
+  AUDIT_RETENTION_MONTHS: undefined,
   TRUSTED_IP_HEADER: undefined,
   TRUSTED_PROXY_COUNT: undefined,
   VERCEL: undefined,

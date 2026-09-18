@@ -43,41 +43,110 @@ jobs:
       - name: Unit tests
         run: npm test
 
-      # The build never connects to these services; the values only satisfy the configuration.
+      # The whole careers workflow against an in-memory stand-in for the Sheets and Drive APIs
+      # (tests/support/google-stub.ts). No credentials, so it runs on every commit and on forks -
+      # this is the job that actually proves a submission still reaches storage end to end.
+      - name: End-to-end workflow (stubbed Google APIs)
+        run: npm run test:workflow
+
+      # The build never contacts Google; these values only have to be well-formed enough to pass
+      # the configuration check (an email address, a PEM envelope, two Google-shaped ids). They are
+      # deliberately not "replace-with-" strings, which src/lib/env.ts reports as an error.
       - name: Build
         run: npm run build
         env:
-          MONGODB_URI: mongodb://127.0.0.1:27017
-          MONGODB_DB_NAME: ci_build
+          GOOGLE_SERVICE_ACCOUNT_EMAIL: ci-build@synergy-ci.iam.gserviceaccount.com
+          GOOGLE_PRIVATE_KEY: |
+            -----BEGIN PRIVATE KEY-----
+            bm90LWEta2V5LiBUaGlzIHBsYWNlaG9sZGVyIG9ubHkgZXhpc3RzIHNvIHRoYXQ=
+            dGhlIGNvbmZpZ3VyYXRpb24gY2hlY2sgcGFzc2VzIGR1cmluZyBgbmV4dCBidWlsZGAu
+            -----END PRIVATE KEY-----
+          GOOGLE_SHEETS_SPREADSHEET_ID: 1CiBuildPlaceholderSpreadsheetId0000000000
+          GOOGLE_DRIVE_FOLDER_ID: 1CiBuildPlaceholderDriveFolderId000000000
           NEXT_PUBLIC_SITE_URL: https://www.synergypharma.lk
 
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
 
+  # The integration suite talks to a real Google Spreadsheet and a real Drive folder: Google
+  # publishes no local emulator for the Sheets or Drive API, so there is nothing to start in a
+  # service container any more. The tests therefore run only where the Google secrets exist, and
+  # are skipped everywhere else - in particular for pull requests from forks, which never receive
+  # secrets.
+  #
+  # The `secrets` context is not available in a job-level `if:` (GitHub allows only github, needs,
+  # vars and inputs there), so this job turns the secrets into an output that the `if:` below can
+  # read. It prints nothing but true or false.
+  integration-secrets:
+    name: Integration credentials present?
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      configured: ${{ steps.check.outputs.configured }}
+    steps:
+      - name: Look for the Google secrets
+        id: check
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_SERVICE_ACCOUNT_EMAIL: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_EMAIL }}
+          GOOGLE_PRIVATE_KEY: ${{ secrets.GOOGLE_PRIVATE_KEY }}
+          GOOGLE_SHEETS_SPREADSHEET_ID: ${{ secrets.GOOGLE_SHEETS_SPREADSHEET_ID }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+        run: |
+          # Credentials come either as the whole key file or as the e-mail/key pair.
+          credentials=false
+          if [ -n "$GOOGLE_SERVICE_ACCOUNT_JSON" ]; then
+            credentials=true
+          elif [ -n "$GOOGLE_SERVICE_ACCOUNT_EMAIL" ] && [ -n "$GOOGLE_PRIVATE_KEY" ]; then
+            credentials=true
+          fi
+
+          if [ "$credentials" = true ] && [ -n "$GOOGLE_SHEETS_SPREADSHEET_ID" ] && [ -n "$GOOGLE_DRIVE_FOLDER_ID" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "Google credentials found: the integration tests will run." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "Integration tests skipped: no Google credentials for this run."
+              echo ""
+              echo "To enable them, add these repository secrets, pointing at a spreadsheet and a"
+              echo "Drive folder used for nothing but CI:"
+              echo "- \`GOOGLE_SERVICE_ACCOUNT_EMAIL\` and \`GOOGLE_PRIVATE_KEY\` (or \`GOOGLE_SERVICE_ACCOUNT_JSON\`)"
+              echo "- \`GOOGLE_SHEETS_SPREADSHEET_ID\`"
+              echo "- \`GOOGLE_DRIVE_FOLDER_ID\`"
+              echo ""
+              echo "Optional: \`GOOGLE_PRIVATE_KEY_ID\`, \`GOOGLE_DRIVE_SHARED_DRIVE_ID\`, \`GOOGLE_IMPERSONATE_USER\`."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
   integration:
-    name: Integration tests (MongoDB + S3-compatible storage)
+    name: Integration tests (Google Sheets + Drive)
+    needs: integration-secrets
+    if: needs.integration-secrets.outputs.configured == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
-    services:
-      mongodb:
-        image: mongo:8
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 30
+    # Every run writes to the same spreadsheet, so runs must not overlap. Queue them instead of
+    # cancelling: a cancelled run leaves rows behind for the next one to clean up.
+    concurrency:
+      group: integration-google
+      cancel-in-progress: false
     env:
-      # Read by tests/integration/support/env.ts. The database name must end with _test: the suite
-      # drops it before every test file. The bucket is created if missing and emptied.
-      INTEGRATION_MONGODB_URI: mongodb://127.0.0.1:27017
-      INTEGRATION_MONGODB_DB_NAME: synergy_ci_integration_test
-      INTEGRATION_S3_ENDPOINT: http://127.0.0.1:8333
-      INTEGRATION_S3_BUCKET: synergy-ci-integration-test
-      # Credentials of the throwaway storage container below, not a real secret.
-      INTEGRATION_S3_ACCESS_KEY_ID: ci-access-key
-      INTEGRATION_S3_SECRET_ACCESS_KEY: ci-secret-access-key
+      # The suite empties every tab before each test file, so it refuses to read the spreadsheet
+      # and folder ids from the ordinary GOOGLE_* variables - that rule is what stops a
+      # mistakenly-inherited production id from being wiped. The ids are passed under the
+      # INTEGRATION_ prefix instead (tests/integration/support/env.ts); point those secrets at a
+      # spreadsheet and Drive folder reserved for CI and nothing else.
+      INTEGRATION_GOOGLE_SHEETS_SPREADSHEET_ID: ${{ secrets.GOOGLE_SHEETS_SPREADSHEET_ID }}
+      INTEGRATION_GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+      # Credentials have no such restriction: the suite falls back to the GOOGLE_* names for them.
+      GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+      GOOGLE_SERVICE_ACCOUNT_EMAIL: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_EMAIL }}
+      GOOGLE_PRIVATE_KEY: ${{ secrets.GOOGLE_PRIVATE_KEY }}
+      GOOGLE_PRIVATE_KEY_ID: ${{ secrets.GOOGLE_PRIVATE_KEY_ID }}
+      # Optional: set when the CI folder lives on a Shared Drive, or when the service account has
+      # to impersonate a Workspace user. A service account has no Drive quota of its own.
+      GOOGLE_DRIVE_SHARED_DRIVE_ID: ${{ secrets.GOOGLE_DRIVE_SHARED_DRIVE_ID }}
+      GOOGLE_IMPERSONATE_USER: ${{ secrets.GOOGLE_IMPERSONATE_USER }}
     steps:
       - name: Check out
         uses: actions/checkout@v5
@@ -91,36 +160,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # SeaweedFS runs as a step rather than a service because service containers cannot be given a
-      # command. AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY make it require signed requests, which the
-      # presigned-upload tests rely on (a PUT with a different size or content type must get 403).
-      - name: Start S3-compatible storage (SeaweedFS)
-        run: |
-          docker run --detach --name seaweedfs --publish 8333:8333 \
-            --env AWS_ACCESS_KEY_ID="$INTEGRATION_S3_ACCESS_KEY_ID" \
-            --env AWS_SECRET_ACCESS_KEY="$INTEGRATION_S3_SECRET_ACCESS_KEY" \
-            chrislusf/seaweedfs:4.47 \
-            server -s3 -dir=/data -ip.bind=0.0.0.0 -master.volumeSizeLimitMB=64
-
-      - name: Wait for storage
-        run: |
-          for attempt in $(seq 1 60); do
-            if curl --silent --fail --output /dev/null \
-              --aws-sigv4 "aws:amz:us-east-1:s3" \
-              --user "$INTEGRATION_S3_ACCESS_KEY_ID:$INTEGRATION_S3_SECRET_ACCESS_KEY" \
-              "$INTEGRATION_S3_ENDPOINT/"; then
-              echo "Storage is ready."
-              exit 0
-            fi
-            sleep 2
-          done
-          echo "Storage did not become ready." >&2
-          docker logs seaweedfs
-          exit 1
-
+      # SMTP needs nothing here: the suite starts its own capture server on a free port.
       - name: Integration tests
         run: npm run test:integration
-
-      - name: Storage logs
-        if: failure()
-        run: docker logs seaweedfs

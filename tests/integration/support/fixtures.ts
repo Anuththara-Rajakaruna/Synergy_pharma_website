@@ -1,15 +1,14 @@
 import { randomBytes } from "node:crypto";
 import assert from "node:assert/strict";
-import { Types } from "mongoose";
 import { createSession, resolveSession, type AdminContext } from "@/lib/auth/session";
 import type { AdminRole, DocumentKind, UploadPurpose } from "@/lib/careers/constants";
 import { createJob } from "@/lib/careers/server/jobs";
-import { createUploadTickets } from "@/lib/careers/server/uploads";
+import type { AuditLogRecord } from "@/lib/careers/server/records";
+import { createUploadTickets, receiveUpload } from "@/lib/careers/server/uploads";
 import { createAdminUser } from "@/lib/careers/server/users";
 import type { ApplicationSubmission, JobInput, TalentSubmission } from "@/lib/careers/validation";
 import { AppError } from "@/lib/http/errors";
-import type { AuditLogDoc } from "@/models/audit-log";
-import { AuditLogModel } from "@/models/audit-log";
+import { flushAuditBuffer, listAuditRecords } from "@/lib/sheets-db/repositories/audit";
 import type { AdminJob, UploadTicket } from "@/types/careers";
 
 const LF = String.fromCharCode(10);
@@ -36,7 +35,7 @@ export function candidate(): { name: string; email: string; phone: string } {
 export async function adminContext(role: AdminRole = "hr", name = "Hiruni Recruiter"): Promise<AdminContext> {
   const suffix = uniqueSuffix();
   const { user } = await createAdminUser({ email: `${role}.${suffix}@synergypharma.test`, name, role }, null);
-  const { token } = await createSession(new Types.ObjectId(user.id), { ip: "203.0.113.10", userAgent: "integration-tests" });
+  const { token } = await createSession(user.id, { ip: "203.0.113.10", userAgent: "integration-tests" });
   const resolved = await resolveSession(token);
   assert.ok(resolved, "session for the fixture admin could not be resolved");
   return { ...resolved, ip: "203.0.113.10", userAgent: "integration-tests" };
@@ -74,25 +73,30 @@ export function pdfBytes(size = 4096): Buffer {
   return Buffer.concat([header, filler, trailer]);
 }
 
-export async function putToTicket(ticket: UploadTicket, body: Buffer, headers: Record<string, string> = ticket.headers): Promise<number> {
-  const response = await fetch(ticket.url, { method: ticket.method, headers, body: new Uint8Array(body) });
-  await response.arrayBuffer();
-  return response.status;
+// The signed token out of a ticket URL. The browser never looks at it; the route handler does.
+export function ticketToken(ticket: UploadTicket): string | null {
+  return new URL(ticket.url).searchParams.get("t");
 }
 
-// Requests an upload ticket and uploads the bytes through the presigned URL, like the browser does.
+// What the browser does with a ticket, minus the HTTP hop: PUT /api/uploads/<id> validates the
+// bytes and forwards them to Drive, and that validation is exactly `receiveUpload`. The suite has
+// no server running, so it calls the handler's implementation directly.
+export async function putToTicket(ticket: UploadTicket, body: Buffer, token: string | null = ticketToken(ticket)): Promise<void> {
+  await receiveUpload(ticket.uploadId, token, body);
+}
+
+// Requests an upload ticket and sends the bytes, like the browser does.
 export async function uploadDocument(
   purpose: UploadPurpose,
   kind: DocumentKind,
   body: Buffer = pdfBytes(),
-  options: { adminUserId?: AdminContext["userId"]; name?: string } = {}
+  options: { adminUserId?: string | null; name?: string } = {}
 ): Promise<string> {
   const [ticket] = await createUploadTickets(
     { purpose, files: [{ kind, name: options.name ?? `${kind}-${uniqueSuffix()}.pdf`, size: body.length, contentType: "application/pdf" }] },
     { adminUserId: options.adminUserId ?? null }
   );
-  const status = await putToTicket(ticket, body);
-  assert.equal(status, 200, `presigned upload failed with HTTP ${status}`);
+  await putToTicket(ticket, body);
   return ticket.uploadId;
 }
 
@@ -136,8 +140,18 @@ export async function expectAppError(promise: Promise<unknown>, status: number, 
   assert.fail(`expected AppError ${status} ${code}, but the operation succeeded`);
 }
 
-export async function auditEntries(filter: { action?: string; entityId?: string } = {}): Promise<AuditLogDoc[]> {
-  return AuditLogModel.find(filter).sort({ at: 1, _id: 1 }).lean<AuditLogDoc[]>();
+// Audit entries are appended in batches a few hundred milliseconds after the action, so that a
+// request does not pay for a Google Sheets round trip per entry. Every read here flushes the
+// buffer first, which is why assertions about the audit log are still exact.
+export async function auditEntries(filter: { action?: string; entityId?: string } = {}): Promise<AuditLogRecord[]> {
+  await flushAuditBuffer();
+  const entries = await listAuditRecords({ maxAgeMs: 0 });
+  // Sheet order, which is append order: the AuditLog tab is append-only, so rows are already in
+  // the order the actions happened. Sorting by `at` would be worse - it has one-millisecond
+  // resolution and two actions in one request often share a timestamp.
+  return entries.filter(
+    (entry) => (filter.action === undefined || entry.action === filter.action) && (filter.entityId === undefined || entry.entityId === filter.entityId)
+  );
 }
 
 // Asserts that none of the given personal values appear in the text (case-insensitive).
@@ -150,6 +164,5 @@ export function assertNoPersonalData(text: string, values: string[], context: st
 }
 
 export async function assertAuditHasNoPersonalData(values: string[]): Promise<void> {
-  const entries = await AuditLogModel.find({}).lean();
-  assertNoPersonalData(JSON.stringify(entries), values, "audit log");
+  assertNoPersonalData(JSON.stringify(await auditEntries()), values, "audit log");
 }

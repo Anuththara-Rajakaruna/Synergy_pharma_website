@@ -89,8 +89,11 @@ export default function PrivacyPolicyPage() {
                 <h2 className="text-xl font-bold text-[#0a1f35] mb-3">5. Who has access to your data</h2>
                 <p>
                   Access to application data is restricted to authorised HR personnel within Synergy Pharma.
-                  Our Careers Portal is hosted on secure infrastructure. No third-party analytics or advertising
-                  services receive your personal information.
+                  Our Careers Portal is hosted on secure infrastructure. Your application details are held in
+                  Google Sheets and your uploaded CV in Google Drive, within Synergy Pharma&apos;s own Google
+                  Workspace account, and are accessible only to authorised recruitment staff. Google acts as a
+                  data processor on our behalf and does not use your data for its own purposes. No third-party
+                  analytics or advertising services receive your personal information.
                 </p>
               </section>
 
@@ -130,9 +133,11 @@ export default function PrivacyPolicyPage() {
               <section>
                 <h2 className="text-xl font-bold text-[#0a1f35] mb-3">8. Data security</h2>
                 <p>
-                  Uploaded CV files are stored in a private directory not accessible to the public internet. Access
-                  is restricted through authenticated API routes. We apply industry-standard security controls including
-                  HTTPS encryption, HTTP-only session cookies, and access logging.
+                  Uploaded CV files are stored in a private Google Drive folder inside our Google Workspace account.
+                  The folder is not shared publicly and is not accessible to the public internet, and we never publish
+                  a link to your file. Access is restricted through authenticated API routes. We apply
+                  industry-standard security controls including HTTPS encryption, HTTP-only session cookies, and
+                  access logging.
                 </p>
               </section>
 
