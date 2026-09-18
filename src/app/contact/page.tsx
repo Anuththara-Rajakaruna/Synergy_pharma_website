@@ -28,7 +28,7 @@ const contactDetails = [
   {
     icon: <Phone aria-hidden="true" />,
     title: "Phone",
-    content: <p>[Phone Number]</p>,
+    content: <p>+94 38 413 77 77</p>,
   },
   {
     icon: <Mail aria-hidden="true" />,
@@ -42,7 +42,7 @@ const contactDetails = [
   {
     icon: <Clock aria-hidden="true" />,
     title: "Business Hours",
-    content: <p>[Business Hours]</p>,
+    content: <p>Monday – Saturday | 8:00 AM – 5:00 PM</p>,
   },
 ];
 
