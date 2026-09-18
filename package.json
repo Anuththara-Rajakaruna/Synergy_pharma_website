@@ -51,7 +51,7 @@
     "smtp-server": "^3.19.13",
     "tailwindcss": "^4.1.12",
     "tsx": "^4.23.13",
-    "typescript": "^5.9.3"
+    "typescript": "^7.0.2"
   },
   "engines": {
     "node": ">=20.19.0"
