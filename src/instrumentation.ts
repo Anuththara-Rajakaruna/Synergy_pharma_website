@@ -7,6 +7,30 @@ export async function register() {
   // The condition wraps the import (rather than returning early) so bundlers drop the Node.js-only
   // configuration modules from any Edge build of this file.
   if (process.env.NEXT_RUNTIME === "nodejs") {
+    // `npm run dev:local`: run against an in-process stand-in for Sheets and Drive instead of a
+    // real Google project. Guarded twice - the module refuses to install when NODE_ENV is
+    // production, and it is not even imported unless this check passes first, so a stray
+    // environment variable on a production host cannot reach it.
+    if (process.env.CAREERS_LOCAL_GOOGLE === "1" && process.env.NODE_ENV !== "production") {
+      try {
+        const { installLocalGoogle, bootstrapLocalData, LOCAL_STATE_FILE } = await import("@/lib/google/local-emulator");
+        await installLocalGoogle();
+        const seeded = await bootstrapLocalData();
+        logger.warn("google.local_emulator_active", {
+          stateFile: LOCAL_STATE_FILE,
+          note: "Sheets and Drive are simulated in this process. Nothing reaches Google.",
+        });
+        if (seeded) {
+          // Printed deliberately: it opens a spreadsheet that exists only inside this process.
+          console.info(
+            `\n  Local admin sign-in: ${seeded.adminEmail} / ${seeded.adminPassword}\n  Two sample jobs published. Careers portal: /careers, admin: /careers/admin\n`
+          );
+        }
+      } catch (err) {
+        logger.error("google.local_emulator_failed", { err });
+      }
+    }
+
     try {
       const { getConfigProblems } = await import("@/lib/env");
       for (const problem of getConfigProblems()) {
