@@ -2057,6 +2057,51 @@ button:disabled:active {
   stroke: #ffffff !important;
 }
 
+.ecosystem-card.ecosystem-card-wide {
+  grid-column: 2 / span 2;
+  grid-row: 2;
+}
+
+.ecosystem-card-wide-columns {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.ecosystem-card-wide-left,
+.ecosystem-card-wide-right {
+  flex: 1 1 50%;
+  min-width: 0;
+}
+
+.ecosystem-card-wide-right {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.ecosystem-card-point {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ecosystem-card-point-icon {
+  color: #1075bd;
+  flex-shrink: 0;
+}
+
+.ecosystem-card-point-text {
+  color: #375168;
+  font-size: 0.95rem;
+  line-height: 1.75;
+  font-weight: 600;
+}
+
 @media (max-width: 900px) {
   .ecosystem-cards-grid {
     grid-template-columns: 1fr 1fr;
