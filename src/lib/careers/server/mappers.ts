@@ -1,11 +1,20 @@
 // Shared by the application and talent-pool services: DTO mappers, request payload parsers,
 // and small persistence helpers (document cleanup, email queueing). Server-only.
 
-import { Types } from "mongoose";
 import type { AdminContext } from "@/lib/auth/session";
 import { FIELD_LIMITS, type ApplicationStatus } from "@/lib/careers/constants";
+import { toDocumentInfo } from "@/lib/careers/server/documents";
+import { applicationReference, newId, talentReference } from "@/lib/careers/server/ids";
+import type {
+  ApplicationRecord,
+  NoteEntry,
+  StatusHistoryEntryRecord,
+  StoredDocument,
+  TalentActivityRecord,
+  TalentPoolRecord,
+} from "@/lib/careers/server/records";
+import { releaseClaimedDocuments } from "@/lib/careers/server/uploads";
 import {
-  escapeRegExp,
   hasControlCharacters,
   isApplicationStatus,
   normalizeTags,
@@ -14,15 +23,10 @@ import {
   type FieldErrors,
   type Pagination,
 } from "@/lib/careers/validation";
-import { toDocumentInfo } from "@/lib/careers/server/documents";
-import { releaseClaimedDocuments } from "@/lib/careers/server/uploads";
 import { enqueueEmails, hrNotificationRecipients, scheduleEmailDelivery, type EnqueueEmailInput } from "@/lib/email/outbox";
 import { badRequest } from "@/lib/http/errors";
 import { logger } from "@/lib/logger";
-import { isDuplicateKeyError } from "@/lib/mongodb";
-import { ApplicationModel, applicationReference, type ApplicationDoc, type StatusHistoryDoc } from "@/models/application";
-import type { NoteEntry, StoredDocument } from "@/models/shared";
-import { TalentPoolEntryModel, type TalentActivityDoc, type TalentPoolEntryDoc } from "@/models/talent-pool-entry";
+import { countDocumentsUsingDriveFile } from "@/lib/sheets-db/repositories/subrecords";
 import type {
   ApplicationDetail,
   ApplicationListItem,
@@ -38,17 +42,16 @@ import type {
   TalentUpdatePayload,
 } from "@/types/careers";
 
-// Upper bound for admin list and count queries so one slow search cannot pile up requests.
+// Soft ceiling for how many records an admin list or export will scan. The MongoDB version used
+// this as a query timeout; filtering now happens in this process over a cached copy of the tab,
+// so it bounds work rather than wall-clock time.
 export const LIST_MAX_TIME_MS = 5_000;
 
 // ── References & dates ───────────────────────────────────────────────────────
 
-export { applicationReference };
-
-// Short, human-friendly talent profile reference ("TP-7F3A9C21").
-export function talentReference(id: Types.ObjectId | string): string {
-  return `TP-${String(id).slice(-8).toUpperCase()}`;
-}
+// Defined next to the id format in ids.ts; re-exported here because every caller already
+// imports the DTO mappers.
+export { applicationReference, talentReference };
 
 export function toIso(value: Date | null | undefined): string | null {
   return value ? new Date(value).toISOString() : null;
@@ -68,34 +71,70 @@ export function toPaginated<T>(items: T[], total: number, page: Pagination): Pag
   };
 }
 
-// Builds `$or` search clauses: case-insensitive substring match (input escaped) on each field,
-// plus an exact match on the record reference when the query looks like one.
-export function searchClauses(q: string, fields: string[], referencePattern: RegExp): Record<string, unknown>[] {
-  const pattern = escapeRegExp(q);
-  const clauses: Record<string, unknown>[] = fields.map((field) => ({ [field]: { $regex: pattern, $options: "i" } }));
+// ── Searching, sorting and paging ────────────────────────────────────────────
+
+// Case-insensitive substring match across the given fields, plus an exact match on the tail of
+// the record id when the query looks like a reference ("APP-7F3A9C21" or a bare "7f3a9c21").
+//
+// The MongoDB version compiled this into a `$or` of escaped regexes. Matching substrings
+// directly gives the same results and removes the escaping problem entirely: a query containing
+// regex metacharacters is now simply a string that does not occur in the data.
+export function makeSearchMatcher<T>(
+  q: string,
+  fieldsOf: (item: T) => (string | null | undefined)[],
+  idOf: (item: T) => string,
+  referencePattern: RegExp
+): (item: T) => boolean {
+  const needle = q.trim().toLowerCase();
+  if (!needle) return () => true;
   const reference = referencePattern.exec(q.trim());
-  if (reference) {
-    clauses.push({
-      $expr: { $regexMatch: { input: { $toString: "$_id" }, regex: `${reference[1].toLowerCase()}$` } },
-    });
-  }
-  return clauses;
+  const idTail = reference ? reference[1].toLowerCase() : null;
+
+  return (item: T) => {
+    if (idTail && idOf(item).toLowerCase().endsWith(idTail)) return true;
+    return fieldsOf(item).some((value) => typeof value === "string" && value.toLowerCase().includes(needle));
+  };
+}
+
+// Newest-first with the id as a stable tie-breaker, matching the {field:-1, _id:-1} sorts the
+// indexes used to provide. Without the tie-break, two records written in the same millisecond
+// could swap places between pages.
+export function compareByDateDesc<T>(dateOf: (item: T) => Date, idOf: (item: T) => string) {
+  return (a: T, b: T): number => {
+    const diff = dateOf(b).getTime() - dateOf(a).getTime();
+    if (diff !== 0) return diff;
+    return idOf(b).localeCompare(idOf(a));
+  };
+}
+
+export function compareByDateAsc<T>(dateOf: (item: T) => Date, idOf: (item: T) => string) {
+  return (a: T, b: T): number => {
+    const diff = dateOf(a).getTime() - dateOf(b).getTime();
+    if (diff !== 0) return diff;
+    return idOf(a).localeCompare(idOf(b));
+  };
+}
+
+// Applies skip/limit to an already-sorted list.
+export function paginate<T>(items: T[], page: Pagination): T[] {
+  const start = (page.page - 1) * page.limit;
+  return items.slice(start, start + page.limit);
 }
 
 // ── DTO mappers ──────────────────────────────────────────────────────────────
 
 export function toNoteInfo(note: NoteEntry): NoteInfo {
   return {
-    id: String(note._id),
+    id: note.id,
     body: note.body,
     authorName: note.authorName,
     createdAt: toIsoRequired(note.createdAt),
   };
 }
 
-function toStatusHistoryEntry(entry: StatusHistoryDoc): StatusHistoryEntry {
+function toStatusHistoryEntry(entry: StatusHistoryEntryRecord): StatusHistoryEntry {
   return {
-    id: String(entry._id),
+    id: entry.id,
     from: entry.from ?? null,
     to: entry.to,
     changedAt: toIsoRequired(entry.changedAt),
@@ -105,9 +144,10 @@ function toStatusHistoryEntry(entry: StatusHistoryDoc): StatusHistoryEntry {
   };
 }
 
+// Everything the list view shows: no cover letter, note bodies, history or Drive file ids.
 export type ApplicationListRow = Pick<
-  ApplicationDoc,
-  | "_id"
+  ApplicationRecord,
+  | "id"
   | "name"
   | "email"
   | "phone"
@@ -122,28 +162,10 @@ export type ApplicationListRow = Pick<
   | "talentPoolEntry"
 > & { documentCount: number; noteCount: number };
 
-// Aggregation `$project` stage for list rows: no cover letter, note bodies, history or storage keys.
-export const APPLICATION_LIST_PROJECTION = {
-  name: 1,
-  email: 1,
-  phone: 1,
-  jobSlug: 1,
-  jobTitle: 1,
-  department: 1,
-  status: 1,
-  source: 1,
-  createdAt: 1,
-  statusChangedAt: 1,
-  archivedAt: 1,
-  talentPoolEntry: 1,
-  documentCount: { $size: { $ifNull: ["$documents", []] } },
-  noteCount: { $size: { $ifNull: ["$notes", []] } },
-} as const;
-
 export function toApplicationListItem(row: ApplicationListRow): ApplicationListItem {
   return {
-    id: String(row._id),
-    reference: applicationReference(row._id),
+    id: row.id,
+    reference: applicationReference(row.id),
     name: row.name,
     email: row.email,
     phone: row.phone,
@@ -162,53 +184,39 @@ export function toApplicationListItem(row: ApplicationListRow): ApplicationListI
 }
 
 export function toApplicationDetail(
-  doc: ApplicationDoc,
+  record: ApplicationRecord,
   extra: { emails: EmailDeliveryInfo[]; jobStillExists: boolean }
 ): ApplicationDetail {
-  const documents = doc.documents ?? [];
-  const notes = doc.notes ?? [];
+  const documents = record.documents ?? [];
+  const notes = record.notes ?? [];
   return {
-    ...toApplicationListItem({ ...doc, documentCount: documents.length, noteCount: notes.length }),
-    coverLetter: doc.coverLetter ?? "",
-    linkedIn: doc.linkedIn || null,
-    portfolio: doc.portfolio || null,
-    consentGiven: Boolean(doc.consentGiven),
-    consentAt: toIso(doc.consentAt),
+    ...toApplicationListItem({ ...record, documentCount: documents.length, noteCount: notes.length }),
+    coverLetter: record.coverLetter ?? "",
+    linkedIn: record.linkedIn || null,
+    portfolio: record.portfolio || null,
+    consentGiven: Boolean(record.consentGiven),
+    consentAt: toIso(record.consentAt),
     documents: documents.map(toDocumentInfo),
     notes: notes.map(toNoteInfo),
-    statusHistory: (doc.statusHistory ?? []).map(toStatusHistoryEntry),
-    talentPoolEntryId: doc.talentPoolEntry ? String(doc.talentPoolEntry) : null,
+    statusHistory: (record.statusHistory ?? []).map(toStatusHistoryEntry),
+    talentPoolEntryId: record.talentPoolEntry ? String(record.talentPoolEntry) : null,
     jobStillExists: extra.jobStillExists,
-    archivedAt: toIso(doc.archivedAt),
-    archivedByName: doc.archivedByName ?? null,
-    archiveReason: doc.archiveReason ?? "",
+    archivedAt: toIso(record.archivedAt),
+    archivedByName: record.archivedByName ?? null,
+    archiveReason: record.archiveReason ?? "",
     emails: extra.emails,
-    updatedAt: toIsoRequired(doc.updatedAt),
+    updatedAt: toIsoRequired(record.updatedAt),
   };
 }
 
 export type TalentListRow = Pick<
-  TalentPoolEntryDoc,
-  "_id" | "name" | "email" | "phone" | "areaOfInterest" | "tags" | "source" | "createdAt" | "updatedAt" | "archivedAt"
+  TalentPoolRecord,
+  "id" | "name" | "email" | "phone" | "areaOfInterest" | "tags" | "source" | "createdAt" | "updatedAt" | "archivedAt"
 > & { applicationCount: number; documentCount: number };
-
-export const TALENT_LIST_PROJECTION = {
-  name: 1,
-  email: 1,
-  phone: 1,
-  areaOfInterest: 1,
-  tags: 1,
-  source: 1,
-  createdAt: 1,
-  updatedAt: 1,
-  archivedAt: 1,
-  applicationCount: { $size: { $ifNull: ["$applications", []] } },
-  documentCount: { $size: { $ifNull: ["$documents", []] } },
-} as const;
 
 export function toTalentListItem(row: TalentListRow): TalentListItem {
   return {
-    id: String(row._id),
+    id: row.id,
     name: row.name,
     email: row.email,
     phone: row.phone,
@@ -223,9 +231,9 @@ export function toTalentListItem(row: TalentListRow): TalentListItem {
   };
 }
 
-function toTalentActivity(entry: TalentActivityDoc): TalentActivity {
+function toTalentActivity(entry: TalentActivityRecord): TalentActivity {
   return {
-    id: String(entry._id),
+    id: entry.id,
     action: entry.action,
     at: toIsoRequired(entry.at),
     actorName: entry.actorName ?? null,
@@ -233,11 +241,11 @@ function toTalentActivity(entry: TalentActivityDoc): TalentActivity {
   };
 }
 
-export type TalentApplicationRow = Pick<ApplicationDoc, "_id" | "jobSlug" | "jobTitle" | "status" | "createdAt" | "archivedAt">;
+export type TalentApplicationRow = Pick<ApplicationRecord, "id" | "jobSlug" | "jobTitle" | "status" | "createdAt" | "archivedAt">;
 
 export function toTalentApplicationLink(row: TalentApplicationRow): TalentApplicationLink {
   return {
-    id: String(row._id),
+    id: row.id,
     jobId: row.jobSlug,
     jobTitle: row.jobTitle,
     status: row.status,
@@ -246,25 +254,25 @@ export function toTalentApplicationLink(row: TalentApplicationRow): TalentApplic
   };
 }
 
-export function toTalentDetail(doc: TalentPoolEntryDoc, applications: TalentApplicationLink[]): TalentDetail {
-  const documents = doc.documents ?? [];
+export function toTalentDetail(record: TalentPoolRecord, applications: TalentApplicationLink[]): TalentDetail {
+  const documents = record.documents ?? [];
   return {
     ...toTalentListItem({
-      ...doc,
-      applicationCount: Math.max(applications.length, (doc.applications ?? []).length),
+      ...record,
+      applicationCount: Math.max(applications.length, (record.applications ?? []).length),
       documentCount: documents.length,
     }),
-    candidateNotes: doc.candidateNotes ?? "",
-    consentGiven: Boolean(doc.consentGiven),
-    consentAt: toIso(doc.consentAt),
+    candidateNotes: record.candidateNotes ?? "",
+    consentGiven: Boolean(record.consentGiven),
+    consentAt: toIso(record.consentAt),
     documents: documents.map(toDocumentInfo),
-    notes: (doc.notes ?? []).map(toNoteInfo),
+    notes: (record.notes ?? []).map(toNoteInfo),
     applications,
-    sourceApplicationId: doc.sourceApplication ? String(doc.sourceApplication) : null,
-    archivedAt: toIso(doc.archivedAt),
-    archivedByName: doc.archivedByName ?? null,
-    archiveReason: doc.archiveReason ?? "",
-    activity: (doc.activity ?? []).map(toTalentActivity),
+    sourceApplicationId: record.sourceApplication ? String(record.sourceApplication) : null,
+    archivedAt: toIso(record.archivedAt),
+    archivedByName: record.archivedByName ?? null,
+    archiveReason: record.archiveReason ?? "",
+    activity: (record.activity ?? []).map(toTalentActivity),
   };
 }
 
@@ -408,16 +416,16 @@ export function parseTalentApplyPayload(body: Record<string, unknown>): { jobSlu
 
 // ── Persistence helpers ──────────────────────────────────────────────────────
 
+// A failure the store reports before writing anything: bad input, or a rule the service
+// enforced itself (AppError). The record definitely does not exist.
 function isDefiniteWriteFailure(err: unknown): boolean {
-  if (isDuplicateKeyError(err)) return true;
-  if (!(err instanceof Error)) return false;
-  return err.name === "ValidationError" || err.name === "CastError" || err.name === "StrictModeError" || err.name === "AppError";
+  return err instanceof Error && (err.name === "AppError" || err.name === "GoogleConfigError");
 }
 
-// Called when inserting a record that owns freshly copied documents fails. A definite failure
-// (duplicate key, validation) releases the objects. After an ambiguous failure (network error,
-// timeout) the insert may still have committed, so the objects are only released once the record
-// is known not to exist. Returns true when the record does exist (the caller treats it as saved).
+// Called when writing a record that owns freshly uploaded documents fails. A definite failure
+// releases the Drive files immediately. After an ambiguous failure (network error, timeout) the
+// append may still have landed, so the files are only released once the record is known not to
+// exist. Returns true when the record does exist (the caller treats it as saved).
 export async function settleFailedInsert(
   err: unknown,
   documents: StoredDocument[],
@@ -429,6 +437,8 @@ export async function settleFailedInsert(
     try {
       exists = Boolean(await recordExists());
     } catch (checkErr) {
+      // Neither confirmed nor refuted: keep the files. An orphan in Drive is recoverable; a
+      // record whose CV was deleted is not.
       if (documents.length > 0) {
         logger.error("documents.release_skipped", { ...context, documentCount: documents.length, err: checkErr });
       }
@@ -443,31 +453,21 @@ export async function settleFailedInsert(
   return false;
 }
 
-// Legacy documents (migrated from the previous system) used keys that were not unique per record.
-// Before erasing a record, keep any legacy object that another record still references.
+// Before erasing a record, keep any Drive file another record still references. Documents
+// migrated from the previous system could share one file between records.
 export async function documentsSafeToDelete(
   documents: StoredDocument[],
-  owner: { type: "application" | "talent"; id: Types.ObjectId }
+  owner: { type: "application" | "talent"; id: string }
 ): Promise<StoredDocument[]> {
   const result: StoredDocument[] = [];
-  for (const doc of documents) {
-    if (!doc.legacy) {
-      result.push(doc);
+  for (const document of documents) {
+    const references = await countDocumentsUsingDriveFile(document.driveFileId);
+    // One reference is this record's own row.
+    if (references > 1) {
+      logger.warn("documents.shared_file_kept", { recordType: owner.type, recordId: owner.id, documentId: document.id });
       continue;
     }
-    const [otherApplication, otherTalent] = await Promise.all([
-      ApplicationModel.exists(
-        owner.type === "application" ? { _id: { $ne: owner.id }, "documents.key": doc.key } : { "documents.key": doc.key }
-      ),
-      TalentPoolEntryModel.exists(
-        owner.type === "talent" ? { _id: { $ne: owner.id }, "documents.key": doc.key } : { "documents.key": doc.key }
-      ),
-    ]);
-    if (otherApplication || otherTalent) {
-      logger.warn("documents.shared_legacy_key_kept", { recordType: owner.type, recordId: String(owner.id), documentId: String(doc._id) });
-      continue;
-    }
-    result.push(doc);
+    result.push(document);
   }
   return result;
 }
@@ -500,19 +500,19 @@ export async function queueEmails(
 }
 
 // The acting HR user (null for public submissions and system jobs), as stored on records.
-export type RecordAuthor = { userId: Types.ObjectId; name: string } | null;
+export type RecordAuthor = { userId: string; name: string } | null;
 
-export function authorFromContext(ctx: AdminContext): { userId: Types.ObjectId; name: string } {
+export function authorFromContext(ctx: AdminContext): { userId: string; name: string } {
   return { userId: ctx.userId, name: ctx.user.name };
 }
 
-export function newNoteEntry(body: string, author: { userId: Types.ObjectId; name: string }, now: Date): NoteEntry {
-  return { _id: new Types.ObjectId(), body, author: author.userId, authorName: author.name, createdAt: now };
+export function newNoteEntry(body: string, author: { userId: string; name: string }, now: Date): NoteEntry {
+  return { id: newId(now), body, author: author.userId, authorName: author.name, createdAt: now };
 }
 
-export function newActivityEntry(action: string, detail: string, author: RecordAuthor, now: Date): TalentActivityDoc {
+export function newActivityEntry(action: string, detail: string, author: RecordAuthor, now: Date): TalentActivityRecord {
   return {
-    _id: new Types.ObjectId(),
+    id: newId(now),
     action,
     at: now,
     actor: author?.userId ?? null,

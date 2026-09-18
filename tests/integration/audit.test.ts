@@ -1,15 +1,39 @@
 import "./support/env";
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
-import { Types } from "mongoose";
 import { toAuditActor, type AdminContext } from "@/lib/auth/session";
-import { listAuditLogs, recordAudit } from "@/lib/careers/server/audit";
-import { AuditLogModel } from "@/models/audit-log";
+import { flushAuditLog, listAuditLogs, recordAudit } from "@/lib/careers/server/audit";
+import { newId } from "@/lib/careers/server/ids";
+import type { AuditLogRecord } from "@/lib/careers/server/records";
 import type { AdminRole } from "@/lib/careers/constants";
-import { adminContext } from "./support/fixtures";
-import { startIntegration, type Integration } from "./support/harness";
+import { appendRecords, invalidateTable } from "@/lib/sheets-db";
+import { auditRow, listAuditRecords } from "@/lib/sheets-db/repositories/audit";
+import { setEnv, suiteSkip } from "./support/env";
+import { adminContext, auditEntries } from "./support/fixtures";
+import { clearTableRows, startIntegration, type Integration } from "./support/harness";
 
-describe("audit log", { timeout: 60_000 }, () => {
+// Writes one entry per row on the AuditLog tab, bypassing the service so the entry can carry an
+// exact timestamp. This is the direct-store access the MongoDB version did with create().
+async function insertEntries(rows: { at: Date; actor: AuditLogRecord["actor"]; action: string; entityType: string; entityId: string; ip?: string | null }[]): Promise<void> {
+  await appendRecords(
+    "AuditLog",
+    rows.map((row) =>
+      auditRow({
+        id: newId(row.at),
+        at: row.at,
+        actor: row.actor,
+        action: row.action,
+        entityType: row.entityType,
+        entityId: row.entityId,
+        summary: row.action,
+        meta: {},
+        ip: row.ip ?? "203.0.113.5",
+      })
+    )
+  );
+}
+
+describe("audit log", { timeout: 120_000, skip: suiteSkip() }, () => {
   let integration: Integration;
   let hr: AdminContext;
   let admin: AdminContext;
@@ -18,7 +42,7 @@ describe("audit log", { timeout: 60_000 }, () => {
     integration = await startIntegration();
     hr = await adminContext("hr", "Hiruni Recruiter");
     admin = await adminContext("admin", "Asela Administrator");
-    await AuditLogModel.deleteMany({});
+    await clearTableRows("AuditLog");
   });
 
   after(async () => {
@@ -35,9 +59,9 @@ describe("audit log", { timeout: 60_000 }, () => {
       meta: { changedFields: ["title"] },
       ip: "unknown",
     });
-    const [entry] = await AuditLogModel.find({ action: "job.update" }).lean();
+    const [entry] = await auditEntries({ action: "job.update" });
     assert.ok(entry);
-    assert.ok(entry.actor?.user.equals(hr.userId));
+    assert.equal(entry.actor?.user, hr.userId);
     assert.equal(entry.actor?.name, "Hiruni Recruiter");
     assert.equal(entry.actor?.role, "hr");
     assert.equal(entry.summary.length, 500);
@@ -46,39 +70,39 @@ describe("audit log", { timeout: 60_000 }, () => {
   });
 
   it("never throws when the entry cannot be written", async () => {
-    await recordAudit({
-      actor: { user: new Types.ObjectId(), email: "x@example.com", name: "Broken Actor", role: "superuser" as AdminRole },
-      action: "job.create",
-      entityType: "job",
-      entityId: "broken",
-      summary: "should not be stored",
-    });
-    assert.equal(await AuditLogModel.exists({ entityId: "broken" }), null);
+    // Point the store at a spreadsheet that does not exist, so the append fails the way a Google
+    // outage or a revoked share would. The action being audited must still succeed.
+    const configured = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
+    setEnv("GOOGLE_SHEETS_SPREADSHEET_ID", "1ThisSpreadsheetDoesNotExist0000000000000000");
+    invalidateTable();
+    try {
+      await recordAudit({
+        actor: { user: newId(), email: "x@example.com", name: "Broken Actor", role: "superuser" as AdminRole },
+        action: "job.create",
+        entityType: "job",
+        entityId: "broken",
+        summary: "should not be stored",
+      });
+      await flushAuditLog();
+    } finally {
+      setEnv("GOOGLE_SHEETS_SPREADSHEET_ID", configured);
+      invalidateTable();
+    }
+    assert.equal((await auditEntries({ entityId: "broken" })).length, 0);
     assert.ok(integration.logs().includes("audit.write_failed"));
   });
 
   it("lists newest first with exact, prefix, entity, actor and date filters", async () => {
-    await AuditLogModel.deleteMany({});
+    await clearTableRows("AuditLog");
     const base = Date.now();
-    const rows = [
-      { action: "auth.login", entityType: "admin_user", entityId: String(hr.userId), actor: toAuditActor(hr), offset: 5 },
-      { action: "auth.login_failed", entityType: "admin_user", entityId: "unknown", actor: null, offset: 4 },
-      { action: "job.publish", entityType: "job", entityId: "qa-executive", actor: toAuditActor(admin), offset: 3 },
-      { action: "application.view", entityType: "application", entityId: "66e9a1b2c3d4e5f601234567", actor: toAuditActor(hr), offset: 2 },
-      { action: "authz.custom", entityType: "other", entityId: "x", actor: null, offset: 1 },
-    ];
-    for (const row of rows) {
-      await AuditLogModel.create({
-        at: new Date(base - row.offset * 60_000),
-        actor: row.actor,
-        action: row.action,
-        entityType: row.entityType,
-        entityId: row.entityId,
-        summary: row.action,
-        meta: {},
-        ip: "203.0.113.5",
-      });
-    }
+    await insertEntries([
+      { at: new Date(base - 5 * 60_000), action: "auth.login", entityType: "admin_user", entityId: hr.userId, actor: toAuditActor(hr) },
+      { at: new Date(base - 4 * 60_000), action: "auth.login_failed", entityType: "admin_user", entityId: "unknown", actor: null },
+      { at: new Date(base - 3 * 60_000), action: "job.publish", entityType: "job", entityId: "qa-executive", actor: toAuditActor(admin) },
+      { at: new Date(base - 2 * 60_000), action: "application.view", entityType: "application", entityId: "66e9a1b2c3d4e5f601234567", actor: toAuditActor(hr) },
+      { at: new Date(base - 1 * 60_000), action: "authz.custom", entityType: "other", entityId: "x", actor: null },
+    ]);
+
     const actions = async (filters: Partial<Parameters<typeof listAuditLogs>[0]>) =>
       (await listAuditLogs({ page: 1, limit: 25, ...filters })).items.map((item) => item.action);
 
@@ -99,6 +123,21 @@ describe("audit log", { timeout: 60_000 }, () => {
     assert.deepEqual(
       { actorName: first.actorName, actorEmail: first.actorEmail, entityType: first.entityType, ip: first.ip },
       { actorName: "Asela Administrator", actorEmail: admin.user.email, entityType: "job", ip: "203.0.113.5" }
+    );
+    assert.equal("meta" in first, false, "meta is written for forensics and never returned by the API");
+  });
+
+  it("keeps the tab readable by hand: one row per entry, newest last", async () => {
+    await clearTableRows("AuditLog");
+    await recordAudit({ actor: toAuditActor(admin), action: "job.create", entityType: "job", entityId: "row-order-1", summary: "First" });
+    await flushAuditLog();
+    await recordAudit({ actor: toAuditActor(admin), action: "job.create", entityType: "job", entityId: "row-order-2", summary: "Second" });
+    await flushAuditLog();
+    const records = await listAuditRecords({ maxAgeMs: 0 });
+    assert.deepEqual(
+      records.map((record) => record.entityId),
+      ["row-order-1", "row-order-2"],
+      "the AuditLog tab is append-only, so rows are in the order they happened"
     );
   });
 });

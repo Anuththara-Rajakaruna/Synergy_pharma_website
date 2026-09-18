@@ -1,7 +1,6 @@
 import "./support/env";
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
-import type { Types } from "mongoose";
 import {
   contactRecipients,
   deliverEmails,
@@ -12,8 +11,11 @@ import {
   type EnqueueEmailInput,
 } from "@/lib/email/outbox";
 import { applicationReceivedEmail } from "@/lib/email/templates";
-import { EmailOutboxModel, type EmailOutboxDoc } from "@/models/email-outbox";
-import { integrationConfig, setEnv } from "./support/env";
+import type { EmailOutboxRecord } from "@/lib/careers/server/records";
+import { updateRecord, type RecordValues } from "@/lib/sheets-db";
+import { encodeDate, encodeNumber } from "@/lib/sheets-db/codec";
+import { findEmailById, listEmails } from "@/lib/sheets-db/repositories/email";
+import { integrationConfig, setEnv, suiteSkip } from "./support/env";
 import { assertNoPersonalData, uniqueSuffix } from "./support/fixtures";
 import { startIntegration, type Integration } from "./support/harness";
 import type { SmtpSink } from "./support/smtp-sink";
@@ -32,10 +34,22 @@ function message(overrides: Partial<EnqueueEmailInput> = {}): EnqueueEmailInput 
   };
 }
 
-async function row(id: Types.ObjectId): Promise<EmailOutboxDoc> {
-  const doc = await EmailOutboxModel.findById(id).lean<EmailOutboxDoc>();
-  assert.ok(doc, `outbox row ${String(id)} not found`);
-  return doc;
+async function row(id: string): Promise<EmailOutboxRecord> {
+  const record = await findEmailById(id);
+  assert.ok(record, `outbox row ${id} not found`);
+  return record;
+}
+
+// Direct cell writes for the states a delivery run cannot be asked to produce (a message due in
+// the future, a lock that has not expired, an attempt count near the limit).
+async function patchEmail(id: string, patch: Partial<Record<"status" | "nextAttemptAt" | "lockedUntil" | "attempts" | "createdAt", unknown>>): Promise<void> {
+  const values: RecordValues = {};
+  if (patch.status !== undefined) values.status = String(patch.status);
+  if (patch.nextAttemptAt !== undefined) values.nextAttemptAt = encodeDate(patch.nextAttemptAt as Date);
+  if (patch.lockedUntil !== undefined) values.lockedUntil = encodeDate(patch.lockedUntil as Date | null);
+  if (patch.attempts !== undefined) values.attempts = encodeNumber(patch.attempts as number);
+  if (patch.createdAt !== undefined) values.createdAt = encodeDate(patch.createdAt as Date);
+  assert.ok(await updateRecord("EmailOutbox", id, values));
 }
 
 async function withEnv<T>(patch: Record<string, string | undefined>, fn: () => Promise<T>): Promise<T> {
@@ -48,7 +62,7 @@ async function withEnv<T>(patch: Record<string, string | undefined>, fn: () => P
   }
 }
 
-describe("email outbox", { timeout: 120_000 }, () => {
+describe("email outbox", { timeout: 240_000, skip: suiteSkip() }, () => {
   let integration: Integration;
   let sink: SmtpSink;
 
@@ -78,10 +92,10 @@ describe("email outbox", { timeout: 120_000 }, () => {
     });
 
     it("refuses invalid recipients and reply-to addresses without writing anything", async () => {
-      const before = await EmailOutboxModel.countDocuments();
+      const before = (await listEmails({ maxAgeMs: 0 })).length;
       await assert.rejects(enqueueEmails([message(), message({ to: "Nimal <nimal@example.com>" })]), /invalid recipient/);
       await assert.rejects(enqueueEmails([message({ replyTo: "a@b.com, c@d.com" })]), /invalid reply-to/);
-      assert.equal(await EmailOutboxModel.countDocuments(), before);
+      assert.equal((await listEmails({ maxAgeMs: 0 })).length, before);
     });
 
     it("leaves messages pending when delivery is scheduled outside a request", async () => {
@@ -89,6 +103,14 @@ describe("email outbox", { timeout: 120_000 }, () => {
       scheduleEmailDelivery(ids);
       assert.equal((await row(ids[0])).status, "pending");
       assert.ok(integration.logs().includes("email.delivery_deferred"));
+    });
+
+    it("writes one row per message, in one append", async () => {
+      const inputs = [message(), message(), message()];
+      const ids = await enqueueEmails(inputs);
+      assert.equal(new Set(ids).size, 3);
+      const rows = await listEmails({ maxAgeMs: 0 });
+      for (const id of ids) assert.equal(rows.filter((item) => item.id === id).length, 1);
     });
   });
 
@@ -135,7 +157,7 @@ describe("email outbox", { timeout: 120_000 }, () => {
       assert.equal(doc.lockedUntil, null);
       assert.equal(doc.lastError, null);
       assert.ok(doc.sentAt);
-      assert.ok(doc.purgeAt);
+      assert.ok(doc.purgeAt, "a sent message gets a purgeAt so the maintenance sweep can remove its row");
 
       assert.deepEqual(await deliverEmails([id]), { sent: 0, failed: 0, retried: 0, skipped: 0 }, "sent messages are never re-sent");
       assert.equal(sink.messagesTo(input.to).length, 1);
@@ -147,8 +169,8 @@ describe("email outbox", { timeout: 120_000 }, () => {
       const later = message();
       const locked = message();
       const [dueId, laterId, lockedId] = await enqueueEmails([due, later, locked]);
-      await EmailOutboxModel.updateOne({ _id: laterId }, { $set: { nextAttemptAt: new Date(Date.now() + 10 * MINUTE) } });
-      await EmailOutboxModel.updateOne({ _id: lockedId }, { $set: { status: "sending", lockedUntil: new Date(Date.now() + MINUTE) } });
+      await patchEmail(laterId, { nextAttemptAt: new Date(Date.now() + 10 * MINUTE) });
+      await patchEmail(lockedId, { status: "sending", lockedUntil: new Date(Date.now() + MINUTE) });
 
       const result = await deliverEmails(undefined, 50);
       assert.ok(result.sent >= 1);
@@ -162,7 +184,7 @@ describe("email outbox", { timeout: 120_000 }, () => {
     it("reclaims messages whose sending lock has expired", async () => {
       const input = message();
       const [id] = await enqueueEmails([input]);
-      await EmailOutboxModel.updateOne({ _id: id }, { $set: { status: "sending", lockedUntil: new Date(Date.now() - 1000) } });
+      await patchEmail(id, { status: "sending", lockedUntil: new Date(Date.now() - 1000) });
       await deliverEmails(undefined, 50);
       assert.equal((await row(id)).status, "sent");
       assert.equal(sink.messagesTo(input.to).length, 1);
@@ -180,14 +202,14 @@ describe("email outbox", { timeout: 120_000 }, () => {
       const related = { entityType: "application", entityId: `listing-${uniqueSuffix()}` };
       const [first] = await enqueueEmails([message({ related })]);
       await deliverEmails([first]);
-      await EmailOutboxModel.updateOne({ _id: first }, { $set: { createdAt: new Date(Date.now() - MINUTE) } });
+      await patchEmail(first, { createdAt: new Date(Date.now() - MINUTE) });
       const [second] = await enqueueEmails([message({ related, template: "hr_new_application" })]);
       const listed = await listEmailsFor(related.entityType, related.entityId);
       assert.deepEqual(
         listed.map((item) => [item.id, item.template, item.status, item.attempts]),
         [
-          [String(second), "hr_new_application", "pending", 0],
-          [String(first), "application_received", "sent", 1],
+          [second, "hr_new_application", "pending", 0],
+          [first, "application_received", "sent", 1],
         ]
       );
       assert.equal(JSON.stringify(listed).includes("@example.com"), false);
@@ -260,14 +282,14 @@ describe("email outbox", { timeout: 120_000 }, () => {
         doc = await row(id);
         assert.deepEqual([doc.attempts, doc.nextAttemptAt.getTime()], [1, scheduled], "a batch run leaves messages that are not due yet alone");
 
-        await EmailOutboxModel.updateOne({ _id: id }, { $set: { nextAttemptAt: new Date(Date.now() - 1000) } });
+        await patchEmail(id, { nextAttemptAt: new Date(Date.now() - 1000) });
         const second = Date.now();
         await deliverEmails(undefined, 50);
         doc = await row(id);
         assert.equal(doc.attempts, 2);
         assert.ok(Math.abs(doc.nextAttemptAt.getTime() - (second + 5 * MINUTE)) < 5000, "second retry after 5 minutes");
 
-        await EmailOutboxModel.updateOne({ _id: id }, { $set: { attempts: 5, nextAttemptAt: new Date(Date.now() - 1000) } });
+        await patchEmail(id, { attempts: 5, nextAttemptAt: new Date(Date.now() - 1000) });
         assert.deepEqual(await deliverEmails([id]), { sent: 0, failed: 1, retried: 0, skipped: 0 });
         doc = await row(id);
         assert.equal(doc.status, "failed");

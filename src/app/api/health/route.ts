@@ -2,9 +2,7 @@ import { isEmailConfigured } from "@/lib/email/transport";
 import { bearerTokenMatches } from "@/lib/env";
 import { apiHandler, jsonResponse } from "@/lib/http/handler";
 import { logger } from "@/lib/logger";
-import { pingDatabase } from "@/lib/mongodb";
-import { checkBucketAccess, isStorageConfigured } from "@/lib/storage";
-import { ALL_MODELS } from "@/models";
+import { inspectSchema, isStoreConfigured, pingDocumentStore, pingStore } from "@/lib/sheets-db";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -20,47 +18,42 @@ type HealthStatus = {
   };
 };
 
-// Default index names as MongoDB/Mongoose generate them, for schema indexes without a name.
-function indexName(fields: Record<string, unknown>, options: { name?: unknown }): string {
-  if (typeof options.name === "string") return options.name;
-  return Object.entries(fields)
-    .map(([key, direction]) => `${key}_${String(direction)}`)
-    .join("_");
-}
-
-// Every index declared in the schemas exists (production runs with autoIndex off, so a missed
-// `npm run db:setup` would otherwise silently drop the unique constraints).
-async function schemaIndexesPresent(): Promise<boolean> {
-  let allPresent = true;
-  for (const model of ALL_MODELS) {
-    const expected = model.schema.indexes().map(([fields, options]) => indexName(fields, options));
-    if (expected.length === 0) continue;
-    try {
-      const existing = new Set(
-        (await model.listIndexes()).map((index: { name?: unknown }) => (typeof index.name === "string" ? index.name : ""))
-      );
-      const missing = expected.filter((name) => !existing.has(name));
-      if (missing.length > 0) {
-        allPresent = false;
-        logger.warn("health.indexes_missing", { collection: model.collection.collectionName, indexes: missing });
+// Every tab and every column this release expects exists in the spreadsheet.
+//
+// This is what the index check was: a guard against a deployment that skipped its setup step.
+// `npm run sheets:setup` creates the tabs and headers, and nothing does it automatically, so a
+// spreadsheet that never had it run - or a tab someone renamed in the browser - would otherwise
+// show up only as records quietly losing fields. Missing columns are not fatal at runtime
+// (decoders fall back to defaults), which is exactly why they have to be reported here.
+async function schemaComplete(): Promise<boolean> {
+  try {
+    const report = await inspectSchema();
+    let complete = true;
+    for (const table of report.tables) {
+      if (!table.exists) {
+        complete = false;
+        logger.warn("health.indexes_missing", { table: table.name, reason: "tab_missing" });
+      } else if (table.missingColumns.length > 0) {
+        complete = false;
+        logger.warn("health.indexes_missing", { table: table.name, columns: table.missingColumns });
       }
-    } catch (err) {
-      allPresent = false;
-      logger.warn("health.indexes_unreadable", { collection: model.collection.collectionName, err });
     }
+    return complete;
+  } catch (err) {
+    logger.warn("health.indexes_unreadable", { err });
+    return false;
   }
-  return allPresent;
 }
 
-// Liveness plus a database ping for everyone; with `Authorization: Bearer <HEALTHCHECK_TOKEN>`
-// also verifies bucket access and indexes. Responses carry statuses only, never hostnames or
-// error messages.
+// Liveness plus a spreadsheet ping for everyone; with `Authorization: Bearer <HEALTHCHECK_TOKEN>`
+// also verifies that the Drive folder is reachable and writable and that the spreadsheet has
+// every tab and column. Responses carry statuses only, never ids, hostnames or error messages.
 export const GET = apiHandler("api.health", async (request: Request) => {
   const token = process.env.HEALTHCHECK_TOKEN?.trim() ?? "";
   const deep = token !== "" && bearerTokenMatches(request.headers.get("authorization"), token);
 
-  const database = await pingDatabase();
-  const storageConfigured = isStorageConfigured();
+  const database = await pingStore();
+  const storageConfigured = isStoreConfigured();
   const body: HealthStatus = {
     status: "ok",
     time: new Date().toISOString(),
@@ -72,8 +65,12 @@ export const GET = apiHandler("api.health", async (request: Request) => {
   };
 
   if (deep) {
-    if (storageConfigured) body.checks.storage = { status: (await checkBucketAccess()) ? "ok" : "error" };
-    if (database.ok) body.checks.indexes = { status: (await schemaIndexesPresent()) ? "ok" : "missing" };
+    if (storageConfigured) {
+      const documents = await pingDocumentStore();
+      if (!documents.ok) logger.warn("health.storage_unavailable", { reason: documents.error });
+      body.checks.storage = { status: documents.ok ? "ok" : "error" };
+    }
+    if (database.ok) body.checks.indexes = { status: (await schemaComplete()) ? "ok" : "missing" };
   }
 
   const degraded =

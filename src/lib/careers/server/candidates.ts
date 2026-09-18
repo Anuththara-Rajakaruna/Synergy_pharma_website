@@ -1,19 +1,25 @@
 // Data subject access: everything held about one candidate (by email address) as a JSON
-// document an administrator can hand over. Storage keys and internal identifiers of other
+// document an administrator can hand over. Drive file ids and internal identifiers of other
 // people are left out. Server-only.
+//
+// MongoDB answered this with two indexed equality queries on emailNormalized. A spreadsheet has
+// no index, so both tabs are loaded instead (one batchGet, through the store's cache) and
+// filtered, sorted and capped in this process. Nothing the administrator receives changed: the
+// same JSON shape, the same oldest-first order, the same 500-record cap per collection, the same
+// APP-/TP- references, and an audit entry that records those references but never the address.
 
-import { APPLICATION_STATUS_LABELS, TALENT_SOURCE_LABELS } from "@/lib/careers/constants";
-import { isValidEmail, normalizeEmail } from "@/lib/careers/validation";
 import { toAuditActor, type AdminContext } from "@/lib/auth/session";
+import { APPLICATION_STATUS_LABELS, TALENT_SOURCE_LABELS } from "@/lib/careers/constants";
 import { recordAudit } from "@/lib/careers/server/audit";
-import { applicationReference, talentReference, toIso } from "@/lib/careers/server/mappers";
+import { applicationReference, compareByDateAsc, talentReference, toIso } from "@/lib/careers/server/mappers";
+import type { ApplicationRecord, StoredDocument, TalentPoolRecord } from "@/lib/careers/server/records";
 import { retentionDueAt } from "@/lib/careers/server/retention";
+import { isValidEmail, normalizeEmail } from "@/lib/careers/validation";
 import { listEmailsFor } from "@/lib/email/outbox";
 import { badRequest, notFound } from "@/lib/http/errors";
-import { connectToDatabase } from "@/lib/mongodb";
-import { ApplicationModel, type ApplicationDoc } from "@/models/application";
-import type { StoredDocument } from "@/models/shared";
-import { TalentPoolEntryModel, type TalentPoolEntryDoc } from "@/models/talent-pool-entry";
+import { ensureStoreReady, loadTables } from "@/lib/sheets-db";
+import { hydrateApplications, listAllApplications } from "@/lib/sheets-db/repositories/applications";
+import { hydrateTalent, listAllTalent } from "@/lib/sheets-db/repositories/talent";
 import type { EmailDeliveryInfo } from "@/types/careers";
 
 const MAX_RECORDS = 500;
@@ -36,6 +42,8 @@ export type CandidateDataExport = {
   talentPoolProfiles: Record<string, unknown>[];
 };
 
+// The Drive file id and the document's own id are deliberately absent: the candidate is entitled
+// to know which files are held, not to the handles the admin download route is addressed by.
 function exportDocuments(documents: StoredDocument[] | undefined): ExportedDocument[] {
   return (documents ?? []).map((doc) => ({
     kind: doc.kind,
@@ -55,9 +63,9 @@ function exportEmails(emails: EmailDeliveryInfo[]): ExportedEmail[] {
   }));
 }
 
-function exportApplication(doc: ApplicationDoc, emails: EmailDeliveryInfo[]): Record<string, unknown> {
+function exportApplication(doc: ApplicationRecord, emails: EmailDeliveryInfo[]): Record<string, unknown> {
   return {
-    reference: applicationReference(doc._id),
+    reference: applicationReference(doc.id),
     job: { id: doc.jobSlug, title: doc.jobTitle, department: doc.department ?? "" },
     name: doc.name,
     email: doc.email,
@@ -90,9 +98,9 @@ function exportApplication(doc: ApplicationDoc, emails: EmailDeliveryInfo[]): Re
   };
 }
 
-function exportTalent(doc: TalentPoolEntryDoc, emails: EmailDeliveryInfo[]): Record<string, unknown> {
+function exportTalent(doc: TalentPoolRecord, emails: EmailDeliveryInfo[]): Record<string, unknown> {
   return {
-    reference: talentReference(doc._id),
+    reference: talentReference(doc.id),
     name: doc.name,
     email: doc.email,
     phone: doc.phone,
@@ -120,6 +128,18 @@ function exportTalent(doc: TalentPoolEntryDoc, emails: EmailDeliveryInfo[]): Rec
   };
 }
 
+// Oldest first with the id as the tie-breaker - the sort({createdAt:1, _id:1}) the emailNormalized
+// index used to provide, so two records written in the same second keep a stable order between
+// exports (and the 500-record cap always cuts the same place).
+function oldestFirst<T extends { id: string; createdAt: Date }>(rows: T[]): T[] {
+  return rows.slice().sort(
+    compareByDateAsc<T>(
+      (row) => row.createdAt,
+      (row) => row.id
+    )
+  );
+}
+
 export async function exportCandidateData(email: string, ctx: AdminContext): Promise<CandidateDataExport> {
   const trimmed = (email ?? "").trim();
   if (!trimmed || !isValidEmail(trimmed)) {
@@ -127,18 +147,25 @@ export async function exportCandidateData(email: string, ctx: AdminContext): Pro
   }
   const emailNormalized = normalizeEmail(trimmed);
 
-  await connectToDatabase();
-  const [applications, talent] = await Promise.all([
-    ApplicationModel.find({ emailNormalized }).sort({ createdAt: 1, _id: 1 }).limit(MAX_RECORDS).lean<ApplicationDoc[]>(),
-    TalentPoolEntryModel.find({ emailNormalized }).sort({ createdAt: 1, _id: 1 }).limit(MAX_RECORDS).lean<TalentPoolEntryDoc[]>(),
-  ]);
-  if (applications.length === 0 && talent.length === 0) {
+  ensureStoreReady();
+  // One batchGet for both tabs; the repository calls below read the cached copies.
+  await loadTables(["Applications", "TalentPool"]);
+  const [everyApplication, everyTalentProfile] = await Promise.all([listAllApplications(), listAllTalent()]);
+
+  const matchedApplications = oldestFirst(everyApplication.filter((row) => row.emailNormalized === emailNormalized)).slice(0, MAX_RECORDS);
+  const matchedTalent = oldestFirst(everyTalentProfile.filter((row) => row.emailNormalized === emailNormalized)).slice(0, MAX_RECORDS);
+
+  if (matchedApplications.length === 0 && matchedTalent.length === 0) {
     throw notFound("No applications or talent pool profiles were found for this email address.", "no_records");
   }
 
+  // Documents, notes, status history and activity live in their own tabs; hydrating the capped
+  // sets costs one read per sub-record tab regardless of how many records matched.
+  const [applications, talent] = await Promise.all([hydrateApplications(matchedApplications), hydrateTalent(matchedTalent)]);
+
   const [applicationEmails, talentEmails] = await Promise.all([
-    Promise.all(applications.map((doc) => listEmailsFor("application", String(doc._id)))),
-    Promise.all(talent.map((doc) => listEmailsFor("talent", String(doc._id)))),
+    Promise.all(applications.map((doc) => listEmailsFor("application", doc.id))),
+    Promise.all(talent.map((doc) => listEmailsFor("talent", doc.id))),
   ]);
 
   const result: CandidateDataExport = {
@@ -153,11 +180,11 @@ export async function exportCandidateData(email: string, ctx: AdminContext): Pro
     actor: toAuditActor(ctx),
     action: "candidate.export",
     entityType: "candidate",
-    entityId: applications[0] ? String(applications[0]._id) : String(talent[0]._id),
+    entityId: applications[0] ? applications[0].id : talent[0].id,
     summary: `Exported candidate data (${applications.length} application${applications.length === 1 ? "" : "s"}, ${talent.length} talent profile${talent.length === 1 ? "" : "s"})`,
     meta: {
-      applications: applications.map((doc) => applicationReference(doc._id)),
-      talentProfiles: talent.map((doc) => talentReference(doc._id)),
+      applications: applications.map((doc) => applicationReference(doc.id)),
+      talentProfiles: talent.map((doc) => talentReference(doc.id)),
     },
     ip: ctx.ip,
   });

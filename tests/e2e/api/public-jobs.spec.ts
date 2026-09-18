@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { api, loginAsAdmin } from "../support/api";
 import type { AdminJob, Job } from "@/types/careers";
 import { expectApiError, expectExactKeys, expectIsoDate, expectNoSensitiveData, expectStatus } from "./lib/assertions";
-import { databaseConfigured, withDatabase } from "./lib/database";
+import { databaseConfigured, findRow, setCell, testSpreadsheetConfirmed } from "./lib/database";
 import { changeJobStatus, createJob, jobPayload, randomObjectId, retireJob } from "./lib/fixtures";
 
 // Public job endpoints: only open jobs (published, deadline not passed) are ever visible.
@@ -134,16 +134,14 @@ test.describe("public jobs API", () => {
   });
 
   test("a published job whose deadline has passed is hidden", async () => {
-    test.skip(!databaseConfigured(), "Set E2E_MONGODB_URI and E2E_MONGODB_DB_NAME to create an expired job.");
+    test.skip(!databaseConfigured(), "Set the GOOGLE_* variables to create an expired job.");
+    test.skip(!(await testSpreadsheetConfirmed()), "The configured spreadsheet is not marked test.spreadsheet=true.");
     const job = await createJob(admin, jobPayload("public-expired"), "published");
     created.push(job.id);
     expectStatus(await api("GET", `/api/jobs/${job.id}`), 200);
-    await withDatabase(async (connection) => {
-      const update = await connection
-        .collection("jobs")
-        .updateOne({ slug: job.id }, { $set: { applicationDeadline: new Date(Date.now() - 60 * 60 * 1000) } });
-      expect(update.matchedCount).toBe(1);
-    });
+    const row = await findRow("Jobs", "slug", job.id);
+    expect(row, "the job row exists").not.toBeNull();
+    await setCell("Jobs", row!.rowNumber, "applicationDeadline", new Date(Date.now() - 60 * 60 * 1000).toISOString());
     expectApiError(await api("GET", `/api/jobs/${job.id}`), 404, "job_not_found");
     const list = await api<Job[]>("GET", "/api/jobs");
     expect(list.body.map((item) => item.id)).not.toContain(job.id);

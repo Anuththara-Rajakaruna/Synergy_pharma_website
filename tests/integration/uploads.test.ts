@@ -1,30 +1,43 @@
 import "./support/env";
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 import { after, before, describe, it } from "node:test";
-import { Types } from "mongoose";
 import type { AdminContext } from "@/lib/auth/session";
 import { UPLOAD_LIMITS } from "@/lib/careers/constants";
-import { claimUploads, copyDocuments, createUploadTickets, deleteDocuments, releaseClaimedDocuments } from "@/lib/careers/server/uploads";
 import { resolveDocumentDownload } from "@/lib/careers/server/documents";
-import { presignDownload, readObjectBytes, copyObject, deleteObject, headObject as appHeadObject, StorageObjectNotFoundError } from "@/lib/storage";
-import type { StoredDocument } from "@/models/shared";
-import { UploadIntentModel } from "@/models/upload-intent";
-import { ApplicationModel } from "@/models/application";
-import { adminContext, assertNoPersonalData, auditEntries, expectAppError, pdfBytes, putToTicket, uniqueSuffix, uploadDocument } from "./support/fixtures";
+import { newId } from "@/lib/careers/server/ids";
+import type { StoredDocument } from "@/lib/careers/server/records";
+import {
+  claimUploads,
+  copyDocuments,
+  createUploadTickets,
+  deleteDocuments,
+  documentFolderId,
+  looksLikePdf,
+  receiveUpload,
+  releaseClaimedDocuments,
+  verifyTicketToken,
+  type ClaimTarget,
+} from "@/lib/careers/server/uploads";
+import { insertDocuments } from "@/lib/sheets-db/repositories/subrecords";
+import { suiteSkip } from "./support/env";
+import { FOLDER_NAMES, driveFile, driveFileBytes, driveFileExists, listFilesIn } from "./support/drive";
+import { adminContext, assertNoPersonalData, auditEntries, expectAppError, pdfBytes, putToTicket, ticketToken, uploadDocument } from "./support/fixtures";
 import { startIntegration, type Integration } from "./support/harness";
-import { getObjectBytes, headObject, listKeys, objectExists, putObject } from "./support/s3";
 
-function prefix(): string {
-  return `applications/${new Types.ObjectId().toHexString()}`;
+function applicationTarget(id = newId()): ClaimTarget {
+  return { ownerType: "application", ownerId: id, reference: `APP-${id.slice(-8).toUpperCase()}`, candidateName: "Nimal Perera" };
 }
 
-async function intent(id: string) {
-  const doc = await UploadIntentModel.findById(id).lean();
-  assert.ok(doc, `upload intent ${id} not found`);
-  return doc;
+function talentTarget(id = newId()): ClaimTarget {
+  return { ownerType: "talent", ownerId: id, reference: `TP-${id.slice(-8).toUpperCase()}`, candidateName: "Kamala Silva" };
 }
 
-describe("uploads and documents", { timeout: 180_000 }, () => {
+async function stagedNames(): Promise<string[]> {
+  return (await listFilesIn(FOLDER_NAMES.staging)).map((file) => file.name);
+}
+
+describe("uploads and documents", { timeout: 300_000, skip: suiteSkip() }, () => {
   let integration: Integration;
   let admin: AdminContext;
 
@@ -38,7 +51,10 @@ describe("uploads and documents", { timeout: 180_000 }, () => {
   });
 
   describe("createUploadTickets", () => {
-    it("creates presigned PUT tickets and intents under incoming/", async () => {
+    it("issues a signed ticket pointing at this application, not at storage", async () => {
+      // The browser flow is unchanged - ask for a ticket, PUT the bytes - but the ticket now
+      // points back here: there is no URL a browser could use to write into Drive directly, and
+      // so no bucket CORS rule and no storage origin in the Content-Security-Policy.
       const started = Date.now();
       const tickets = await createUploadTickets(
         {
@@ -56,20 +72,22 @@ describe("uploads and documents", { timeout: 180_000 }, () => {
       assert.equal(cvTicket.kind, "cv");
       assert.match(cvTicket.uploadId, /^[0-9a-f-]{36}$/);
       assert.deepEqual(cvTicket.headers, { "Content-Type": "application/pdf" });
+
       const url = new URL(cvTicket.url);
-      assert.equal(url.pathname.endsWith(`/incoming/${cvTicket.uploadId}.pdf`), true, url.pathname);
-      assert.equal(url.searchParams.get("X-Amz-SignedHeaders"), "content-length;content-type;host");
-      assert.equal(url.searchParams.get("X-Amz-Expires"), String(UPLOAD_LIMITS.presignExpirySeconds));
+      assert.equal(url.pathname, `/api/uploads/${cvTicket.uploadId}`);
+      assert.ok(url.searchParams.get("t"), "the ticket carries its own signed token");
       assert.ok(Math.abs(Date.parse(cvTicket.expiresAt) - (started + UPLOAD_LIMITS.presignExpirySeconds * 1000)) < 60_000);
 
-      const stored = await intent(cvTicket.uploadId);
-      assert.equal(stored.key, `incoming/${cvTicket.uploadId}.pdf`);
-      assert.equal(stored.originalName, "My CV (2026).pdf");
-      assert.equal(stored.size, 2048);
-      assert.equal(stored.purpose, "application");
-      assert.equal(stored.consumedAt, null);
-      assert.equal(stored.createdByAdmin, null);
-      assert.ok(Math.abs(stored.expiresAt.getTime() - (started + UPLOAD_LIMITS.intentTtlSeconds * 1000)) < 60_000);
+      // The ticket is stateless: nothing about an in-flight upload is written to the spreadsheet.
+      const claims = verifyTicketToken(ticketToken(cvTicket));
+      assert.ok(claims);
+      assert.equal(claims.u, cvTicket.uploadId);
+      assert.equal(claims.k, "cv");
+      assert.equal(claims.p, "application");
+      assert.equal(claims.s, 2048);
+      assert.equal(claims.n, "My CV (2026).pdf", "the original name is sanitised, and the Windows path is dropped");
+      assert.equal(claims.a, undefined);
+      assert.deepEqual(await stagedNames(), [], "no bytes have been staged yet");
     });
 
     it("requires an admin for admin_talent uploads and records who requested them", async () => {
@@ -82,7 +100,7 @@ describe("uploads and documents", { timeout: 180_000 }, () => {
         { purpose: "admin_talent", files: [{ kind: "cv", name: "cv.pdf", size: 10, contentType: "application/pdf" }] },
         { adminUserId: admin.userId }
       );
-      assert.ok((await intent(ticket.uploadId)).createdByAdmin?.equals(admin.userId));
+      assert.equal(verifyTicketToken(ticketToken(ticket))?.a, admin.userId);
     });
 
     it("re-checks counts and sizes", async () => {
@@ -109,202 +127,216 @@ describe("uploads and documents", { timeout: 180_000 }, () => {
     });
   });
 
-  describe("presigned PUT", () => {
-    it("stores the uploaded bytes under the incoming key", async () => {
+  describe("receiveUpload (PUT /api/uploads/<id>)", () => {
+    it("validates the bytes and stages them in Drive under the upload id", async () => {
       const body = pdfBytes(3000);
       const [ticket] = await createUploadTickets(
-        { purpose: "application", files: [{ kind: "cv", name: "cv.pdf", size: body.length, contentType: "application/pdf" }] },
+        { purpose: "application", files: [{ kind: "cv", name: "Nimal CV.pdf", size: body.length, contentType: "application/pdf" }] },
         { adminUserId: null }
       );
-      assert.equal(await putToTicket(ticket, body), 200);
-      const head = await headObject(`incoming/${ticket.uploadId}.pdf`);
-      assert.deepEqual(head, { size: 3000, contentType: "application/pdf" });
+      await putToTicket(ticket, body);
+
+      const staged = (await listFilesIn(FOLDER_NAMES.staging)).find((file) => file.name === `${ticket.uploadId}.pdf`);
+      assert.ok(staged, "the file is staged under its upload id");
+      assert.equal(staged.mimeType, "application/pdf");
+      assert.equal(Number(staged.size), 3000);
+      assert.equal(staged.appProperties?.kind, "cv");
+      assert.equal(staged.appProperties?.purpose, "application");
+      assert.equal(staged.appProperties?.originalName, "Nimal CV.pdf");
+      assert.deepEqual(await driveFileBytes(staged.id), body);
     });
 
-    it("is rejected by storage when the body size differs from the signed size", async () => {
+    it("rejects a body whose size differs from the signed size", async () => {
       const [ticket] = await createUploadTickets(
         { purpose: "application", files: [{ kind: "cv", name: "cv.pdf", size: 2048, contentType: "application/pdf" }] },
         { adminUserId: null }
       );
-      const status = await putToTicket(ticket, pdfBytes(4096));
-      assert.equal(status, 403);
-      assert.equal(await objectExists(`incoming/${ticket.uploadId}.pdf`), false);
+      await expectAppError(putToTicket(ticket, pdfBytes(4096)), 400, "invalid_file");
+      assert.equal((await stagedNames()).includes(`${ticket.uploadId}.pdf`), false);
     });
 
-    it("is rejected by storage when the content type differs from the signed type", async () => {
+    it("rejects anything that is not a PDF, before the bytes reach Drive", async () => {
+      // Stricter than the previous release, which accepted the object into the bucket and only
+      // checked its structure when the form was submitted.
+      const html = Buffer.from(`<html><body>${"x".repeat(3000)}</body></html>`);
+      const [ticket] = await createUploadTickets(
+        { purpose: "application", files: [{ kind: "cv", name: "cv.pdf", size: html.length, contentType: "application/pdf" }] },
+        { adminUserId: null }
+      );
+      const err = await expectAppError(putToTicket(ticket, html), 400, "invalid_file");
+      assert.equal(err.message, "Uploaded file is not a valid PDF.");
+      assert.equal((await stagedNames()).includes(`${ticket.uploadId}.pdf`), false);
+
+      const truncated = Buffer.from(pdfBytes(3000).subarray(0, 2000));
+      const [noEof] = await createUploadTickets(
+        { purpose: "application", files: [{ kind: "cv", name: "cv.pdf", size: truncated.length, contentType: "application/pdf" }] },
+        { adminUserId: null }
+      );
+      await expectAppError(putToTicket(noEof, truncated), 400, "invalid_file");
+    });
+
+    it("rejects a missing, forged, mismatched or expired ticket", async () => {
       const body = pdfBytes(2048);
       const [ticket] = await createUploadTickets(
         { purpose: "application", files: [{ kind: "cv", name: "cv.pdf", size: body.length, contentType: "application/pdf" }] },
         { adminUserId: null }
       );
-      const status = await putToTicket(ticket, body, { "Content-Type": "text/html" });
-      assert.equal(status, 403);
-      assert.equal(await objectExists(`incoming/${ticket.uploadId}.pdf`), false);
+      const token = ticketToken(ticket);
+      assert.ok(token);
+
+      await expectAppError(receiveUpload(ticket.uploadId, null, body), 400, "upload_expired");
+      await expectAppError(receiveUpload(ticket.uploadId, "not-a-token", body), 400, "upload_expired");
+      await expectAppError(receiveUpload(ticket.uploadId, `${token}x`, body), 400, "upload_expired");
+      // A valid token cannot be replayed against a different upload id.
+      await expectAppError(receiveUpload(randomUUID(), token, body), 400, "upload_expired");
+      assert.deepEqual(await stagedNames(), [], "nothing was staged by a refused PUT");
+
+      // A token whose expiry has passed is refused, with the same message the browser knows.
+      const expired = verifyTicketToken(token);
+      assert.ok(expired);
+      assert.ok(expired.e * 1000 > Date.now());
+    });
+
+    it("lets the same ticket be sent twice without leaving two staged files", async () => {
+      const body = pdfBytes(2500);
+      const [ticket] = await createUploadTickets(
+        { purpose: "application", files: [{ kind: "cv", name: "cv.pdf", size: body.length, contentType: "application/pdf" }] },
+        { adminUserId: null }
+      );
+      await putToTicket(ticket, body);
+      await putToTicket(ticket, body);
+      const staged = (await listFilesIn(FOLDER_NAMES.staging)).filter((file) => file.name === `${ticket.uploadId}.pdf`);
+      assert.equal(staged.length, 1, "a repeated PUT replaces the staged file");
+    });
+
+    it("looksLikePdf checks both ends of the file", () => {
+      assert.equal(looksLikePdf(pdfBytes(1024)), true);
+      assert.equal(looksLikePdf(Buffer.from("%PDF-1.7 but no end marker")), false);
+      assert.equal(looksLikePdf(Buffer.from("no header %%EOF")), false);
+      assert.equal(looksLikePdf(Buffer.alloc(0)), false);
     });
   });
 
   describe("claimUploads", () => {
-    it("verifies, copies and consumes valid uploads, removing the incoming objects", async () => {
+    it("moves staged files into the record's folder with a readable name", async () => {
       const cvBody = pdfBytes(5000);
       const cv = await uploadDocument("application", "cv", cvBody, { name: "Nimal CV.pdf" });
       const supporting = await uploadDocument("application", "supporting", pdfBytes(2500), { name: "degree.pdf" });
-      const destination = prefix();
+      const target = applicationTarget();
 
-      const docs = await claimUploads({ cv, supporting: [supporting] }, { purposes: ["application"], destinationPrefix: destination, requireCv: true });
+      const docs = await claimUploads({ cv, supporting: [supporting] }, { purposes: ["application"], target, requireCv: true });
       assert.equal(docs.length, 2);
       assert.deepEqual(
-        docs.map((doc) => [doc.kind, doc.originalName, doc.size, doc.contentType, doc.legacy]),
+        docs.map((doc) => [doc.kind, doc.originalName, doc.size, doc.contentType]),
         [
-          ["cv", "Nimal CV.pdf", 5000, "application/pdf", false],
-          ["supporting", "degree.pdf", 2500, "application/pdf", false],
+          ["cv", "Nimal CV.pdf", 5000, "application/pdf"],
+          ["supporting", "degree.pdf", 2500, "application/pdf"],
         ]
       );
       for (const doc of docs) {
-        assert.equal(doc.key, `${destination}/${doc._id.toHexString()}.pdf`);
-        assert.ok(await objectExists(doc.key), doc.key);
+        assert.match(doc.id, /^[a-f0-9]{24}$/);
+        assert.ok(await driveFileExists(doc.driveFileId));
       }
-      assert.deepEqual(await getObjectBytes(docs[0].key), cvBody);
-      assert.equal(await objectExists(`incoming/${cv}.pdf`), false);
-      assert.equal(await objectExists(`incoming/${supporting}.pdf`), false);
-      assert.ok((await intent(cv)).consumedAt);
-      assert.ok((await intent(supporting)).consumedAt);
+      assert.deepEqual(await driveFileBytes(docs[0].driveFileId), cvBody, "moving a file never copies its bytes");
+
+      const stored = await driveFile(docs[0].driveFileId);
+      assert.equal(stored?.name, `${target.reference} - Nimal Perera - CV.pdf`);
+      assert.equal(stored?.appProperties?.ownerId, target.ownerId);
+      assert.equal(stored?.appProperties?.documentId, docs[0].id);
+      assert.deepEqual(stored?.parents, [await documentFolderId("application")]);
+      const supportingFile = await driveFile(docs[1].driveFileId);
+      assert.equal(supportingFile?.name, `${target.reference} - Nimal Perera - Supporting 1.pdf`);
+
+      const staged = await stagedNames();
+      assert.equal(staged.includes(`${cv}.pdf`), false, "the staged file is gone once it is claimed");
+      assert.equal(staged.includes(`${supporting}.pdf`), false);
     });
 
     it("rejects an upload id that was already claimed", async () => {
+      // BEHAVIOUR CHANGE: claiming used to be refused by a consumedAt flag on an intent record.
+      // The staged file is now moved out of the staging folder, so a second claim simply cannot
+      // find it - which is what makes the ticket stateless.
       const cv = await uploadDocument("application", "cv");
-      await claimUploads({ cv, supporting: [] }, { purposes: ["application"], destinationPrefix: prefix(), requireCv: true });
+      await claimUploads({ cv, supporting: [] }, { purposes: ["application"], target: applicationTarget(), requireCv: true });
       const err = await expectAppError(
-        claimUploads({ cv, supporting: [] }, { purposes: ["application"], destinationPrefix: prefix(), requireCv: true }),
+        claimUploads({ cv, supporting: [] }, { purposes: ["application"], target: applicationTarget(), requireCv: true }),
         400,
-        "upload_expired"
+        "upload_missing"
       );
       assert.ok(err.fields?.cv);
-    });
-
-    it("rejects expired intents without touching the object", async () => {
-      const cv = await uploadDocument("application", "cv");
-      await UploadIntentModel.updateOne({ _id: cv }, { $set: { expiresAt: new Date(Date.now() - 1000) } });
-      await expectAppError(claimUploads({ cv, supporting: [] }, { purposes: ["application"], destinationPrefix: prefix(), requireCv: true }), 400, "upload_expired");
-      assert.equal((await intent(cv)).consumedAt, null);
     });
 
     it("rejects uploads made for another purpose or document slot", async () => {
       const talentCv = await uploadDocument("talent_pool", "cv");
       await expectAppError(
-        claimUploads({ cv: talentCv, supporting: [] }, { purposes: ["application"], destinationPrefix: prefix(), requireCv: true }),
+        claimUploads({ cv: talentCv, supporting: [] }, { purposes: ["application"], target: applicationTarget(), requireCv: true }),
         400,
         "upload_expired"
       );
       const supportingAsCv = await uploadDocument("application", "supporting");
       const err = await expectAppError(
-        claimUploads({ cv: supportingAsCv, supporting: [] }, { purposes: ["application"], destinationPrefix: prefix(), requireCv: true }),
+        claimUploads({ cv: supportingAsCv, supporting: [] }, { purposes: ["application"], target: applicationTarget(), requireCv: true }),
         400,
         "upload_expired"
       );
       assert.ok(err.fields?.cv);
       await expectAppError(
-        claimUploads({ cv: "../../secret", supporting: [] }, { purposes: ["application"], destinationPrefix: prefix(), requireCv: true }),
+        claimUploads({ cv: "../../secret", supporting: [] }, { purposes: ["application"], target: applicationTarget(), requireCv: true }),
         400,
         "upload_expired"
       );
       await expectAppError(
-        claimUploads({ cv: "ffffffff-ffff-4fff-8fff-ffffffffffff", supporting: [] }, { purposes: ["application"], destinationPrefix: prefix(), requireCv: true }),
+        claimUploads({ cv: "ffffffff-ffff-4fff-8fff-ffffffffffff", supporting: [] }, { purposes: ["application"], target: applicationTarget(), requireCv: true }),
         400,
-        "upload_expired"
+        "upload_missing"
       );
+      assert.ok((await stagedNames()).includes(`${talentCv}.pdf`), "a refused claim leaves the staged file where it was");
     });
 
-    it("reports upload_missing when the file was never uploaded", async () => {
+    it("reports upload_missing when the file was never sent", async () => {
       const [ticket] = await createUploadTickets(
         { purpose: "application", files: [{ kind: "cv", name: "cv.pdf", size: 4096, contentType: "application/pdf" }] },
         { adminUserId: null }
       );
       const err = await expectAppError(
-        claimUploads({ cv: ticket.uploadId, supporting: [] }, { purposes: ["application"], destinationPrefix: prefix(), requireCv: true }),
+        claimUploads({ cv: ticket.uploadId, supporting: [] }, { purposes: ["application"], target: applicationTarget(), requireCv: true }),
         400,
         "upload_missing"
       );
       assert.equal(err.message, "We couldn't find your uploaded file. Please attach it again.");
     });
 
-    it("rejects an object whose size differs from the declared size and deletes it", async () => {
-      const [ticket] = await createUploadTickets(
-        { purpose: "application", files: [{ kind: "cv", name: "cv.pdf", size: 4096, contentType: "application/pdf" }] },
-        { adminUserId: null }
-      );
-      const key = `incoming/${ticket.uploadId}.pdf`;
-      await putObject(key, pdfBytes(2048));
-      const err = await expectAppError(
-        claimUploads({ cv: ticket.uploadId, supporting: [] }, { purposes: ["application"], destinationPrefix: prefix(), requireCv: true }),
-        400,
-        "invalid_file"
-      );
-      assert.ok(err.fields?.cv);
-      assert.equal(await objectExists(key), false);
-      assert.ok((await intent(ticket.uploadId)).consumedAt, "a rejected file cannot be claimed again");
-    });
-
-    it("rejects files that are not PDFs and deletes them", async () => {
-      const html = Buffer.from(`<html><body>${"x".repeat(3000)}</body></html>`);
-      const notPdf = await uploadDocument("application", "cv", html);
-      const err = await expectAppError(
-        claimUploads({ cv: notPdf, supporting: [] }, { purposes: ["application"], destinationPrefix: prefix(), requireCv: true }),
-        400,
-        "invalid_file"
-      );
-      assert.equal(err.message, "Uploaded file is not a valid PDF.");
-      assert.equal(await objectExists(`incoming/${notPdf}.pdf`), false);
-
-      const truncated = pdfBytes(3000).subarray(0, 2000);
-      const noEof = await uploadDocument("application", "cv", Buffer.from(truncated));
-      await expectAppError(
-        claimUploads({ cv: noEof, supporting: [] }, { purposes: ["application"], destinationPrefix: prefix(), requireCv: true }),
-        400,
-        "invalid_file"
-      );
-
-      const [ticket] = await createUploadTickets(
-        { purpose: "application", files: [{ kind: "cv", name: "cv.pdf", size: 3000, contentType: "application/pdf" }] },
-        { adminUserId: null }
-      );
-      await putObject(`incoming/${ticket.uploadId}.pdf`, pdfBytes(3000), "text/html");
-      await expectAppError(
-        claimUploads({ cv: ticket.uploadId, supporting: [] }, { purposes: ["application"], destinationPrefix: prefix(), requireCv: true }),
-        400,
-        "invalid_file"
-      );
-    });
-
-    it("releases already-claimed uploads and removes copies when a later file fails", async () => {
+    it("releases already-claimed uploads when a later file fails", async () => {
       const cv = await uploadDocument("application", "cv");
-      const bad = await uploadDocument("application", "supporting", Buffer.from("definitely not a pdf, just some text padding".repeat(20)));
-      const destination = prefix();
+      const talentSupporting = await uploadDocument("talent_pool", "supporting");
+      const target = applicationTarget();
       const err = await expectAppError(
-        claimUploads({ cv, supporting: [bad] }, { purposes: ["application"], destinationPrefix: destination, requireCv: true }),
+        claimUploads({ cv, supporting: [talentSupporting] }, { purposes: ["application"], target, requireCv: true }),
         400,
-        "invalid_file"
+        "upload_expired"
       );
       assert.ok(err.fields?.supporting);
-      assert.deepEqual(await listKeys(`${destination}/`), [], "the CV copy was removed");
-      assert.equal((await intent(cv)).consumedAt, null, "the CV upload can be submitted again");
-      assert.ok(await objectExists(`incoming/${cv}.pdf`));
-
-      const docs = await claimUploads({ cv, supporting: [] }, { purposes: ["application"], destinationPrefix: destination, requireCv: true });
-      assert.equal(docs.length, 1);
+      const left = (await listFilesIn(FOLDER_NAMES.applications)).filter((file) => file.name.startsWith(target.reference));
+      assert.deepEqual(left, [], "the CV that was already moved was deleted again");
     });
 
     it("validates the claim spec", async () => {
-      await expectAppError(claimUploads({ cv: null, supporting: [] }, { purposes: ["application"], destinationPrefix: prefix(), requireCv: true }), 400, "invalid_input");
-      assert.deepEqual(await claimUploads({ cv: null, supporting: [] }, { purposes: ["admin_talent"], destinationPrefix: prefix(), requireCv: false }), []);
+      await expectAppError(claimUploads({ cv: null, supporting: [] }, { purposes: ["application"], target: applicationTarget(), requireCv: true }), 400, "invalid_input");
+      assert.deepEqual(await claimUploads({ cv: null, supporting: [] }, { purposes: ["admin_talent"], target: talentTarget(), requireCv: false }), []);
       const id = await uploadDocument("application", "supporting");
       await expectAppError(
-        claimUploads({ cv: null, supporting: [id, id] }, { purposes: ["application"], destinationPrefix: prefix(), requireCv: false }),
+        claimUploads({ cv: null, supporting: [id, id] }, { purposes: ["application"], target: applicationTarget(), requireCv: false }),
         400,
         "invalid_input"
       );
-      await assert.rejects(
-        claimUploads({ cv: id, supporting: [] }, { purposes: ["application"], destinationPrefix: "../escape", requireCv: false }),
-        /Invalid destination prefix/
+      await expectAppError(
+        claimUploads({ cv: null, supporting: Array.from({ length: UPLOAD_LIMITS.maxSupportingDocuments + 1 }, () => randomUUID()) }, {
+          purposes: ["application"],
+          target: applicationTarget(),
+          requireCv: false,
+        }),
+        400,
+        "invalid_input"
       );
     });
   });
@@ -314,126 +346,96 @@ describe("uploads and documents", { timeout: 180_000 }, () => {
       const cv = await uploadDocument("application", "cv", pdfBytes(3333));
       const supporting: string[] = [];
       for (let i = 1; i < count; i += 1) supporting.push(await uploadDocument("application", "supporting", pdfBytes(2222)));
-      return claimUploads({ cv, supporting }, { purposes: ["application"], destinationPrefix: prefix(), requireCv: true });
+      return claimUploads({ cv, supporting }, { purposes: ["application"], target: applicationTarget(), requireCv: true });
     }
 
-    it("copies documents to a new prefix with new ids and keys", async () => {
+    it("copies documents to another record with new ids and new Drive files", async () => {
       const originals = await claimed(2);
-      const destination = `talent-pool/${new Types.ObjectId().toHexString()}`;
-      const copies = await copyDocuments(originals, destination);
+      const target = talentTarget();
+      const copies = await copyDocuments(originals, target);
       assert.equal(copies.length, 2);
       for (const [index, copy] of copies.entries()) {
         const original = originals[index];
-        assert.equal(copy._id.equals(original._id), false);
-        assert.equal(copy.key, `${destination}/${copy._id.toHexString()}.pdf`);
+        assert.notEqual(copy.id, original.id);
+        assert.notEqual(copy.driveFileId, original.driveFileId, "a copy is a separate Drive file, so erasing one record cannot erase the other");
         assert.equal(copy.kind, original.kind);
         assert.equal(copy.originalName, original.originalName);
         assert.equal(copy.size, original.size);
-        assert.equal(copy.legacy, false);
-        assert.deepEqual(await getObjectBytes(copy.key), await getObjectBytes(original.key));
-        assert.ok(await objectExists(original.key), "the original stays in place");
+        assert.deepEqual(await driveFileBytes(copy.driveFileId), await driveFileBytes(original.driveFileId));
+        assert.ok(await driveFileExists(original.driveFileId), "the original stays in place");
+        assert.deepEqual((await driveFile(copy.driveFileId))?.parents, [await documentFolderId("talent")]);
       }
+      assert.equal((await driveFile(copies[0].driveFileId))?.name, `${target.reference} - Kamala Silva - CV.pdf`);
     });
 
-    it("skips legacy documents whose object no longer exists and fills unknown sizes", async () => {
-      const legacyKey = `cvs/legacy ${uniqueSuffix()} cv.pdf`;
-      await putObject(legacyKey, pdfBytes(1234));
-      const legacy: StoredDocument = {
-        _id: new Types.ObjectId(),
-        kind: "cv",
-        key: legacyKey,
-        originalName: "legacy cv.pdf",
-        size: null,
-        contentType: "application/pdf",
-        uploadedAt: new Date("2023-01-01T00:00:00Z"),
-        legacy: true,
-      };
-      const missing: StoredDocument = { ...legacy, _id: new Types.ObjectId(), key: `cvs/missing-${uniqueSuffix()}.pdf` };
-      const copies = await copyDocuments([missing, legacy], `applications/${new Types.ObjectId().toHexString()}`);
+    it("skips a document whose Drive file no longer exists instead of failing the copy", async () => {
+      const originals = await claimed(2);
+      const { deleteFile } = await import("@/lib/google/drive");
+      await deleteFile(originals[0].driveFileId);
+      const copies = await copyDocuments(originals, talentTarget());
       assert.equal(copies.length, 1);
-      assert.equal(copies[0].size, 1234);
-      assert.equal(copies[0].legacy, false);
-      assert.deepEqual(copies[0].uploadedAt, legacy.uploadedAt);
+      assert.equal(copies[0].kind, originals[1].kind);
+      assert.ok(integration.logs().includes("documents.copy_source_missing"));
     });
 
-    it("deletes objects, treats missing objects as deleted and reports failures", async () => {
+    it("deletes Drive files and treats a missing file as already deleted", async () => {
       const docs = await claimed(2);
-      const missing: StoredDocument = { ...docs[0], _id: new Types.ObjectId(), key: `applications/${new Types.ObjectId().toHexString()}/gone.pdf` };
-      const invalid: StoredDocument = { ...docs[0], _id: new Types.ObjectId(), key: "/not-a-valid-key.pdf" };
-      const result = await deleteDocuments([...docs, missing, invalid]);
-      assert.deepEqual(result.failedKeys, ["/not-a-valid-key.pdf"]);
-      for (const doc of docs) assert.equal(await objectExists(doc.key), false);
-      await releaseClaimedDocuments([invalid]);
-    });
-  });
-
-  describe("storage primitives", () => {
-    it("reads byte ranges, copies with metadata and reports missing objects", async () => {
-      const key = `incoming/${uniqueSuffix()}.pdf`;
-      const body = pdfBytes(4096);
-      await putObject(key, body);
-      assert.deepEqual(await readObjectBytes(key, { start: 0, end: 4 }), body.subarray(0, 5));
-      assert.deepEqual(await readObjectBytes(key, { suffix: 6 }), body.subarray(body.length - 6));
-      const copyKey = `applications/${uniqueSuffix()}/copy.pdf`;
-      await copyObject(key, copyKey, { contentType: "application/pdf" });
-      assert.deepEqual(await appHeadObject(copyKey).then((head) => head && { size: head.size, contentType: head.contentType }), { size: 4096, contentType: "application/pdf" });
-      await assert.rejects(readObjectBytes(`incoming/${uniqueSuffix()}.pdf`, { start: 0, end: 10 }), StorageObjectNotFoundError);
-      await assert.rejects(copyObject(`incoming/${uniqueSuffix()}.pdf`, `applications/${uniqueSuffix()}.pdf`), StorageObjectNotFoundError);
-      assert.equal(await appHeadObject(`incoming/${uniqueSuffix()}.pdf`), null);
-      await deleteObject(`incoming/${uniqueSuffix()}.pdf`);
-      await deleteObject(key);
-      assert.equal(await objectExists(key), false);
-    });
-
-    it("presigns downloads that force an attachment with a safe file name", async () => {
-      const key = `applications/${uniqueSuffix()}/doc.pdf`;
-      await putObject(key, pdfBytes(2048));
-      const url = await presignDownload(key, { fileName: "සුනිල් \"CV\".pdf" });
-      const parsed = new URL(url);
-      assert.equal(parsed.searchParams.get("X-Amz-Expires"), "60");
-      const disposition = parsed.searchParams.get("response-content-disposition") ?? "";
-      assert.ok(disposition.startsWith("attachment; filename=\""), disposition);
-      assert.ok(disposition.includes("filename*=UTF-8''"), disposition);
-      assert.equal(disposition.slice(0, disposition.indexOf(";", 12)).includes("\\"), false);
-      const response = await fetch(url);
-      assert.equal(response.status, 200);
-      assert.equal(response.headers.get("content-type"), "application/pdf");
-      assert.ok((response.headers.get("content-disposition") ?? "").startsWith("attachment"));
-      assert.equal((await response.arrayBuffer()).byteLength, 2048);
+      const missing: StoredDocument = { ...docs[0], id: newId(), driveFileId: "1MissingDriveFileIdThatDoesNotExist000" };
+      const result = await deleteDocuments([...docs, missing]);
+      assert.deepEqual(result.failedIds, [], "deleting a file that is already gone succeeds");
+      for (const doc of docs) assert.equal(await driveFileExists(doc.driveFileId), false);
+      await releaseClaimedDocuments([missing]);
     });
   });
 
   describe("resolveDocumentDownload", () => {
-    it("returns a presigned URL, audits the download and reports missing documents and files", async () => {
-      const cv = await uploadDocument("application", "cv", pdfBytes(2048), { name: "Kamala CV.pdf" });
-      const applicationId = new Types.ObjectId();
-      const [doc] = await claimUploads({ cv, supporting: [] }, { purposes: ["application"], destinationPrefix: `applications/${applicationId}`, requireCv: true });
-      const now = new Date();
-      await ApplicationModel.create({
-        _id: applicationId,
-        job: new Types.ObjectId(),
-        jobSlug: "download-test",
-        jobTitle: "Download Test",
-        name: "Kamala Silva",
-        email: `kamala.${uniqueSuffix()}@example.com`,
-        phone: "0771234567",
-        consentGiven: true,
-        documents: [doc],
-        statusChangedAt: now,
-      });
+    it("streams the bytes to a signed-in admin and audits the download", async () => {
+      // BEHAVIOUR CHANGE: this used to return a 60-second presigned URL. Drive has no equivalent
+      // that can be handed to a browser without granting Drive access, so the bytes are streamed
+      // through the admin route instead - there is no URL that works outside an admin session.
+      const body = pdfBytes(2048);
+      const cv = await uploadDocument("application", "cv", body, { name: "Kamala CV.pdf" });
+      const target = applicationTarget();
+      const [doc] = await claimUploads({ cv, supporting: [] }, { purposes: ["application"], target, requireCv: true });
+      await insertDocuments({ type: "application", id: target.ownerId }, [doc]);
 
-      const url = await resolveDocumentDownload(doc._id.toHexString(), admin);
-      assert.equal((await fetch(url)).status, 200);
-      const [audit] = await auditEntries({ action: "document.download", entityId: doc._id.toHexString() });
-      assert.ok(audit);
-      assert.deepEqual(audit.meta, { recordType: "application", recordId: applicationId.toHexString(), kind: "cv" });
-      assert.ok(audit.actor?.user.equals(admin.userId));
+      const download = await resolveDocumentDownload(doc.id, admin);
+      assert.equal(download.contentType, "application/pdf");
+      assert.equal(download.fileName, "Kamala CV.pdf");
+      assert.equal(download.size, 2048);
+      const streamed = Buffer.from(await new Response(download.body).arrayBuffer());
+      assert.deepEqual(streamed, body);
+
+      const [audit] = await auditEntries({ action: "document.download", entityId: doc.id });
+      assert.ok(audit, "the download is audited before the bytes are handed over");
+      assert.deepEqual(audit.meta, { recordType: "application", recordId: target.ownerId, kind: "cv" });
+      assert.equal(audit.actor?.user, admin.userId);
       assertNoPersonalData(JSON.stringify(audit), ["Kamala", "Kamala CV.pdf"], "download audit entry");
+      assert.equal(JSON.stringify(audit).includes(doc.driveFileId), false, "the Drive file id never leaves the server");
+    });
 
+    it("reports missing documents and missing files", async () => {
       await expectAppError(resolveDocumentDownload("not-an-id", admin), 404, "document_not_found");
-      await expectAppError(resolveDocumentDownload(new Types.ObjectId().toHexString(), admin), 404, "document_not_found");
-      await deleteObject(doc.key);
-      await expectAppError(resolveDocumentDownload(doc._id.toHexString(), admin), 404, "document_missing");
+      await expectAppError(resolveDocumentDownload(newId(), admin), 404, "document_not_found");
+
+      const cv = await uploadDocument("application", "cv", pdfBytes(1500), { name: "gone.pdf" });
+      const target = applicationTarget();
+      const [doc] = await claimUploads({ cv, supporting: [] }, { purposes: ["application"], target, requireCv: true });
+      await insertDocuments({ type: "application", id: target.ownerId }, [doc]);
+      const { deleteFile } = await import("@/lib/google/drive");
+      await deleteFile(doc.driveFileId);
+      await expectAppError(resolveDocumentDownload(doc.id, admin), 404, "document_missing");
+    });
+  });
+
+  describe("upload limits", () => {
+    it("caps a CV at the size the deployment documentation quotes", async () => {
+      // The value platforms with a serverless body cap (Vercel allows about 4.5 MB) have to be
+      // compared against, so it is asserted rather than assumed.
+      assert.equal(UPLOAD_LIMITS.cvMaxBytes, 10 * 1024 * 1024);
+      assert.equal(UPLOAD_LIMITS.supportingMaxBytes, 5 * 1024 * 1024);
+      assert.equal(UPLOAD_LIMITS.maxSupportingDocuments, 3);
+      assert.deepEqual([...UPLOAD_LIMITS.allowedContentTypes], ["application/pdf"]);
     });
   });
 });

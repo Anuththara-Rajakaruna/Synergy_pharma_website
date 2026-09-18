@@ -28,12 +28,17 @@ function serializeError(err: unknown): LogMeta {
       kinds: Object.values(errors).map((e) => e?.kind ?? "unknown"),
     });
   }
-  if (err.name === "CastError") {
-    return withFramesOnly({ name: err.name, path: (err as { path?: unknown }).path });
-  }
-  if (err.name === "MongoServerError" || err.name === "MongoBulkWriteError" || err.name === "MongoWriteConcernError") {
-    const e = err as { code?: unknown; codeName?: unknown; keyPattern?: unknown; errorLabels?: unknown };
-    return withFramesOnly({ name: err.name, code: e.code, codeName: e.codeName, keyPattern: e.keyPattern, errorLabels: e.errorLabels });
+
+  // Google's client errors are built by src/lib/google/* and already name only an operation and
+  // a machine-readable reason ("sheets.values.append", "PERMISSION_DENIED"). The message is safe,
+  // but a GoogleConfigError's message names environment variables and a Drive error can carry a
+  // file name, so only the structural fields are kept for both.
+  if (err.name === "GoogleConfigError" || err.name === "GoogleUnavailableError" || err.name === "GoogleNotFoundError") {
+    const retryAfterSeconds = (err as { retryAfterSeconds?: unknown }).retryAfterSeconds;
+    return withFramesOnly({
+      name: err.name,
+      ...(typeof retryAfterSeconds === "number" ? { retryAfterSeconds } : {}),
+    });
   }
 
   const code = (err as { code?: unknown }).code;

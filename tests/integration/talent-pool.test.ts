@@ -1,10 +1,11 @@
 import "./support/env";
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
-import { Types } from "mongoose";
 import type { AdminContext } from "@/lib/auth/session";
 import { moveApplicationToTalentPool, submitApplication } from "@/lib/careers/server/applications";
 import { changeJobStatus, createJob } from "@/lib/careers/server/jobs";
+import { newId } from "@/lib/careers/server/ids";
+import type { TalentPoolRecord } from "@/lib/careers/server/records";
 import {
   addTalentNote,
   applyTalentToJob,
@@ -18,11 +19,12 @@ import {
   updateTalentEntry,
 } from "@/lib/careers/server/talent-pool";
 import { parsePagination, type HrTalentInput, type TalentSubmission } from "@/lib/careers/validation";
-import { ApplicationModel } from "@/models/application";
-import { EmailOutboxModel } from "@/models/email-outbox";
-import { TalentPoolEntryModel, type TalentPoolEntryDoc } from "@/models/talent-pool-entry";
+import { loadApplication } from "@/lib/sheets-db/repositories/applications";
+import { listEmails } from "@/lib/sheets-db/repositories/email";
+import { findTalentById, loadTalent } from "@/lib/sheets-db/repositories/talent";
 import type { AdminJob } from "@/types/careers";
-import { integrationConfig } from "./support/env";
+import { integrationConfig, suiteSkip } from "./support/env";
+import { FOLDER_NAMES, driveFileExists, listFilesIn } from "./support/drive";
 import {
   adminContext,
   applicationSubmission,
@@ -39,15 +41,22 @@ import {
   uploadDocument,
 } from "./support/fixtures";
 import { startIntegration, type Integration } from "./support/harness";
-import { objectExists } from "./support/s3";
 
-async function loadEntry(id: string): Promise<TalentPoolEntryDoc> {
-  const doc = await TalentPoolEntryModel.findById(id).lean<TalentPoolEntryDoc>();
-  assert.ok(doc, `talent entry ${id} not found`);
-  return doc;
+async function entryOf(id: string): Promise<TalentPoolRecord> {
+  const found = await loadTalent(id, { refreshOnMiss: true });
+  assert.ok(found, `talent entry ${id} not found`);
+  return found;
 }
 
-describe("talent pool service", { timeout: 300_000 }, () => {
+async function stagedNames(): Promise<string[]> {
+  return (await listFilesIn(FOLDER_NAMES.staging)).map((file) => file.name);
+}
+
+async function emailsFor(entityType: string, entityId: string) {
+  return (await listEmails({ maxAgeMs: 0 })).filter((message) => message.related?.entityType === entityType && message.related?.entityId === entityId);
+}
+
+describe("talent pool service", { timeout: 600_000, skip: suiteSkip() }, () => {
   let integration: Integration;
   let hr: AdminContext;
   const personalData: string[] = [];
@@ -97,7 +106,7 @@ describe("talent pool service", { timeout: 300_000 }, () => {
       const { id, reference, input } = await submitProfile({}, 1);
       assert.match(reference, /^TP-[0-9A-F]{8}$/);
       assert.equal(reference, `TP-${id.slice(-8).toUpperCase()}`);
-      const entry = await loadEntry(id);
+      const entry = await entryOf(id);
       assert.equal(entry.source, "self_submitted");
       assert.equal(entry.emailNormalized, input.email.toLowerCase());
       assert.equal(entry.candidateNotes, input.candidateNotes);
@@ -106,14 +115,18 @@ describe("talent pool service", { timeout: 300_000 }, () => {
       assert.deepEqual(entry.tags, []);
       assert.deepEqual(entry.notes, []);
       assert.equal(entry.createdBy, null);
+      assert.equal(entry.supersededBy, null);
       assert.deepEqual(entry.activity.map((activity) => activity.action), ["created"]);
       assert.equal(entry.documents.length, 2);
       for (const document of entry.documents) {
-        assert.equal(document.key, `talent-pool/${id}/${document._id.toHexString()}.pdf`);
-        assert.ok(await objectExists(document.key));
+        assert.ok(await driveFileExists(document.driveFileId));
+      }
+      const staged = await stagedNames();
+      for (const uploadId of [input.uploads.cv, ...input.uploads.supporting]) {
+        assert.equal(staged.includes(`${uploadId}.pdf`), false);
       }
 
-      const emails = await EmailOutboxModel.find({ "related.entityType": "talent", "related.entityId": id }).sort({ template: 1 }).lean();
+      const emails = (await emailsFor("talent", id)).sort((a, b) => a.template.localeCompare(b.template));
       assert.deepEqual(
         emails.map((email) => [email.template, email.to, email.replyTo]),
         [
@@ -135,7 +148,7 @@ describe("talent pool service", { timeout: 300_000 }, () => {
         "duplicate_talent_profile"
       );
       assert.equal(err.message, "This email address is already in our talent pool. We'll contact you when a matching role opens.");
-      assert.ok(await objectExists(`incoming/${cv}.pdf`), "uploads are not claimed for duplicates");
+      assert.ok((await stagedNames()).includes(`${cv}.pdf`), "uploads are not claimed for duplicates");
 
       await setTalentArchived(first.id, true, "Candidate asked us to pause contact", hr);
       await expectAppError(
@@ -143,7 +156,7 @@ describe("talent pool service", { timeout: 300_000 }, () => {
         409,
         "duplicate_talent_profile"
       );
-      assert.ok((await loadEntry(first.id)).archivedAt, "a public submission never restores an archived profile");
+      assert.ok((await entryOf(first.id)).archivedAt, "a public submission never restores an archived profile");
     });
   });
 
@@ -155,13 +168,10 @@ describe("talent pool service", { timeout: 300_000 }, () => {
       assert.equal(detail.areaOfInterest, "Referred by the production manager");
       assert.deepEqual(detail.tags, ["referral", "production"]);
       assert.deepEqual(detail.documents, []);
-      assert.deepEqual(
-        detail.notes.map((note) => [note.body, note.authorName]),
-        [["Met at the Colombo career fair.", "Hiruni Recruiter"]]
-      );
+      assert.deepEqual(detail.notes.map((note) => [note.body, note.authorName]), [["Met at the Colombo career fair.", "Hiruni Recruiter"]]);
       assert.equal(detail.consentGiven, true);
-      const entry = await loadEntry(detail.id);
-      assert.ok(entry.createdBy?.equals(hr.userId));
+      const entry = await entryOf(detail.id);
+      assert.equal(entry.createdBy, hr.userId);
       const [audit] = await auditEntries({ action: "talent.create", entityId: detail.id });
       assert.deepEqual(audit.meta, { documentCount: 0, tagCount: 2, hasNote: true });
       assertNoPersonalData(JSON.stringify(audit), ["Met at the Colombo career fair."], "talent.create audit");
@@ -178,8 +188,9 @@ describe("talent pool service", { timeout: 300_000 }, () => {
           ["supporting", 2000],
         ]
       );
-      const entry = await loadEntry(detail.id);
-      for (const document of entry.documents) assert.ok(document.key.startsWith(`talent-pool/${detail.id}/`));
+      const entry = await entryOf(detail.id);
+      const talentFolderFiles = (await listFilesIn(FOLDER_NAMES.talent)).map((file) => file.id);
+      for (const document of entry.documents) assert.ok(talentFolderFiles.includes(document.driveFileId));
 
       const publicUpload = await uploadDocument("talent_pool", "cv");
       await expectAppError(createTalentEntry(hrInput({ uploads: { cv: publicUpload, supporting: [] } }), hr), 400, "upload_expired");
@@ -216,7 +227,7 @@ describe("talent pool service", { timeout: 300_000 }, () => {
       await expectAppError(updateTalentEntry(detail.id, {}, hr), 400, "nothing_to_update");
       await expectAppError(updateTalentEntry(detail.id, { email: "new@example.com" } as unknown as { name?: string }, hr), 400, "nothing_to_update");
       await expectAppError(updateTalentEntry(detail.id, { name: "=cmd|calc" }, hr), 400, "invalid_input");
-      assert.equal((await loadEntry(detail.id)).email, detail.email, "email is not editable");
+      assert.equal((await entryOf(detail.id)).email, detail.email, "email is not editable");
     });
 
     it("adds notes and refuses edits to archived profiles", async () => {
@@ -240,7 +251,7 @@ describe("talent pool service", { timeout: 300_000 }, () => {
         (await auditEntries({ entityId: detail.id })).map((entry) => entry.action),
         ["talent.create", "talent.note_add", "talent.archive", "talent.restore"]
       );
-      await expectAppError(updateTalentEntry(new Types.ObjectId().toHexString(), { phone: "0779998887" }, hr), 404, "talent_not_found");
+      await expectAppError(updateTalentEntry(newId(), { phone: "0779998887" }, hr), 404, "talent_not_found");
     });
   });
 
@@ -285,7 +296,7 @@ describe("talent pool service", { timeout: 300_000 }, () => {
     it("creates an application from the profile with copied documents", async () => {
       const profile = await submitProfile({}, 1);
       const result = await applyTalentToJob(profile.id, { jobSlug: job.id.toUpperCase(), note: "Strong match for this role" }, hr);
-      const application = await ApplicationModel.findById(result.applicationId).lean();
+      const application = await loadApplication(result.applicationId, { refreshOnMiss: true });
       assert.ok(application);
       assert.equal(application.source, "talent_pool");
       assert.equal(application.jobSlug, job.id);
@@ -293,22 +304,22 @@ describe("talent pool service", { timeout: 300_000 }, () => {
       assert.equal(application.coverLetter, "");
       assert.equal(application.linkedIn, null);
       assert.equal(application.status, "submitted");
-      assert.ok(application.talentPoolEntry?.equals(profile.id));
+      assert.equal(application.talentPoolEntry, profile.id);
       assert.equal(application.statusHistory[0].note, "Created from talent pool by Hiruni Recruiter");
-      assert.ok(application.statusHistory[0].changedBy?.equals(hr.userId));
+      assert.equal(application.statusHistory[0].changedBy, hr.userId);
       assert.deepEqual(application.notes.map((note) => note.body), ["Strong match for this role"]);
 
-      const entry = await loadEntry(profile.id);
-      assert.deepEqual(entry.applications.map(String), [result.applicationId]);
+      const entry = await entryOf(profile.id);
+      assert.deepEqual(entry.applications, [result.applicationId]);
       assert.equal(entry.activity.at(-1)?.action, "applied_to_job");
       assert.equal(application.documents.length, entry.documents.length);
       for (const [index, document] of application.documents.entries()) {
-        assert.equal(document._id.equals(entry.documents[index]._id), false);
-        assert.equal(document.key, `applications/${result.applicationId}/${document._id.toHexString()}.pdf`);
-        assert.ok(await objectExists(document.key));
+        assert.notEqual(document.id, entry.documents[index].id);
+        assert.notEqual(document.driveFileId, entry.documents[index].driveFileId);
+        assert.ok(await driveFileExists(document.driveFileId));
       }
       assert.equal((await auditEntries({ action: "talent.apply_to_job", entityId: profile.id })).length, 1);
-      assert.equal(await EmailOutboxModel.countDocuments({ "related.entityId": result.applicationId }), 0, "HR-created applications do not email the candidate");
+      assert.equal((await emailsFor("application", result.applicationId)).length, 0, "HR-created applications do not email the candidate");
 
       const retry = await applyTalentToJob(profile.id, { jobSlug: job.id, note: "Strong match for this role" }, hr);
       assert.equal(retry.applicationId, result.applicationId, "retries converge on the same application");
@@ -328,8 +339,8 @@ describe("talent pool service", { timeout: 300_000 }, () => {
       await expectAppError(applyTalentToJob(profile.id, { jobSlug: archived.id, note: "" }, hr), 409, "job_archived");
       await expectAppError(applyTalentToJob(profile.id, { jobSlug: `missing-${uniqueSuffix()}`, note: "" }, hr), 404, "job_not_found");
       await expectAppError(applyTalentToJob(profile.id, { jobSlug: "", note: "" }, hr), 400, "invalid_input");
-      await expectAppError(applyTalentToJob(new Types.ObjectId().toHexString(), { jobSlug: job.id, note: "" }, hr), 404, "talent_not_found");
-      assert.equal((await loadEntry(profile.id)).applications.length, 2);
+      await expectAppError(applyTalentToJob(newId(), { jobSlug: job.id, note: "" }, hr), 404, "talent_not_found");
+      assert.equal((await entryOf(profile.id)).applications.length, 2);
     });
 
     it("refuses duplicates of an existing application and archived profiles", async () => {
@@ -362,25 +373,29 @@ describe("talent pool service", { timeout: 300_000 }, () => {
       const linked = await moveApplicationToTalentPool(website.id, { tags: [], note: "" }, hr);
       assert.equal(linked.created, true);
 
-      const entry = await loadEntry(profile.id);
+      const entry = await entryOf(profile.id);
       await expectAppError(purgeTalentEntry(profile.id, admin), 409, "not_archived");
       await setTalentArchived(profile.id, true, "Erasure request", hr);
       await purgeTalentEntry(profile.id, admin);
 
-      assert.equal(await TalentPoolEntryModel.exists({ _id: profile.id }), null);
-      for (const document of entry.documents) assert.equal(await objectExists(document.key), false, document.key);
-      assert.equal(await EmailOutboxModel.countDocuments({ "related.entityType": "talent", "related.entityId": profile.id }), 0);
-      assert.equal(await EmailOutboxModel.countDocuments({ "related.entityType": "talent", "related.entityId": other.id }), 2);
+      assert.equal(await findTalentById(profile.id, { maxAgeMs: 0 }), null);
+      for (const document of entry.documents) assert.equal(await driveFileExists(document.driveFileId), false, document.driveFileId);
+      assert.equal((await emailsFor("talent", profile.id)).length, 0);
+      assert.equal((await emailsFor("talent", other.id)).length, 2);
 
-      const application = await ApplicationModel.findById(applied.applicationId).lean();
+      const application = await loadApplication(applied.applicationId, { refreshOnMiss: true });
       assert.ok(application, "applications created from the profile are kept");
       assert.equal(application.talentPoolEntry, null);
-      for (const document of application.documents) assert.ok(await objectExists(document.key), "application copies are independent");
-      assert.ok((await ApplicationModel.findById(website.id).lean())?.talentPoolEntry?.equals(linked.talentPoolEntryId), "other links are untouched");
+      for (const document of application.documents) {
+        assert.ok(await driveFileExists(document.driveFileId), "application copies are independent");
+      }
+      const websiteApplication = await loadApplication(website.id, { refreshOnMiss: true });
+      assert.equal(websiteApplication?.talentPoolEntry, linked.talentPoolEntryId, "other links are untouched");
 
       const [audit] = await auditEntries({ action: "talent.purge", entityId: profile.id });
-      assert.ok(audit.actor?.user.equals(admin.userId));
+      assert.equal(audit.actor?.user, admin.userId);
       assert.equal(audit.meta.reference, profile.reference);
+      assert.equal(audit.meta.keptSharedDocuments, 0);
       await expectAppError(purgeTalentEntry(profile.id, admin), 404, "talent_not_found");
     });
   });

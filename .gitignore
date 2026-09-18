@@ -149,3 +149,7 @@ private-uploads/
 # Automated test output
 /test-results/
 /playwright-report/
+
+# Local Google Sheets/Drive emulator state (npm run dev:local). Never commit: it holds
+# whatever test applications you submitted locally.
+.local-google/

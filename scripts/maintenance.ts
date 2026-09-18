@@ -2,22 +2,28 @@
 //
 //   npm run jobs:maintenance
 //
-// Delivers queued emails, removes abandoned uploads under incoming/ and applies the data
-// retention policy (purging overdue records only when RETENTION_AUTO_PURGE=true). Use it on
-// hosts without Vercel Cron, e.g. from a system cron entry every few hours.
+// Delivers queued emails, removes abandoned uploads from the Drive staging folder, applies the
+// data retention policy (purging overdue records only when RETENTION_AUTO_PURGE=true) and trims
+// the rows MongoDB's TTL indexes used to remove on their own (expired sessions, sent email, old
+// audit entries). Use it on hosts without Vercel Cron, e.g. from a system cron entry every few
+// hours.
 
 import "./lib/load-env";
+import { flushAuditLog } from "@/lib/careers/server/audit";
 import { runMaintenance } from "@/lib/careers/server/maintenance";
 import { logger } from "@/lib/logger";
-import { connectToDatabase, disconnectFromDatabase } from "@/lib/mongodb";
+import { ensureStoreReady } from "@/lib/sheets-db";
 
 async function main() {
-  await connectToDatabase({ autoSchemaSetup: false });
+  // No connection to open; this fails fast when the Google configuration is incomplete.
+  ensureStoreReady();
   try {
     const report = await runMaintenance();
     console.log(JSON.stringify(report, null, 2));
   } finally {
-    await disconnectFromDatabase();
+    // The retention purge and the sweeps write audit entries through the buffer, which would
+    // otherwise die with the process.
+    await flushAuditLog();
   }
 }
 

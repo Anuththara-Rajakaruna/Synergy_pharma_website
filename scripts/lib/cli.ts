@@ -2,7 +2,7 @@ import { parseArgs, type ParseArgsConfig } from "node:util";
 
 type ParseArgsOptionsConfig = NonNullable<ParseArgsConfig["options"]>;
 
-// Options every database script accepts. --no-env-files is acted on by scripts/lib/load-env.ts.
+// Options every data-store script accepts. --no-env-files is acted on by scripts/lib/load-env.ts.
 export const COMMON_OPTIONS = {
   "no-env-files": { type: "boolean" },
   help: { type: "boolean", short: "h" },
@@ -26,37 +26,26 @@ export function parseScriptArgs<const O extends ParseArgsOptionsConfig>(options:
   return values;
 }
 
-// Mongoose validation errors: field paths and failure kinds only. Messages can quote the
-// offending values (candidate names, emails), so they are never printed.
-export function validationProblems(err: unknown): string[] {
-  const errors = (err as { errors?: Record<string, { kind?: unknown }> } | null)?.errors;
-  if (errors && typeof errors === "object") {
-    return Object.entries(errors).map(([path, detail]) => `${path} (${typeof detail?.kind === "string" ? detail.kind : "invalid"})`);
-  }
-  if (err instanceof Error && err.name === "StrictModeError") {
-    const path = (err as { path?: unknown }).path;
-    return [`${typeof path === "string" ? path : "unknown field"} (not in schema)`];
-  }
-  if (err instanceof Error && err.name === "CastError") {
-    const path = (err as { path?: unknown }).path;
-    return [`${typeof path === "string" ? path : "unknown field"} (cast)`];
-  }
-  return [err instanceof Error ? err.name : "invalid value"];
-}
-
-// One-line description of an unexpected failure that is safe to print (no document values).
+// One-line description of an unexpected failure that is safe to print. The data layer's errors
+// (src/lib/google/errors.ts) are written so their messages never contain credentials, access
+// tokens, spreadsheet contents or applicant data; nothing else from an error object is echoed.
+// Matched by name rather than by `instanceof` so this module stays free of server imports.
 export function describeError(err: unknown): string {
   if (!(err instanceof Error)) return typeof err === "string" ? err : "Unknown error";
+  const firstLine = err.message.split("\n")[0];
+
+  if (err.name === "GoogleConfigError") return `Configuration problem: ${firstLine}`;
+  if (err.name === "GoogleUnavailableError") {
+    const retryAfter = (err as { retryAfterSeconds?: unknown }).retryAfterSeconds;
+    const wait = typeof retryAfter === "number" && Number.isFinite(retryAfter) ? ` (retry after ${retryAfter}s)` : "";
+    return `Google could not be reached: ${firstLine}${wait}`;
+  }
+  if (err.name === "GoogleNotFoundError") return `Not found: ${firstLine}`;
+
+  // Node transport failures (ECONNRESET, ENOTFOUND, UND_ERR_CONNECT_TIMEOUT, ...).
   const code = (err as { code?: unknown }).code;
-  if (code === 11000) return `${err.name}: duplicate key (E11000)`;
-  if (err.name === "ValidationError" || err.name === "StrictModeError" || err.name === "CastError") {
-    return `${err.name}: ${validationProblems(err).join(", ")}`;
-  }
-  if (err.name.startsWith("Mongo") && typeof code === "number") {
-    const codeName = (err as { codeName?: unknown }).codeName;
-    return `${err.name} (code ${code}${typeof codeName === "string" ? ` ${codeName}` : ""}): ${err.message.split("\n")[0]}`;
-  }
-  return `${err.name}: ${err.message}`;
+  if (typeof code === "string" && code) return `${err.name} (${code}): ${firstLine}`;
+  return `${err.name}: ${firstLine}`;
 }
 
 export function printTable(headers: string[], rows: (string | number)[][], log: (line: string) => void = console.log): void {
@@ -67,19 +56,4 @@ export function printTable(headers: string[], rows: (string | number)[][], log: 
   log(`  ${format(cells[0])}`);
   log(`  ${widths.map((width) => "-".repeat(width)).join("-+-")}`);
   for (const row of cells.slice(1)) log(`  ${format(row)}`);
-}
-
-// Runs `fn` over `items` with at most `limit` calls in flight.
-export async function mapWithConcurrency<T, R>(items: readonly T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
-  const results = new Array<R>(items.length);
-  let next = 0;
-  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
-    while (next < items.length) {
-      const index = next;
-      next += 1;
-      results[index] = await fn(items[index]);
-    }
-  });
-  await Promise.all(workers);
-  return results;
 }

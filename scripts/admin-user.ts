@@ -17,6 +17,7 @@
 
 import "./lib/load-env";
 import { ADMIN_ROLE_LABELS, ADMIN_ROLES, type AdminRole } from "@/lib/careers/constants";
+import { flushAuditLog } from "@/lib/careers/server/audit";
 import {
   createAdminUser,
   createAdminUserWithPassword,
@@ -28,8 +29,8 @@ import {
 } from "@/lib/careers/server/users";
 import { isAdminRole } from "@/lib/careers/validation";
 import { AppError } from "@/lib/http/errors";
-import { connectToDatabase, disconnectFromDatabase } from "@/lib/mongodb";
 import type { AdminUserInfo } from "@/types/careers";
+import { requireStoreTarget } from "./lib/store";
 
 class UsageError extends Error {}
 
@@ -184,8 +185,10 @@ async function run(parsed: ParsedArgs & { command: Command }) {
   const role = values.has("role") ? readRole(values) : null;
   const stdinPassword = flags.has("password-stdin") ? await readPasswordFromStdin() : null;
 
-  const mongoose = await connectToDatabase({ autoSchemaSetup: false });
-  console.log(`Database: ${mongoose.connection.host}/${mongoose.connection.name}`);
+  // There is no connection to open: this only fails fast when the Google configuration is
+  // incomplete, so a typo in a variable is reported before anything is written.
+  const target = requireStoreTarget();
+  console.log(`Spreadsheet: ${target.spreadsheetId}`);
 
   const email = values.get("email") ?? "";
 
@@ -283,7 +286,9 @@ async function main() {
       console.error(`✗ Failed: ${err instanceof Error ? err.message : String(err)}`);
     }
   } finally {
-    await disconnectFromDatabase();
+    // Audit entries are buffered and flushed a moment later, which never happens in a process
+    // that is about to exit. Nothing here rejects.
+    await flushAuditLog();
   }
 }
 

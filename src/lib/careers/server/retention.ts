@@ -1,17 +1,22 @@
 // Data retention: applications and talent-pool profiles are kept for DATA_RETENTION_MONTHS
 // (default 12) after they were created. The maintenance job reports overdue records and erases
 // them when RETENTION_AUTO_PURGE=true. Server-only.
+//
+// The overdue set used to come from an indexed, time-capped MongoDB query. There is no index and
+// no server-side time limit on a spreadsheet, so both tabs are read (through the store's cache,
+// in a single batchGet) and filtered, sorted and limited here instead. The records themselves
+// are unchanged: createdAt is immutable, so the clock below still produces the same answer it
+// always did.
 
-import type { Types } from "mongoose";
 import { purgeApplicationRecord } from "@/lib/careers/server/applications";
+import { compareByDateAsc } from "@/lib/careers/server/mappers";
 import { purgeTalentRecord } from "@/lib/careers/server/talent-pool";
 import { logger } from "@/lib/logger";
-import { connectToDatabase } from "@/lib/mongodb";
-import { ApplicationModel } from "@/models/application";
-import { TalentPoolEntryModel } from "@/models/talent-pool-entry";
+import { ensureStoreReady, loadTables } from "@/lib/sheets-db";
+import { listAllApplications } from "@/lib/sheets-db/repositories/applications";
+import { listAllTalent } from "@/lib/sheets-db/repositories/talent";
 
 const DEFAULT_RETENTION_MONTHS = 12;
-const RETENTION_QUERY_MAX_TIME_MS = 30_000;
 
 // Invalid values fall back to the default; src/lib/env.ts reports them as configuration problems.
 export function retentionMonths(): number {
@@ -22,7 +27,8 @@ export function retentionMonths(): number {
 }
 
 // Adds calendar months in UTC, clamping to the last day of the target month (31 Jan + 1 → 28/29 Feb).
-function addMonths(date: Date, months: number): Date {
+// Exported because the maintenance job needs the same arithmetic for the audit-log trim.
+export function addCalendarMonths(date: Date, months: number): Date {
   const result = new Date(date.getTime());
   const day = result.getUTCDate();
   result.setUTCDate(1);
@@ -33,71 +39,75 @@ function addMonths(date: Date, months: number): Date {
 }
 
 export function retentionDueAt(createdAt: Date): Date {
-  return addMonths(new Date(createdAt), retentionMonths());
+  return addCalendarMonths(new Date(createdAt), retentionMonths());
 }
 
-type OverdueRow = { _id: Types.ObjectId; createdAt: Date };
+type OverdueRow = { id: string; createdAt: Date };
 
 // A record is overdue once createdAt + months <= now, i.e. createdAt <= now - months.
 function overdueCutoff(now: Date): Date {
-  return addMonths(now, -retentionMonths());
+  return addCalendarMonths(now, -retentionMonths());
 }
 
-async function findOverdueRows(now: Date, limit: number) {
-  const cutoff = overdueCutoff(now);
+// Oldest first, with the id as the tie-breaker - the sort({createdAt:1, _id:1}) the index used
+// to provide, so two records written in the same second keep a stable order between runs.
+function overdueOf(rows: { id: string; createdAt: Date }[], cutoff: Date, size: number): OverdueRow[] {
+  return rows
+    .filter((row) => row.createdAt.getTime() <= cutoff.getTime())
+    .map((row) => ({ id: row.id, createdAt: new Date(row.createdAt) }))
+    .sort(
+      compareByDateAsc<OverdueRow>(
+        (row) => row.createdAt,
+        (row) => row.id
+      )
+    )
+    .slice(0, size);
+}
+
+async function findOverdueRows(now: Date, limit: number): Promise<{ applications: OverdueRow[]; talent: OverdueRow[] }> {
   const size = Math.max(0, Math.floor(limit));
-  if (size === 0) return { applications: [] as OverdueRow[], talent: [] as OverdueRow[] };
-  const [applications, talent] = await Promise.all([
-    ApplicationModel.find({ createdAt: { $lte: cutoff } })
-      .select({ _id: 1, createdAt: 1 })
-      .sort({ createdAt: 1, _id: 1 })
-      .limit(size)
-      .maxTimeMS(RETENTION_QUERY_MAX_TIME_MS)
-      .lean<OverdueRow[]>(),
-    TalentPoolEntryModel.find({ createdAt: { $lte: cutoff } })
-      .select({ _id: 1, createdAt: 1 })
-      .sort({ createdAt: 1, _id: 1 })
-      .limit(size)
-      .maxTimeMS(RETENTION_QUERY_MAX_TIME_MS)
-      .lean<OverdueRow[]>(),
-  ]);
-  return { applications, talent };
+  if (size === 0) return { applications: [], talent: [] };
+  const cutoff = overdueCutoff(now);
+  // Erasure decides on the state of the sheet right now, not on a cached copy that may be a few
+  // seconds old. Both tabs are refreshed in one batchGet; the repository reads below then come
+  // straight from that.
+  await loadTables(["Applications", "TalentPool"], { maxAgeMs: 0 });
+  const [applications, talent] = await Promise.all([listAllApplications(), listAllTalent()]);
+  return { applications: overdueOf(applications, cutoff, size), talent: overdueOf(talent, cutoff, size) };
 }
 
 // Oldest overdue records first, at most `limit` of each kind.
 export async function findRetentionOverdue(
   limit: number
 ): Promise<{ applications: { id: string; createdAt: Date }[]; talent: { id: string; createdAt: Date }[] }> {
-  await connectToDatabase();
-  const rows = await findOverdueRows(new Date(), limit);
-  const toResult = (row: OverdueRow) => ({ id: String(row._id), createdAt: new Date(row.createdAt) });
-  return { applications: rows.applications.map(toResult), talent: rows.talent.map(toResult) };
+  ensureStoreReady();
+  return findOverdueRows(new Date(), limit);
 }
 
 // System erasure of overdue records (archived or not), using the same purge path as HR erasure.
 // Applications go first so talent profiles are unlinked from them before their own purge.
 // A failure on one record (e.g. storage unavailable) is counted and the rest continue.
 export async function purgeRetentionOverdue(limit: number): Promise<{ applications: number; talent: number; errors: number }> {
-  await connectToDatabase();
+  ensureStoreReady();
   const rows = await findOverdueRows(new Date(), limit);
   const result = { applications: 0, talent: 0, errors: 0 };
 
   for (const row of rows.applications) {
     try {
-      await purgeApplicationRecord(row._id, { actor: null, ip: null, requireArchived: false, action: "retention.purge" });
+      await purgeApplicationRecord(row.id, { actor: null, ip: null, requireArchived: false, action: "retention.purge" });
       result.applications += 1;
     } catch (err) {
       result.errors += 1;
-      logger.error("retention.purge_failed", { recordType: "application", recordId: String(row._id), err });
+      logger.error("retention.purge_failed", { recordType: "application", recordId: row.id, err });
     }
   }
   for (const row of rows.talent) {
     try {
-      await purgeTalentRecord(row._id, { actor: null, ip: null, requireArchived: false, action: "retention.purge" });
+      await purgeTalentRecord(row.id, { actor: null, ip: null, requireArchived: false, action: "retention.purge" });
       result.talent += 1;
     } catch (err) {
       result.errors += 1;
-      logger.error("retention.purge_failed", { recordType: "talent", recordId: String(row._id), err });
+      logger.error("retention.purge_failed", { recordType: "talent", recordId: row.id, err });
     }
   }
 

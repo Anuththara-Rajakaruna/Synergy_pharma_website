@@ -1,15 +1,41 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { isValidEmail } from "@/lib/careers/validation";
 import { inspectEmailConfig } from "@/lib/email/transport";
-import { DatabaseConfigError, readDatabaseConfig } from "@/lib/mongodb";
-import { readStorageEnv } from "@/lib/storage-origin";
+import { readGoogleEnv } from "@/lib/google/config";
 
 // Central configuration check. Reported at server start (src/instrumentation.ts) and by
-// `npm run db:check`. Messages name variables but never include their values.
+// `npm run sheets:check`. Messages name variables but never include their values.
 
 export type ConfigProblem = { level: "error" | "warning"; variable: string; message: string };
 
 const MIN_SECRET_LENGTH = 32;
+
+// Variables the previous releases read and this one does not. Flagged so an operator who
+// migrated a deployment can see what is now dead weight (and, for the credentials among them,
+// what should be revoked rather than merely deleted).
+const RETIRED_VARIABLES: { names: readonly string[]; reason: string }[] = [
+  {
+    names: ["MONGODB_URI", "MONGODB_DB_NAME", "MONGODB_MAX_POOL_SIZE"],
+    reason: "records are held in the Google spreadsheet, not in a database server",
+  },
+  {
+    names: [
+      "S3_BUCKET",
+      "S3_REGION",
+      "S3_ENDPOINT",
+      "S3_PUBLIC_ENDPOINT",
+      "S3_ACCESS_KEY_ID",
+      "S3_SECRET_ACCESS_KEY",
+      "S3_FORCE_PATH_STYLE",
+      "S3_SERVER_SIDE_ENCRYPTION",
+    ],
+    reason: "candidate documents are held in the Google Drive folder, not in object storage",
+  },
+  {
+    names: ["AUTH_SECRET", "ADMIN_PASSWORD"],
+    reason: "admin users sign in with individual accounts",
+  },
+];
 
 function value(name: string): string {
   return (process.env[name] ?? "").trim();
@@ -29,6 +55,16 @@ function checkRecipientList(name: string, problems: ConfigProblem[], required: {
   }
 }
 
+// A whole number of months within the range the reader accepts. Anything outside it is silently
+// replaced by the default at the point of use, which is exactly why it is reported here.
+function checkMonths(name: string, problems: ConfigProblem[]) {
+  const raw = value(name);
+  if (!raw) return;
+  if (!/^\d+$/.test(raw) || Number(raw) < 1 || Number(raw) > 120) {
+    problems.push({ level: "error", variable: name, message: `${name} must be a whole number of months between 1 and 120.` });
+  }
+}
+
 export function getConfigProblems(): ConfigProblem[] {
   const production = process.env.NODE_ENV === "production";
   const problems: ConfigProblem[] = [];
@@ -40,19 +76,18 @@ export function getConfigProblems(): ConfigProblem[] {
     }
   }
 
-  // Database
-  try {
-    readDatabaseConfig();
-  } catch (err) {
-    if (err instanceof DatabaseConfigError) {
-      problems.push({
-        level: "error",
-        variable: err.message.includes("MONGODB_DB_NAME") ? "MONGODB_DB_NAME" : "MONGODB_URI",
-        message: err.message,
-      });
-    } else {
-      throw err;
-    }
+  // Data store: the Google spreadsheet (records) and the Google Drive folder (candidate files).
+  // Nothing the site does works without both, in every environment, so each problem readGoogleEnv
+  // reports is an error and is attributed to the variable that caused it.
+  const google = readGoogleEnv();
+  for (const problem of google.problems) problems.push({ level: "error", ...problem });
+  if (production && google.settings && !google.settings.sharedDriveId && !google.settings.impersonateUser) {
+    problems.push({
+      level: "warning",
+      variable: "GOOGLE_DRIVE_SHARED_DRIVE_ID",
+      message:
+        "Neither GOOGLE_DRIVE_SHARED_DRIVE_ID nor GOOGLE_IMPERSONATE_USER is set. A service account has no Drive storage quota of its own, so a file it uploads into a plain My Drive folder is charged against a quota of zero and the upload is refused with storageQuotaExceeded. Put the folder on a Shared Drive and set GOOGLE_DRIVE_SHARED_DRIVE_ID, or set up domain-wide delegation and set GOOGLE_IMPERSONATE_USER.",
+    });
   }
 
   // Site URL
@@ -76,29 +111,6 @@ export function getConfigProblems(): ConfigProblem[] {
       problems.push({ level: "error", variable: "NEXT_PUBLIC_SITE_URL", message: "NEXT_PUBLIC_SITE_URL must be an absolute URL such as https://www.example.com." });
     } else if (production && url.protocol !== "https:") {
       problems.push({ level: "error", variable: "NEXT_PUBLIC_SITE_URL", message: "NEXT_PUBLIC_SITE_URL must use https in production." });
-    }
-  }
-
-  // Object storage
-  const storage = readStorageEnv();
-  if (!storage.anySet) {
-    problems.push({
-      level: production ? "error" : "warning",
-      variable: "S3_BUCKET",
-      message: "Object storage is not configured (S3_BUCKET, S3_REGION or S3_ENDPOINT, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY); CV uploads and downloads will fail.",
-    });
-  } else {
-    for (const problem of storage.problems) problems.push({ level: "error", ...problem });
-    if (production && storage.settings) {
-      for (const endpoint of [storage.settings.endpoint, storage.settings.publicEndpoint]) {
-        if (endpoint && endpoint.startsWith("http://")) {
-          problems.push({
-            level: "warning",
-            variable: endpoint === storage.settings.endpoint ? "S3_ENDPOINT" : "S3_PUBLIC_ENDPOINT",
-            message: "The storage endpoint uses http://; candidate documents would travel unencrypted.",
-          });
-        }
-      }
     }
   }
 
@@ -167,23 +179,25 @@ export function getConfigProblems(): ConfigProblem[] {
   }
 
   // Retention
-  const retention = value("DATA_RETENTION_MONTHS");
-  if (retention && (!/^\d+$/.test(retention) || Number(retention) < 1 || Number(retention) > 120)) {
-    problems.push({ level: "error", variable: "DATA_RETENTION_MONTHS", message: "DATA_RETENTION_MONTHS must be a whole number of months between 1 and 120." });
-  }
+  checkMonths("DATA_RETENTION_MONTHS", problems);
   const autoPurge = value("RETENTION_AUTO_PURGE");
   if (autoPurge && autoPurge !== "true" && autoPurge !== "false") {
     problems.push({ level: "error", variable: "RETENTION_AUTO_PURGE", message: "RETENTION_AUTO_PURGE must be true or false." });
   }
+  // The AuditLog tab is the only one that grows for ever, and a spreadsheet holds at most ten
+  // million cells, so how long audit rows are kept is a capacity setting as well as a policy one.
+  checkMonths("AUDIT_RETENTION_MONTHS", problems);
 
-  // Settings from the previous release that no longer have any effect.
-  for (const name of ["AUTH_SECRET", "ADMIN_PASSWORD"]) {
-    if (value(name)) {
-      problems.push({
-        level: "warning",
-        variable: name,
-        message: `${name} is no longer used (admin users sign in with individual accounts). Remove it from the environment.`,
-      });
+  // Settings from previous releases that no longer have any effect.
+  for (const group of RETIRED_VARIABLES) {
+    for (const name of group.names) {
+      if (value(name)) {
+        problems.push({
+          level: "warning",
+          variable: name,
+          message: `${name} is no longer used (${group.reason}). Remove it from the environment.`,
+        });
+      }
     }
   }
 

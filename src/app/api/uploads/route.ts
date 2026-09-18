@@ -1,4 +1,3 @@
-import type { Types } from "mongoose";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { createUploadTickets } from "@/lib/careers/server/uploads";
 import { validateUploadRequest } from "@/lib/careers/validation";
@@ -13,12 +12,12 @@ export const runtime = "nodejs";
 
 const UPLOAD_REQUEST_LIMIT = 64 * 1024;
 
-// Issues presigned direct-to-storage upload URLs. The files themselves never pass through this
-// server, which keeps requests far below serverless body limits.
+// Issues one signed upload ticket per file. The ticket points at PUT /api/uploads/<uploadId>,
+// which receives the bytes, validates them and stages them in Google Drive.
 export const POST = apiHandler("api.uploads.create", async (request: Request) => {
   const body = await readJsonBody(request, UPLOAD_REQUEST_LIMIT);
 
-  let adminUserId: Types.ObjectId | null = null;
+  let adminUserId: string | null = null;
   if (body.purpose === "admin_talent") {
     const ctx = await requireAdmin(request);
     adminUserId = ctx.userId;

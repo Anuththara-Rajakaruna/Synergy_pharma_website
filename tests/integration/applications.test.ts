@@ -1,7 +1,6 @@
 import "./support/env";
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
-import { Types } from "mongoose";
 import type { AdminContext } from "@/lib/auth/session";
 import {
   addApplicationNote,
@@ -15,15 +14,19 @@ import {
   submitApplication,
 } from "@/lib/careers/server/applications";
 import { changeJobStatus, createJob, updateJob } from "@/lib/careers/server/jobs";
+import { applicationReference, newId } from "@/lib/careers/server/ids";
+import type { ApplicationRecord } from "@/lib/careers/server/records";
 import { setTalentArchived, submitTalentProfile } from "@/lib/careers/server/talent-pool";
 import { parsePagination, type ApplicationSubmission } from "@/lib/careers/validation";
-import { ApplicationModel, applicationReference, type ApplicationDoc } from "@/models/application";
-import { EmailOutboxModel } from "@/models/email-outbox";
-import { JobModel } from "@/models/job";
-import { TalentPoolEntryModel } from "@/models/talent-pool-entry";
-import { UploadIntentModel } from "@/models/upload-intent";
+import { updateRecord } from "@/lib/sheets-db";
+import { encodeDate } from "@/lib/sheets-db/codec";
+import { findApplicationById, loadApplication } from "@/lib/sheets-db/repositories/applications";
+import { listEmails } from "@/lib/sheets-db/repositories/email";
+import { findJobBySlug, patchJob } from "@/lib/sheets-db/repositories/jobs";
+import { listAllTalent, loadTalent } from "@/lib/sheets-db/repositories/talent";
 import type { AdminJob } from "@/types/careers";
-import { integrationConfig } from "./support/env";
+import { integrationConfig, suiteSkip } from "./support/env";
+import { FOLDER_NAMES, driveFileExists, listFilesIn } from "./support/drive";
 import {
   adminContext,
   applicationSubmission,
@@ -39,20 +42,37 @@ import {
   uploadDocument,
 } from "./support/fixtures";
 import { startIntegration, type Integration } from "./support/harness";
-import { listKeys, objectExists, putObject } from "./support/s3";
 
 const LF = String.fromCharCode(10);
 const DAY = 24 * 60 * 60 * 1000;
 
 type Submitted = { id: string; reference: string; input: ApplicationSubmission };
 
-async function loadApplication(id: string): Promise<ApplicationDoc> {
-  const doc = await ApplicationModel.findById(id).lean<ApplicationDoc>();
-  assert.ok(doc, `application ${id} not found`);
-  return doc;
+async function record(id: string): Promise<ApplicationRecord> {
+  const found = await loadApplication(id, { refreshOnMiss: true });
+  assert.ok(found, `application ${id} not found`);
+  return found;
 }
 
-describe("applications service", { timeout: 300_000 }, () => {
+async function stagedNames(): Promise<string[]> {
+  return (await listFilesIn(FOLDER_NAMES.staging)).map((file) => file.name);
+}
+
+async function emailsFor(entityType: string, entityId: string) {
+  return (await listEmails({ maxAgeMs: 0 })).filter((message) => message.related?.entityType === entityType && message.related?.entityId === entityId);
+}
+
+async function liveApplicationsFor(emailNormalized: string): Promise<ApplicationRecord[]> {
+  const rows = await listApplications({ archived: "include" }, parsePagination(new URLSearchParams("limit=100")));
+  const found: ApplicationRecord[] = [];
+  for (const item of rows.items) {
+    const full = await loadApplication(item.id);
+    if (full && full.emailNormalized === emailNormalized.toLowerCase()) found.push(full);
+  }
+  return found;
+}
+
+describe("applications service", { timeout: 600_000, skip: suiteSkip() }, () => {
   let integration: Integration;
   let hr: AdminContext;
   let job: AdminJob;
@@ -89,9 +109,10 @@ describe("applications service", { timeout: 300_000 }, () => {
       assert.equal(reference, applicationReference(id));
       assert.match(reference, /^APP-[0-9A-F]{8}$/);
 
-      const doc = await loadApplication(id);
-      const jobDoc = await JobModel.findOne({ slug: job.id }).lean();
-      assert.ok(jobDoc && doc.job.equals(jobDoc._id));
+      const doc = await record(id);
+      const jobRecord = await findJobBySlug(job.id);
+      assert.ok(jobRecord);
+      assert.equal(doc.job, jobRecord.id, "the row stores the job's record id, not its slug");
       assert.equal(doc.jobSlug, job.id);
       assert.equal(doc.jobTitle, job.title);
       assert.equal(doc.department, "Quality Assurance");
@@ -104,26 +125,26 @@ describe("applications service", { timeout: 300_000 }, () => {
       assert.equal(doc.talentPoolEntry, null);
       assert.equal(doc.linkedIn, input.linkedIn);
       assert.equal(doc.portfolio, null);
+      assert.equal(doc.supersededBy, null);
+
       assert.equal(doc.statusHistory.length, 1);
       assert.deepEqual(
-        { ...doc.statusHistory[0], _id: undefined, changedAt: undefined },
-        { _id: undefined, changedAt: undefined, from: null, to: "submitted", changedBy: null, changedByName: null, note: "Application submitted via website", candidateNotified: false }
+        { ...doc.statusHistory[0], id: undefined, changedAt: undefined },
+        { id: undefined, changedAt: undefined, from: null, to: "submitted", changedBy: null, changedByName: null, note: "Application submitted via website", candidateNotified: false }
       );
 
       assert.equal(doc.documents.length, 2);
-      assert.deepEqual(
-        doc.documents.map((document) => document.kind),
-        ["cv", "supporting"]
-      );
+      assert.deepEqual(doc.documents.map((document) => document.kind), ["cv", "supporting"]);
       for (const document of doc.documents) {
-        assert.equal(document.key, `applications/${id}/${document._id.toHexString()}.pdf`);
-        assert.ok(await objectExists(document.key));
+        assert.match(document.driveFileId, /^[A-Za-z0-9_-]{10,}$/);
+        assert.ok(await driveFileExists(document.driveFileId));
       }
+      const staged = await stagedNames();
       for (const uploadId of [input.uploads.cv, ...input.uploads.supporting]) {
-        assert.equal(await objectExists(`incoming/${uploadId}.pdf`), false);
+        assert.equal(staged.includes(`${uploadId}.pdf`), false, "the staged file was moved, not copied");
       }
 
-      const emails = await EmailOutboxModel.find({ "related.entityType": "application", "related.entityId": id }).sort({ template: 1 }).lean();
+      const emails = (await emailsFor("application", id)).sort((a, b) => a.template.localeCompare(b.template));
       assert.deepEqual(
         emails.map((email) => [email.template, email.to, email.replyTo, email.status]),
         [
@@ -144,7 +165,7 @@ describe("applications service", { timeout: 300_000 }, () => {
       const localJob = await publishedJob(hr);
       const { id } = await submit(localJob.id);
       await updateJob(localJob.id, jobInput({ title: "Renamed Role" }), hr);
-      assert.equal((await loadApplication(id)).jobTitle, localJob.title);
+      assert.equal((await record(id)).jobTitle, localJob.title);
     });
 
     it("rejects a duplicate (case-insensitive email) before claiming the new uploads", async () => {
@@ -153,9 +174,8 @@ describe("applications service", { timeout: 300_000 }, () => {
       const duplicate = applicationSubmission(job.id, { cv }, { email: first.input.email.toUpperCase() });
       const err = await expectAppError(submitApplication(duplicate, { ip: "198.51.100.23" }), 409, "duplicate_application");
       assert.equal(err.message, "You have already applied for this role. We'll be in touch if your profile is shortlisted.");
-      assert.equal((await UploadIntentModel.findById(cv).lean())?.consumedAt, null);
-      assert.ok(await objectExists(`incoming/${cv}.pdf`));
-      assert.equal(await ApplicationModel.countDocuments({ emailNormalized: first.input.email.toLowerCase() }), 1);
+      assert.ok((await stagedNames()).includes(`${cv}.pdf`), "the upload is still staged and can be submitted again");
+      assert.equal((await liveApplicationsFor(first.input.email)).length, 1);
 
       await setApplicationArchived(first.id, true, "", hr);
       const cvAgain = await uploadDocument("application", "cv");
@@ -177,27 +197,30 @@ describe("applications service", { timeout: 300_000 }, () => {
       const archived = await publishedJob(hr);
       await changeJobStatus(archived.id, "archive", hr);
       const expired = await publishedJob(hr, { applicationDeadline: new Date(Date.now() + DAY) });
-      await JobModel.updateOne({ slug: expired.id }, { $set: { applicationDeadline: new Date(Date.now() - 1000) } });
+      const expiredRecord = await findJobBySlug(expired.id);
+      assert.ok(expiredRecord);
+      await patchJob(expiredRecord.id, { applicationDeadline: new Date(Date.now() - 1000) });
 
       for (const slug of [closed.id, draft.id, archived.id, expired.id, `missing-${uniqueSuffix()}`]) {
         const cv = await uploadDocument("application", "cv");
         const err = await expectAppError(submitApplication(applicationSubmission(slug, { cv }), { ip: "198.51.100.23" }), 404, "job_not_found");
         assert.equal(err.message, "This role is no longer accepting applications.");
-        assert.equal((await UploadIntentModel.findById(cv).lean())?.consumedAt, null, slug);
+        assert.ok((await stagedNames()).includes(`${cv}.pdf`), slug);
       }
     });
 
     it("releases the claimed CV when a supporting document is invalid, so the form can be resubmitted", async () => {
       const cv = await uploadDocument("application", "cv");
-      const notPdf = await uploadDocument("application", "supporting", Buffer.from("plain text ".repeat(300)));
-      const input = applicationSubmission(job.id, { cv, supporting: [notPdf] });
+      // An upload issued for the talent pool cannot be claimed as an application document.
+      const wrongPurpose = await uploadDocument("talent_pool", "supporting", pdfBytes(1500));
+      const input = applicationSubmission(job.id, { cv, supporting: [wrongPurpose] });
       personalData.push(input.name, input.email, input.phone);
-      await expectAppError(submitApplication(input, { ip: "198.51.100.23" }), 400, "invalid_file");
-      assert.equal(await ApplicationModel.exists({ emailNormalized: input.email.toLowerCase() }), null);
-      assert.equal((await UploadIntentModel.findById(cv).lean())?.consumedAt, null);
+      await expectAppError(submitApplication(input, { ip: "198.51.100.23" }), 400, "upload_expired");
+      assert.equal((await liveApplicationsFor(input.email)).length, 0);
+      assert.ok((await stagedNames()).includes(`${cv}.pdf`), "the CV was moved back out of the candidate folder");
 
       const retried = await submitApplication({ ...input, uploads: { cv, supporting: [] } }, { ip: "198.51.100.23" });
-      assert.equal((await loadApplication(retried.id)).documents.length, 1);
+      assert.equal((await record(retried.id)).documents.length, 1);
     });
 
     it("accepts only one of two simultaneous submissions for the same job and email, releasing the loser's files", async () => {
@@ -206,7 +229,7 @@ describe("applications service", { timeout: 300_000 }, () => {
       const first = applicationSubmission(raceJob.id, { cv: cvA });
       personalData.push(first.name, first.email, first.phone);
       const second = { ...first, email: first.email.toUpperCase(), uploads: { cv: cvB, supporting: [] } };
-      const keysBefore = new Set(await listKeys("applications/"));
+      const filesBefore = new Set((await listFilesIn(FOLDER_NAMES.applications)).map((file) => file.id));
 
       const outcomes = await Promise.allSettled([submitApplication(first, { ip: "198.51.100.23" }), submitApplication(second, { ip: "198.51.100.23" })]);
       const fulfilled = outcomes.filter((outcome) => outcome.status === "fulfilled");
@@ -215,24 +238,11 @@ describe("applications service", { timeout: 300_000 }, () => {
       assert.equal(rejected.length, 1);
       assert.ok(rejected[0].reason instanceof Error && (rejected[0].reason as { code?: string }).code === "duplicate_application", String(rejected[0].reason));
 
-      const raceJobDoc = await JobModel.findOne({ slug: raceJob.id }).lean();
-      const stored = await ApplicationModel.find({ job: raceJobDoc?._id }).lean<ApplicationDoc[]>();
-      assert.equal(stored.length, 1);
-      for (const document of stored[0].documents) assert.ok(await objectExists(document.key), "the winner keeps its documents");
-      const newKeys = (await listKeys("applications/")).filter((key) => !keysBefore.has(key)).sort();
-      assert.deepEqual(newKeys, stored[0].documents.map((document) => document.key).sort(), "copies made for the rejected submission were deleted");
-    });
-
-    it("removes copied documents when the record cannot be saved", async () => {
-      const keysBefore = new Set(await listKeys("applications/"));
-      const cv = await uploadDocument("application", "cv");
-      // Bypasses the route validator: the schema rejects the over-long name after the upload was claimed.
-      const input = applicationSubmission(job.id, { cv }, { name: `Nimal ${"Perera".repeat(30)}` });
-      personalData.push(input.email, input.phone);
-      await assert.rejects(submitApplication(input, { ip: "198.51.100.23" }), (err: unknown) => err instanceof Error && err.name === "ValidationError");
-      const newKeys = (await listKeys("applications/")).filter((key) => !keysBefore.has(key));
-      assert.deepEqual(newKeys, []);
-      assert.equal(await ApplicationModel.exists({ emailNormalized: input.email.toLowerCase() }), null);
+      const stored = await liveApplicationsFor(first.email);
+      assert.equal(stored.length, 1, "the loser's row is superseded, so it is invisible everywhere");
+      for (const document of stored[0].documents) assert.ok(await driveFileExists(document.driveFileId), "the winner keeps its documents");
+      const newFiles = (await listFilesIn(FOLDER_NAMES.applications)).filter((file) => !filesBefore.has(file.id)).map((file) => file.id).sort();
+      assert.deepEqual(newFiles, stored[0].documents.map((document) => document.driveFileId).sort(), "files moved for the rejected submission were deleted");
     });
   });
 
@@ -246,7 +256,7 @@ describe("applications service", { timeout: 300_000 }, () => {
         { ...reviewed.statusHistory[1], id: undefined, changedAt: undefined },
         { id: undefined, changedAt: undefined, from: "submitted", to: "under_review", changedByName: "Hiruni Recruiter", note: "CV looks relevant", candidateNotified: false }
       );
-      assert.equal(await EmailOutboxModel.countDocuments({ "related.entityId": id, template: "application_status_update" }), 0);
+      assert.equal((await emailsFor("application", id)).filter((email) => email.template === "application_status_update").length, 0);
 
       const message = `Please bring your certificates.${LF}<b>Venue:</b> Head office`;
       const invited = await changeApplicationStatus(
@@ -256,7 +266,7 @@ describe("applications service", { timeout: 300_000 }, () => {
       );
       assert.equal(invited.statusHistory[2].candidateNotified, true);
       assert.ok(Date.parse(invited.statusChangedAt) >= Date.parse(reviewed.statusChangedAt));
-      const email = await EmailOutboxModel.findOne({ "related.entityId": id, template: "application_status_update" }).lean();
+      const email = (await emailsFor("application", id)).find((item) => item.template === "application_status_update");
       assert.ok(email);
       assert.equal(email.to, input.email);
       assert.equal(email.replyTo, integrationConfig.hrEmail);
@@ -280,7 +290,7 @@ describe("applications service", { timeout: 300_000 }, () => {
       await changeApplicationStatus(id, { status: "rejected", expectedStatus: "submitted" }, hr);
       const back = await changeApplicationStatus(id, { status: "submitted", expectedStatus: "rejected", notifyCandidate: true, candidateMessage: "Reopened" }, hr);
       assert.equal(back.statusHistory[2].candidateNotified, false);
-      assert.equal(await EmailOutboxModel.countDocuments({ "related.entityId": id, template: "application_status_update" }), 0);
+      assert.equal((await emailsFor("application", id)).filter((email) => email.template === "application_status_update").length, 0);
     });
 
     it("rejects an unchanged status and a stale expected status", async () => {
@@ -289,7 +299,7 @@ describe("applications service", { timeout: 300_000 }, () => {
       await changeApplicationStatus(id, { status: "shortlisted", expectedStatus: "submitted" }, hr);
       const err = await expectAppError(changeApplicationStatus(id, { status: "rejected", expectedStatus: "submitted" }, hr), 409, "status_conflict");
       assert.equal(err.message, "This application was updated by someone else. Refresh to see the latest status.");
-      const doc = await loadApplication(id);
+      const doc = await record(id);
       assert.equal(doc.status, "shortlisted");
       assert.equal(doc.statusHistory.length, 2);
     });
@@ -303,7 +313,7 @@ describe("applications service", { timeout: 300_000 }, () => {
       assert.deepEqual(outcomes.map((outcome) => outcome.status).sort(), ["fulfilled", "rejected"]);
       const failure = outcomes.find((outcome): outcome is PromiseRejectedResult => outcome.status === "rejected");
       assert.equal((failure?.reason as { code?: string }).code, "status_conflict");
-      assert.equal((await loadApplication(id)).statusHistory.length, 2);
+      assert.equal((await record(id)).statusHistory.length, 2, "the losing change appended no history row");
     });
 
     it("refuses to change archived applications", async () => {
@@ -322,11 +332,7 @@ describe("applications service", { timeout: 300_000 }, () => {
       );
       assert.ok(err.fields?.status);
       await expectAppError(changeApplicationStatus("not-an-id", { status: "rejected", expectedStatus: "submitted" }, hr), 404, "application_not_found");
-      await expectAppError(
-        changeApplicationStatus(new Types.ObjectId().toHexString(), { status: "rejected", expectedStatus: "submitted" }, hr),
-        404,
-        "application_not_found"
-      );
+      await expectAppError(changeApplicationStatus(newId(), { status: "rejected", expectedStatus: "submitted" }, hr), 404, "application_not_found");
     });
   });
 
@@ -338,10 +344,7 @@ describe("applications service", { timeout: 300_000 }, () => {
       assert.equal(detail.notes[0].body, "Strong GMP background; call on Monday.");
       assert.equal(detail.notes[0].authorName, "Hiruni Recruiter");
       const second = await addApplicationNote(id, "Second note", hr);
-      assert.deepEqual(
-        second.notes.map((note) => note.body),
-        ["Strong GMP background; call on Monday.", "Second note"]
-      );
+      assert.deepEqual(second.notes.map((note) => note.body), ["Strong GMP background; call on Monday.", "Second note"]);
       const audits = await auditEntries({ action: "application.note_add", entityId: id });
       assert.equal(audits.length, 2);
       assertNoPersonalData(JSON.stringify(audits), ["Strong GMP background", "Second note"], "note audit");
@@ -366,7 +369,7 @@ describe("applications service", { timeout: 300_000 }, () => {
       assert.equal(archived.archiveReason, "Duplicate of a phone application");
       await setApplicationArchived(id, true, "again", hr);
       assert.equal((await auditEntries({ action: "application.archive", entityId: id })).length, 1);
-      assert.equal((await loadApplication(id)).archiveReason, "Duplicate of a phone application");
+      assert.equal((await record(id)).archiveReason, "Duplicate of a phone application");
 
       const restored = await setApplicationArchived(id, false, "", hr);
       assert.equal(restored.archived, false);
@@ -385,7 +388,7 @@ describe("applications service", { timeout: 300_000 }, () => {
       const c = await submit(listJob.id);
       await changeApplicationStatus(b.id, { status: "shortlisted", expectedStatus: "submitted" }, hr);
       await setApplicationArchived(c.id, true, "", hr);
-      await ApplicationModel.collection.updateOne({ _id: new Types.ObjectId(a.id) }, { $set: { createdAt: new Date("2025-01-15T10:00:00.000Z") } });
+      assert.ok(await updateRecord("Applications", a.id, { createdAt: encodeDate(new Date("2025-01-15T10:00:00.000Z")) }));
 
       const page = parsePagination(new URLSearchParams("limit=10"));
       const ids = async (filters: Parameters<typeof listApplications>[0]) => (await listApplications({ jobSlug: listJob.id, ...filters }, page)).items.map((item) => item.id);
@@ -408,7 +411,7 @@ describe("applications service", { timeout: 300_000 }, () => {
       assert.equal(firstPage.items.length, 2);
       const item = firstPage.items[0];
       assert.equal("coverLetter" in item, false);
-      assert.equal(JSON.stringify(firstPage).includes("applications/"), false, "no storage keys in list items");
+      assert.equal(JSON.stringify(firstPage).includes("driveFileId"), false, "no storage identifiers in list items");
 
       const { csv, rowCount } = await exportApplicationsCsv({ jobSlug: listJob.id, archived: "include" }, hr);
       assert.equal(rowCount, 3);
@@ -433,7 +436,7 @@ describe("applications service", { timeout: 300_000 }, () => {
   });
 
   describe("detail", () => {
-    it("returns the detail DTO without storage keys and audits the view", async () => {
+    it("returns the detail DTO without Drive identifiers and audits the view", async () => {
       const { id } = await submit(job.id, {}, 1);
       const detail = await getApplicationDetail(id, hr);
       assert.equal(detail.documents.length, 2);
@@ -441,7 +444,10 @@ describe("applications service", { timeout: 300_000 }, () => {
         assert.equal(document.downloadUrl, `/api/admin/documents/${document.id}`);
       }
       const json = JSON.stringify(detail);
-      assert.equal(json.includes(`applications/${id}/`), false);
+      const stored = await record(id);
+      for (const document of stored.documents) {
+        assert.equal(json.includes(document.driveFileId), false, "the Drive file id never reaches the browser");
+      }
       assert.equal(json.includes("emailNormalized"), false);
       assert.equal(detail.jobStillExists, true);
       assert.equal((await auditEntries({ action: "application.view", entityId: id })).length, 1);
@@ -455,35 +461,29 @@ describe("applications service", { timeout: 300_000 }, () => {
       const result = await moveApplicationToTalentPool(id, { tags: ["GMP", " qa "], note: "Great fit for future QA roles" }, hr);
       assert.equal(result.created, true);
 
-      const entry = await TalentPoolEntryModel.findById(result.talentPoolEntryId).lean();
+      const entry = await loadTalent(result.talentPoolEntryId);
       assert.ok(entry);
       assert.equal(entry.source, "application");
-      assert.ok(entry.sourceApplication?.equals(id));
-      assert.deepEqual(entry.applications.map(String), [id]);
+      assert.equal(entry.sourceApplication, id);
+      assert.deepEqual(entry.applications, [id]);
       assert.equal(entry.emailNormalized, input.email.toLowerCase());
       assert.equal(entry.areaOfInterest, "Quality Assurance");
       assert.deepEqual(entry.tags, ["gmp", "qa"]);
       assert.equal(entry.consentGiven, true);
       assert.equal(entry.candidateNotes, "");
-      assert.deepEqual(
-        entry.notes.map((note) => [note.body, note.authorName]),
-        [["Great fit for future QA roles", "Hiruni Recruiter"]]
-      );
-      assert.deepEqual(
-        entry.activity.map((activity) => activity.action),
-        ["created"]
-      );
+      assert.deepEqual(entry.notes.map((note) => [note.body, note.authorName]), [["Great fit for future QA roles", "Hiruni Recruiter"]]);
+      assert.deepEqual(entry.activity.map((activity) => activity.action), ["created"]);
       assert.ok(entry.activity[0].detail.includes(reference));
 
-      const application = await loadApplication(id);
-      assert.ok(application.talentPoolEntry?.equals(result.talentPoolEntryId));
+      const application = await record(id);
+      assert.equal(application.talentPoolEntry, result.talentPoolEntryId);
       assert.equal(entry.documents.length, application.documents.length);
       for (const [index, document] of entry.documents.entries()) {
         const original = application.documents[index];
-        assert.equal(document._id.equals(original._id), false);
-        assert.equal(document.key, `talent-pool/${result.talentPoolEntryId}/${document._id.toHexString()}.pdf`);
-        assert.ok(await objectExists(document.key));
-        assert.ok(await objectExists(original.key));
+        assert.notEqual(document.id, original.id);
+        assert.notEqual(document.driveFileId, original.driveFileId, "the copy is its own Drive file");
+        assert.ok(await driveFileExists(document.driveFileId));
+        assert.ok(await driveFileExists(original.driveFileId));
       }
       assert.equal((await auditEntries({ action: "application.move_to_talent_pool", entityId: id })).length, 1);
     });
@@ -496,32 +496,32 @@ describe("applications service", { timeout: 300_000 }, () => {
       const third = await moveApplicationToTalentPool(id, { tags: ["qc"], note: "" }, hr);
       assert.equal(third.talentPoolEntryId, first.talentPoolEntryId);
 
-      const entry = await TalentPoolEntryModel.findById(first.talentPoolEntryId).lean();
+      const entry = await loadTalent(first.talentPoolEntryId);
       assert.ok(entry);
       assert.deepEqual(entry.tags, ["qa", "qc"]);
       assert.equal(entry.notes.length, 1);
       assert.equal(entry.documents.length, 1);
-      assert.deepEqual(
-        entry.activity.map((activity) => activity.action),
-        ["created", "tags_changed"]
-      );
-      assert.equal(await TalentPoolEntryModel.countDocuments({ emailNormalized: entry.emailNormalized }), 1);
+      assert.deepEqual(entry.activity.map((activity) => activity.action), ["created", "tags_changed"]);
+      assert.equal((await listAllTalent({ maxAgeMs: 0 })).filter((item) => item.emailNormalized === entry.emailNormalized).length, 1);
     });
 
     it("creates a single profile when the move is requested twice at the same time", async () => {
       const { id } = await submit(job.id, {}, 1);
-      const keysBefore = new Set(await listKeys("talent-pool/"));
+      const filesBefore = new Set((await listFilesIn(FOLDER_NAMES.talent)).map((file) => file.id));
       const results = await Promise.all([
         moveApplicationToTalentPool(id, { tags: ["qa"], note: "" }, hr),
         moveApplicationToTalentPool(id, { tags: ["qa"], note: "" }, hr),
       ]);
       assert.equal(results[0].talentPoolEntryId, results[1].talentPoolEntryId);
       assert.deepEqual(results.map((result) => result.created).sort(), [false, true]);
-      const application = await loadApplication(id);
-      assert.equal(await TalentPoolEntryModel.countDocuments({ emailNormalized: application.emailNormalized }), 1);
-      const entry = await TalentPoolEntryModel.findById(results[0].talentPoolEntryId).lean();
-      const newKeys = (await listKeys("talent-pool/")).filter((key) => !keysBefore.has(key)).sort();
-      assert.deepEqual(newKeys, (entry?.documents ?? []).map((document) => document.key).sort(), "copies made by the losing request were deleted");
+      const application = await record(id);
+      assert.equal(
+        (await listAllTalent({ maxAgeMs: 0 })).filter((item) => item.emailNormalized === application.emailNormalized).length,
+        1
+      );
+      const entry = await loadTalent(results[0].talentPoolEntryId);
+      const newFiles = (await listFilesIn(FOLDER_NAMES.talent)).filter((file) => !filesBefore.has(file.id)).map((file) => file.id).sort();
+      assert.deepEqual(newFiles, (entry?.documents ?? []).map((document) => document.driveFileId).sort(), "copies made by the losing request were deleted");
     });
 
     it("links an existing talent profile with the same email instead of creating one", async () => {
@@ -533,17 +533,14 @@ describe("applications service", { timeout: 300_000 }, () => {
 
       const result = await moveApplicationToTalentPool(id, { tags: ["referral"], note: "Linked from application" }, hr);
       assert.deepEqual(result, { talentPoolEntryId: talent.id, created: false });
-      const entry = await TalentPoolEntryModel.findById(talent.id).lean();
+      const entry = await loadTalent(talent.id);
       assert.ok(entry);
-      assert.deepEqual(entry.applications.map(String), [id]);
+      assert.deepEqual(entry.applications, [id]);
       assert.equal(entry.documents.length, 1, "documents are not copied into an existing profile");
       assert.deepEqual(entry.tags, ["referral"]);
-      assert.deepEqual(
-        entry.activity.map((activity) => activity.action),
-        ["created", "application_linked", "tags_changed"]
-      );
+      assert.deepEqual(entry.activity.map((activity) => activity.action), ["created", "application_linked", "tags_changed"]);
       assert.deepEqual(entry.notes.map((note) => note.body), ["Linked from application"]);
-      assert.ok((await loadApplication(id)).talentPoolEntry?.equals(talent.id));
+      assert.equal((await record(id)).talentPoolEntry, talent.id);
     });
 
     it("refuses archived talent profiles and archived applications", async () => {
@@ -567,97 +564,66 @@ describe("applications service", { timeout: 300_000 }, () => {
     it("requires the application to be archived first", async () => {
       const { id } = await submit();
       await expectAppError(purgeApplication(id, hr), 409, "not_archived");
-      assert.ok(await ApplicationModel.exists({ _id: id }));
+      assert.ok(await findApplicationById(id, { maxAgeMs: 0 }));
     });
 
-    it("erases documents, related emails and talent links, then the record", async () => {
+    it("erases documents, related emails and talent links, then the rows", async () => {
       const admin = await adminContext("admin", "Asela Administrator");
       const { id, reference } = await submit(job.id, {}, 1);
       const other = await submit();
       const moved = await moveApplicationToTalentPool(id, { tags: [], note: "" }, hr);
       await changeApplicationStatus(id, { status: "rejected", expectedStatus: "submitted", notifyCandidate: true }, hr);
-      const documents = (await loadApplication(id)).documents;
-      assert.equal(await EmailOutboxModel.countDocuments({ "related.entityType": "application", "related.entityId": id }), 3);
+      const documents = (await record(id)).documents;
+      assert.equal((await emailsFor("application", id)).length, 3);
 
       await setApplicationArchived(id, true, "Erasure request", hr);
       await purgeApplication(id, admin);
 
-      assert.equal(await ApplicationModel.exists({ _id: id }), null);
-      for (const document of documents) assert.equal(await objectExists(document.key), false, document.key);
-      assert.equal(await EmailOutboxModel.countDocuments({ "related.entityType": "application", "related.entityId": id }), 0);
-      assert.equal(await EmailOutboxModel.countDocuments({ "related.entityType": "application", "related.entityId": other.id }), 2, "other records keep their emails");
+      assert.equal(await findApplicationById(id, { maxAgeMs: 0 }), null);
+      for (const document of documents) assert.equal(await driveFileExists(document.driveFileId), false, document.driveFileId);
+      assert.equal((await emailsFor("application", id)).length, 0);
+      assert.equal((await emailsFor("application", other.id)).length, 2, "other records keep their emails");
 
-      const entry = await TalentPoolEntryModel.findById(moved.talentPoolEntryId).lean();
+      const entry = await loadTalent(moved.talentPoolEntryId);
       assert.ok(entry, "the talent profile itself is kept");
       assert.deepEqual(entry.applications, []);
       assert.equal(entry.sourceApplication, null);
       assert.equal(entry.activity.at(-1)?.action, "application_deleted");
-      assert.ok(entry.documents.every((document) => document.key.startsWith(`talent-pool/${moved.talentPoolEntryId}/`)));
-      for (const document of entry.documents) assert.ok(await objectExists(document.key), "talent copies are independent");
+      for (const document of entry.documents) {
+        assert.ok(await driveFileExists(document.driveFileId), "talent copies are independent");
+      }
 
       const [audit] = await auditEntries({ action: "application.purge", entityId: id });
-      assert.ok(audit.actor?.user.equals(admin.userId));
+      assert.equal(audit.actor?.user, admin.userId);
       assert.equal(audit.meta.reference, reference);
       assert.equal(audit.meta.jobSlug, job.id);
+      assert.equal(audit.meta.keptSharedDocuments, 0);
     });
 
-    it("keeps a migrated (legacy) file while another record still references its key", async () => {
-      const legacyKey = `cvs/1700000000-shared ${uniqueSuffix()}.pdf`;
-      await putObject(legacyKey, pdfBytes(1024));
-      const legacyDocument = () => ({
-        _id: new Types.ObjectId(),
-        kind: "cv" as const,
-        key: legacyKey,
-        originalName: "shared.pdf",
-        size: null,
-        contentType: "application/pdf",
-        uploadedAt: new Date("2024-01-01T00:00:00.000Z"),
-        legacy: true,
-      });
+    it("keeps a Drive file while another record's document row still points at it", async () => {
+      // Records merged before the migration can share one file. Erasing one of them must not
+      // take the file out from under the other.
       const first = await submit();
       const second = await submit();
-      // Replace the uploaded CVs with the same migrated file, as merged legacy records can share one.
-      await ApplicationModel.updateOne({ _id: first.id }, { $set: { documents: [legacyDocument()] } });
-      await ApplicationModel.updateOne({ _id: second.id }, { $set: { documents: [legacyDocument()] } });
+      const shared = (await record(first.id)).documents[0];
+      const secondDocument = (await record(second.id)).documents[0];
+      assert.ok(await updateRecord("Documents", secondDocument.id, { driveFileId: shared.driveFileId }));
 
       await setApplicationArchived(first.id, true, "", hr);
       await purgeApplication(first.id, hr);
-      assert.equal(await ApplicationModel.exists({ _id: first.id }), null);
-      assert.ok(await objectExists(legacyKey), "the other record still needs the file");
+      assert.equal(await findApplicationById(first.id, { maxAgeMs: 0 }), null);
+      assert.ok(await driveFileExists(shared.driveFileId), "the other record still needs the file");
       const [audit] = await auditEntries({ action: "application.purge", entityId: first.id });
       assert.equal(audit.meta.keptSharedDocuments, 1);
 
       await setApplicationArchived(second.id, true, "", hr);
       await purgeApplication(second.id, hr);
-      assert.equal(await objectExists(legacyKey), false, "the last reference removes the file");
+      assert.equal(await driveFileExists(shared.driveFileId), false, "the last reference removes the file");
     });
 
-    it("keeps the record and reports 502 when stored documents cannot be deleted", async () => {
-      const { id } = await submit();
-      const key = `applications/${id}/${new Types.ObjectId().toHexString()}.pdf`;
-      await putObject(key, pdfBytes(1024));
-      await ApplicationModel.updateOne(
-        { _id: id },
-        {
-          $push: {
-            documents: {
-              _id: new Types.ObjectId(),
-              kind: "supporting",
-              key: "/invalid-key-that-storage-rejects.pdf",
-              originalName: "broken.pdf",
-              size: 10,
-              contentType: "application/pdf",
-              uploadedAt: new Date(),
-              legacy: false,
-            },
-          },
-        }
-      );
-      await setApplicationArchived(id, true, "", hr);
-      await expectAppError(purgeApplication(id, hr), 502, "storage_delete_failed");
-      assert.ok(await ApplicationModel.exists({ _id: id }));
-      assert.equal(await EmailOutboxModel.countDocuments({ "related.entityId": id }), 2, "emails are kept until the purge succeeds");
-      await expectAppError(purgeApplication(new Types.ObjectId().toHexString(), hr), 404, "application_not_found");
+    it("refuses unknown ids", async () => {
+      await expectAppError(purgeApplication(newId(), hr), 404, "application_not_found");
+      await expectAppError(purgeApplication("not-an-id", hr), 404, "application_not_found");
     });
   });
 });
