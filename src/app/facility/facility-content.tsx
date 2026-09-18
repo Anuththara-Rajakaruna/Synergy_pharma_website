@@ -26,28 +26,16 @@ const facilities = [
     image: "/facilities/Quality control.png",
   },
   {
-    id: 4,
-    title: "Manufacturing Facilities  ",
-    description: "State-of-the-art production lines meeting EU-GMP/ USFDA guidelines with precision, automation, and quality control systems. ",
-    image: "/facilities/manufacturing_.jpg",
-  },
-  {
-    id: 5,
-    title: "Oncology (OSD & Injectables) ",
-    description: "Dedicated manufacturing for oncology products with the highest levels of containment and care.",
-    image: "/facilities/Onco.png",
+    id: 7,
+    title: "Microbiology Laboratory",
+    description: "Advanced microbiological testing and environmental monitoring facilities ensuring product safety, sterility, and compliance with international quality standards.",
+    image: "/facilities/micro.png",
   },
   {
     id: 6,
     title: "R&D Center",
     description: "An innovation hub dedicated to developing future-ready pharmaceuticals.",
     image: "/facilities/R&D.jpg",
-  },
-  {
-    id: 7,
-    title: "Microbiology Laboratory",
-    description: "Advanced microbiological testing and environmental monitoring facilities ensuring product safety, sterility, and compliance with international quality standards.",
-    image: "/facilities/micro.png",
   },
 ];
 
@@ -149,6 +137,32 @@ export function FacilityPageContent() {
                 )
               },
               {
+                title: "Oncology Products",
+                description: "Specialized oncology manufacturing capabilities covering OSD and injectables, supported by dedicated containment facilities and stringent quality controls to ensure safe, consistent, and compliant production.",
+                items: ["OSD", "Injectables"],
+                containment: true,
+                icon: (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+                    <path d="M12 8v6" />
+                    <path d="M9 11h6" />
+                  </svg>
+                )
+              },
+              {
+                title: "Hormone-Based Therapeutics",
+                description: "Specialized manufacturing capabilities for hormone-based therapeutics across OSD, injectables, and ointments, supported by dedicated containment facilities and robust quality systems for safe, consistent, and compliant production.",
+                items: ["OSD", "Injectables", "Ointment"],
+                containment: true,
+                icon: (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 2v6.5L4 20a1 1 0 0 0 1 2h14a1 1 0 0 0 1-2l-5-11.5V2" />
+                    <path d="M8.5 2h7" />
+                    <path d="M6.5 14h11" />
+                  </svg>
+                )
+              },
+              {
                 title: "Independent Quality Assurance",
                 description: "An independent Quality Assurance team oversees every stage of manufacturing to ensure full compliance with GMP requirements, regulatory expectations, and the highest quality standards.",
                 icon: (
@@ -196,6 +210,18 @@ export function FacilityPageContent() {
                   </motion.div>
                   <h3 className="facility-capabilityCardTitle">{capability.title}</h3>
                   <p className="facility-capabilityCardDescription">{capability.description}</p>
+                  {capability.items && (
+                    <ul className="facility-capabilityItemsList">
+                      {capability.items.map((item) => (
+                        <li key={item} className="facility-capabilityItem">{item}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {capability.containment && (
+                    <p className="facility-capabilityContainmentNote">
+                      Dedicated Containment Facilities Available
+                    </p>
+                  )}
                 </div>
                 <div className="facility-capabilityCardAccent" />
               </ScrollRevealItem>
@@ -632,6 +658,9 @@ export function FacilityPageContent() {
               height={640}
               className="facility-qualityImageContent"
             />
+            <div className="facility-qualityImageBadge">
+              <span>Right 1st Time</span>
+            </div>
           </motion.div>
 
           <motion.div

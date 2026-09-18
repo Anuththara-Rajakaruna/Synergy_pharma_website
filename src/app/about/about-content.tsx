@@ -27,13 +27,13 @@ const aboutCards = [
   {
     title: "Synergy Pharmaceuticals",
     description:
-      "Our pharmaceutical arm focused on high-quality manufacturing, trusted compliance, and scalable healthcare solutions for regional markets.",
+      "Our pharmaceutical arm focused on high-quality manufacturing, trusted compliance, and  healthcare solutions for global markets.",
     icon: Pill,
   },
   {
     title: "Our Business",
     description:
-      "A connected healthcare business model spanning manufacturing, diagnostics, and enterprise support to create dependable long-term value.",
+      "A connected healthcare business model spanning manufacturing, supply chain, and enterprise support to create dependable long-term value.",
     icon: BarChart3,
   },
   {
