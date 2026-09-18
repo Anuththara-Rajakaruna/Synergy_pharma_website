@@ -22,7 +22,7 @@ const qualityHighlights = [
   {
     title: "100%",
     subtitle: "Independent QA Systems",
-    detail: "Autonomous Oversight",
+    detail: "Complete digitalization",
     accent: "blue",
     icon: Share2,
   },
@@ -36,14 +36,14 @@ const qualityHighlights = [
   {
     title: "Global",
     subtitle: "Compliance Standards",
-    detail: "CGMP, USP, PH.EUR",
+    detail: "USFDA,MHRA,EU-GMP",
     accent: "blue",
     icon: Globe2,
   },
   {
-    title: "Digital",
+    title: "Digitalization",
     subtitle: "Quality Monitoring",
-    detail: "EDMS & LMS Integration",
+    detail: "BMS,EMS,DMS,LMS,PMS,LIMS,SAP",
     accent: "teal",
     icon: ChartNoAxesColumn,
   },
@@ -56,8 +56,9 @@ const ecosystemCards = [
     icon: Settings2,
     points: [
       "Integrated Risk Management protocols",
+      "Self Inspection",
       "Periodic Product Quality Reviews (PQR)",
-      "Robust CAPA (Corrective and Preventive Action) systems",
+      "Robust Change Management, Deviation & CAPA systems",
     ],
   },
   {
@@ -78,12 +79,13 @@ const compliancePrinciples = [
     description: "Current Good Manufacturing Practices adhered across all sites.",
   },
   {
-    title: "USP / Ph.Eur",
-    description: "Strict pharmacopoeial compliance for all chemical entities.",
+    title: "USFDA ,  MHRA , EU-GMP",
+    description: "Strict global regulatory compliance.",
   },
 ];
 
 const trainingItems = [
+  "Training the Trainers",
   "Continuous personnel certification programs",
   "Advanced analytical method validation training",
   "Data integrity and ethics workshops",
@@ -295,27 +297,27 @@ export function QualityPageContent() {
           <ScrollRevealContainer staggerDelay={0.12} className="laboratoryCardsGrid">
             {[
               {
-                title: "Chemistry Section",
-                description: "Equipped with HPLC, GC, and MS for precise molecular characterization and stability testing.",
+                title: "Chemical Lab",
+                description: "Equipped with advanced HPLC, GC, and MS technologies for comprehensive chemical analysis and reliable stability testing across pharmaceutical products.",
                 label: "Instrumental Excellence",
                 accent: "blue",
-                image: "/Chemistry.png",
+                image: "/Quality/Chem.jpg",
                 imageAlt: "Chemistry instruments and laboratory glassware",
               },
               {
-                title: "Microbiology Section",
-                description: "Specialized sterility testing, microbial limits, and environmental monitoring in Class A environments.",
+                title: "Microbiology Lab",
+                description: "Specialized microbiological testing, including sterility testing, microbial limits testing, and environmental monitoring in controlled environments.",
                 label: "Biological Integrity",
                 accent: "teal",
-                image: "/Microbiology.png",
+                image: "/Quality/Micro.jpg",
                 imageAlt: "Microbiology laboratory environment",
               },
               {
                 title: "Digital Quality Systems",
-                description: "Paperless documentation via eDMS, real-time LMS training tracking, and AI-driven automation.",
+                description: "Connected digital operations through **BMS, EMS, DMS, LMS, PMS, LIMS, and SAP** for smarter workflows, real-time visibility, and efficient decision-making.",
                 label: "Automated Precision",
                 accent: "teal",
-                image: "/Digital_Quality.png",
+                image: "/Quality/Digital.jpg",
                 imageAlt: "Digital quality systems visualization",
               },
             ].map((card) => (

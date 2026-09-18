@@ -7090,9 +7090,10 @@ button:disabled:active {
 
 .compliancePrinciple h3 {
   margin: 0;
-  font-size: clamp(1.3rem, 4vw, 1.9rem);
+  font-size: clamp(1.05rem, 2.6vw, 1.7rem);
   line-height: 1.1;
   color: #000000;
+  white-space: nowrap;
 }
 
 .compliancePrinciple p {
@@ -7100,6 +7101,10 @@ button:disabled:active {
   color: #556b7b;
   font-size: clamp(0.95rem, 2vw, 1.05rem);
   line-height: 1.5;
+}
+
+.compliancePrinciple:nth-child(2) p {
+  white-space: nowrap;
 }
 
 .trainingCard {
