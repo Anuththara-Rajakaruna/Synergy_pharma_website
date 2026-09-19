@@ -23,7 +23,7 @@ export async function register() {
         if (seeded) {
           // Printed deliberately: it opens a spreadsheet that exists only inside this process.
           console.info(
-            `\n  Local admin sign-in: ${seeded.adminEmail} / ${seeded.adminPassword}\n  Two sample jobs published. Careers portal: /careers, admin: /careers/admin\n`
+            `\n  Local admin sign-in: ${seeded.adminEmail} / ${seeded.adminPassword}\n  The open positions are published. Careers portal: /careers, admin: /careers/admin\n`
           );
         }
       } catch (err) {
