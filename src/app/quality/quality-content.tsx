@@ -43,7 +43,7 @@ const qualityHighlights = [
   {
     title: "Digitalization",
     subtitle: "Quality Monitoring",
-    detail: "BMS,EMS,DMS,LMS,PMS,LIMS,SAP",
+    detail: "BMS,EMS,QMS,LMS,DMS,LIMS,SAP",
     accent: "teal",
     icon: ChartNoAxesColumn,
   },
@@ -314,7 +314,7 @@ export function QualityPageContent() {
               },
               {
                 title: "Digital Quality Systems",
-                description: "Connected digital operations through BMS, EMS, DMS, LMS, PMS, LIMS, and SAP for smarter workflows, real-time visibility, and efficient decision-making.",
+                description: "Connected digital operations through BMS, EMS, QMS, LMS, DMS, LIMS, and SAP for smarter workflows, real-time visibility, and efficient decision-making.",
                 label: "Automated Precision",
                 accent: "teal",
                 image: "/Quality/Digital.jpg",

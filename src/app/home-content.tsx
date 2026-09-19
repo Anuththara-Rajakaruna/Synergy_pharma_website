@@ -157,8 +157,7 @@ export function HomeContent() {
               <article className="scope-card">
                 <p className="scope-label">CERTIFICATIONS</p>
                 <p className="scope-copy">
-                    NMRA GMP Approved<br />
-                    WHO-GMP Approved                </p>
+                    NMRA GMP Approved</p>
               </article>
             </div>
             <div className="showcase-metrics">
