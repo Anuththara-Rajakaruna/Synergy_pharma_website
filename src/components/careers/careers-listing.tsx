@@ -97,7 +97,19 @@ export function CareersListing({ initialJobs, loadError = false, renderedAt }: C
       new Map(
         jobs.map((job) => [
           job.id,
-          [job.title, job.department, job.location, job.experience, job.description].join(" ").toLowerCase(),
+          [
+            job.title,
+            job.department,
+            job.location,
+            job.experience,
+            job.description,
+            ...job.responsibilities,
+            ...job.requirements,
+            ...job.qualifications,
+            ...job.benefits,
+          ]
+            .join(" ")
+            .toLowerCase(),
         ])
       ),
     [jobs]

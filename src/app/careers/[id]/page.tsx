@@ -8,7 +8,7 @@ import { ScrollReveal } from "@/components/scroll-reveal";
 import { SiteHeader } from "@/components/site-header";
 import { ApplicationForm } from "@/components/careers/application-form";
 import { deadlineLabel, formatDate } from "@/lib/careers/format";
-import { getOpenJob, listRelatedOpenJobs } from "@/lib/careers/server/jobs";
+import { getStaticOpenJob, listStaticRelatedOpenJobs } from "@/lib/careers/static-jobs";
 import { serializeJsonLd } from "@/lib/json-ld";
 import { logger } from "@/lib/logger";
 import { buildMetadata } from "@/lib/metadata";
@@ -22,7 +22,7 @@ type PageProps = { params: Promise<{ id: string }> };
 
 // generateMetadata and the page share one database lookup per request. Only open jobs are
 // returned, so drafts, closed, expired and archived postings all 404.
-const getJob = cache(getOpenJob);
+const getJob = cache(getStaticOpenJob);
 
 const EMPLOYMENT_TYPES: Record<JobType, string> = {
   "Full-time": "FULL_TIME",
@@ -107,7 +107,7 @@ function jobPostingJsonLd(job: Job) {
 
 async function loadRelatedJobs(job: Job): Promise<Job[]> {
   try {
-    return await listRelatedOpenJobs(job.department, job.id, 3);
+    return await listStaticRelatedOpenJobs(job.department, job.id, 3);
   } catch (err) {
     // Related roles are optional; the posting itself already loaded.
     logger.warn("careers.related_jobs_unavailable", { err });
@@ -136,11 +136,15 @@ export default async function CareerDetailPage({ params }: PageProps) {
   const deadline = deadlineLabel(job.applicationDeadline, new Date());
   const paragraphs = descriptionParagraphs(job.description);
   const listPanels = [
-    { badge: "Responsibilities", heading: "What you'll lead", items: job.responsibilities },
-    { badge: "Requirements", heading: "What we're looking for", items: job.requirements },
     { badge: "Qualifications", heading: "Qualifications", items: job.qualifications },
-    { badge: "Benefits", heading: "What we offer", items: job.benefits },
+    { badge: "Requirements", heading: "What we're looking for", items: job.requirements },
+    { badge: "Responsibilities", heading: "Key Responsibilities", items: job.responsibilities },
+    { badge: "Why Join Us", heading: "Why Join Us", items: job.benefits },
   ].filter((panel) => panel.items.length > 0);
+  // Jobs that carry an apply email are applied for by email; the rest use the application form.
+  const applyHref = job.applyEmail
+    ? `mailto:${job.applyEmail}?subject=${encodeURIComponent(`Application for ${job.title}`)}`
+    : "#apply";
 
   return (
     <main className="career-detail-page">
@@ -151,7 +155,7 @@ export default async function CareerDetailPage({ params }: PageProps) {
       <Hero
         eyebrow={job.department}
         heading={job.title}
-        description={summarize(job.description, 220)}
+        description={job.summary ?? summarize(job.description, 220)}
         className="careers-hero-section careers-detail-hero"
         breadcrumb={
           <nav aria-label="Breadcrumb" className="careers-hero-breadcrumb">
@@ -170,7 +174,7 @@ export default async function CareerDetailPage({ params }: PageProps) {
         }
         actions={
           <div className="careers-hero-actions">
-            <a href="#apply" className="button-link">Apply Now</a>
+            <a href={applyHref} className="button-link">Apply Now</a>
             <Link href="/careers#open-positions" className="button-link-secondary">View All Roles</Link>
           </div>
         }
@@ -182,6 +186,22 @@ export default async function CareerDetailPage({ params }: PageProps) {
             <ScrollReveal className="career-detail-panel career-detail-panel-soft">
               <p className={badgeClass}>Role Overview</p>
               <h2>Job Description</h2>
+              <dl className="careers-summary-facts" style={{ marginBottom: "1.25rem" }}>
+                <div>
+                  <dt>Location</dt>
+                  <dd>{job.location}</dd>
+                </div>
+                <div>
+                  <dt>Employment type</dt>
+                  <dd>{job.type}</dd>
+                </div>
+                {job.experience ? (
+                  <div>
+                    <dt>Experience</dt>
+                    <dd>{job.experience}</dd>
+                  </div>
+                ) : null}
+              </dl>
               <div className="careers-detail-description">
                 {paragraphs.map((paragraph, index) => (
                   <p key={index}>{paragraph}</p>
@@ -200,6 +220,24 @@ export default async function CareerDetailPage({ params }: PageProps) {
                 </ul>
               </ScrollReveal>
             ))}
+
+            {job.contactPhone ? (
+              <ScrollReveal className="career-detail-panel career-detail-panel-soft" delay={0.05 * (listPanels.length + 1)}>
+                <p className={badgeClass}>Contact</p>
+                <h2>Contact information</h2>
+                <div className="careers-detail-description">
+                  <p>Phone: {job.contactPhone}</p>
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "1rem", marginTop: "1.25rem" }}>
+                  <a href={applyHref} className="button-link">
+                    Apply Now
+                  </a>
+                  <Link href="/careers" className="career-back-link">
+                    Back to open positions
+                  </Link>
+                </div>
+              </ScrollReveal>
+            ) : null}
 
             {relatedJobs.length > 0 && (
               <ScrollReveal className="career-detail-panel career-detail-panel-soft" delay={0.05 * (listPanels.length + 1)}>
@@ -277,7 +315,7 @@ export default async function CareerDetailPage({ params }: PageProps) {
                     ) : null}
                   </dl>
                 ) : null}
-                <a href="#apply" className="button-link career-sticky-button">
+                <a href={applyHref} className="button-link career-sticky-button">
                   Apply Now
                 </a>
                 <Link href="/careers" className="career-back-link">
@@ -289,11 +327,13 @@ export default async function CareerDetailPage({ params }: PageProps) {
         </div>
       </section>
 
-      <section className="career-detail-application-zone" id="apply">
-        <div className="careers-shell career-detail-shell career-detail-application-wrap">
-          <ApplicationForm job={job} />
-        </div>
-      </section>
+      {job.applyEmail ? null : (
+        <section className="career-detail-application-zone" id="apply">
+          <div className="careers-shell career-detail-shell career-detail-application-wrap">
+            <ApplicationForm job={job} />
+          </div>
+        </section>
+      )}
     </main>
   );
 }

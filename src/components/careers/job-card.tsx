@@ -77,7 +77,7 @@ export function JobCard({ job, index, now }: JobCardProps) {
               overflow: "hidden",
             }}
           >
-            {job.description}
+            {job.summary || job.description}
           </p>
 
           <ul className="mt-4 flex flex-wrap gap-3" aria-label="Role details">

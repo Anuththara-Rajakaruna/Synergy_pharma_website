@@ -58,6 +58,11 @@ export type Job = {
   requirements: string[];
   qualifications: string[];
   benefits: string[];
+  // Optional, set by the static jobs list (src/lib/careers/static-jobs.ts): a short card
+  // summary, and where to call and apply by email. The Google Sheets store does not have them.
+  summary?: string;
+  contactPhone?: string;
+  applyEmail?: string;
   applicationDeadline: string | null;
   publishedAt: string | null;
   updatedAt: string;

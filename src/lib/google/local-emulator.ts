@@ -919,46 +919,15 @@ export async function bootstrapLocalData(): Promise<{ adminEmail: string; adminP
   if (!session) throw new Error("local bootstrap could not open a session");
   const ctx = { ...session, ip: "127.0.0.1", userAgent: "local-bootstrap" };
 
-  const samples = [
-    {
-      slug: "quality-control-analyst",
-      title: "Quality Control Analyst",
-      department: "Quality Control",
-      location: "Colombo",
-      description: "Run release testing for finished products and keep the batch records straight.",
-      responsibilities: ["Test finished batches against specification", "Write and review analytical reports"],
-      requirements: ["BSc in Chemistry or equivalent", "Two years in a regulated laboratory"],
-    },
-    {
-      slug: "production-executive",
-      title: "Production Executive",
-      department: "Production",
-      location: "Kelaniya",
-      description: "Own a production line end to end, from dispensing through to packing.",
-      responsibilities: ["Plan and supervise daily production", "Keep GMP documentation current"],
-      requirements: ["Degree in Pharmacy, Chemistry or Engineering", "Shift-work experience"],
-    },
-  ];
-
-  for (const sample of samples) {
-    const job = await createJob(
-      {
-        slug: sample.slug,
-        title: sample.title,
-        department: sample.department,
-        location: sample.location,
-        type: "Full-time",
-        experience: "2+ years",
-        description: sample.description,
-        responsibilities: sample.responsibilities,
-        requirements: sample.requirements,
-        qualifications: [],
-        benefits: ["Medical cover", "Annual bonus"],
-        applicationDeadline: null,
-      },
-      "draft",
-      ctx
-    );
+  // The real open positions (src/data/open-positions.ts), published so /careers has content.
+  const { OPEN_POSITIONS } = await import("@/data/open-positions");
+  for (const position of OPEN_POSITIONS) {
+    // The store has no contact fields, so the emulator keeps the contact line in the description.
+    const description = [
+      position.description,
+      `For more information call ${position.contactPhone}. To apply, email your CV to ${position.applyEmail}.`,
+    ].join("\n\n");
+    const job = await createJob({ ...position, description, applicationDeadline: null }, "draft", ctx);
     await changeJobStatus(job.id, "publish", ctx);
   }
 

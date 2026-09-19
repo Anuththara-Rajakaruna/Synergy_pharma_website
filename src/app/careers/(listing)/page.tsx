@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/hero";
 import { CareersListing } from "@/components/careers/careers-listing";
 import { TalentPoolForm } from "@/components/careers/talent-pool-form";
-import { listOpenJobs } from "@/lib/careers/server/jobs";
+import { listStaticOpenJobs } from "@/lib/careers/static-jobs";
 import { logger } from "@/lib/logger";
 import { buildMetadata } from "@/lib/metadata";
 import type { Job } from "@/types/careers";
@@ -25,7 +25,7 @@ export const metadata: Metadata = buildMetadata({
 async function loadOpenJobs(): Promise<{ jobs: Job[]; loadError: boolean; renderedAt: string }> {
   const renderedAt = new Date().toISOString();
   try {
-    return { jobs: await listOpenJobs(), loadError: false, renderedAt };
+    return { jobs: await listStaticOpenJobs(), loadError: false, renderedAt };
   } catch (err) {
     logger.error("careers.jobs_unavailable", { err });
     return { jobs: [], loadError: true, renderedAt };
