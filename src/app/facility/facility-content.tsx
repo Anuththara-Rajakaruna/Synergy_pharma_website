@@ -115,6 +115,7 @@ export function FacilityPageContent() {
               {
                 title: "Tablets & Capsules (General OSD)",
                 description: "Our General Oral Solid Dosage (OSD) manufacturing facility is designed for the large-scale production of tablets and capsules with an annual manufacturing capacity of 5 billion units, meeting international quality standards.",
+                items: ["Tablets", "Capsules"],
                 icon: (
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z" />
@@ -123,8 +124,9 @@ export function FacilityPageContent() {
                 )
               },
               {
-                title: "Parenterals",
+                title: "General Injections",
                 description: "Dedicated sterile manufacturing facilities for both Large Volume Parenterals (LVP) and Small Volume Parenterals (SVP), designed to deliver safe, high-quality injectable pharmaceutical products.",
+                items: ["Pre-filled Syringes", "Ampoules", "Liquid Injections"],
                 icon: (
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="m18 2 4 4" />
@@ -164,7 +166,7 @@ export function FacilityPageContent() {
               },
               {
                 title: "Independent Quality Assurance",
-                description: "An independent Quality Assurance team oversees every stage of manufacturing to ensure full compliance with GMP requirements, regulatory expectations, and the highest quality standards.",
+                description: "An independent Quality Assurance team oversees every stage of manufacturing & packing to ensure full compliance with GMP requirements, regulatory expectations, and the highest quality standards.",
                 icon: (
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M12 2L2 7l10 5 10-5-10-5z" />

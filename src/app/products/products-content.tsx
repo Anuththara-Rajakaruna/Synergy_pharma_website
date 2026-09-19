@@ -6,7 +6,7 @@ import { ScrollReveal, ScrollRevealContainer, ScrollRevealItem } from "@/compone
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
-import { FlaskConical, Syringe, Droplet, Ribbon, ShieldCheck, Package } from "lucide-react";
+import { FlaskConical, Syringe, Droplet, Ribbon, ShieldCheck, Package, Pill } from "lucide-react";
 
 export function ProductsPageContent() {
   const highlightRef = useRef<HTMLElement | null>(null);
@@ -149,6 +149,30 @@ export function ProductsPageContent() {
                       animate={{ y: [0, -8, 0] }}
                       transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                     >
+                      <Pill size={40} strokeWidth={2} />
+                    </motion.div>
+                  </motion.div>
+                  <h3 className="facility-capabilityCardTitle">General Oral Solid Dosage</h3>
+                  <ul className="capability-list">
+                    <li>
+                      <span className="capability-list-label">Tablets and Capsules</span>
+                      <span className="capability-list-value">5 billion</span>
+                    </li>
+                  </ul>
+                </div>
+              </ScrollRevealItem>
+              <ScrollRevealItem>
+                <div className="capability-card">
+                  <motion.div
+                    className="facility-capabilityIcon"
+                    animate={{ rotateY: 360 }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                  >
+                    <motion.div
+                      className="facility-capabilityAnimatedIcon"
+                      animate={{ y: [0, -8, 0] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    >
                       <Syringe size={40} strokeWidth={2} />
                     </motion.div>
                   </motion.div>
@@ -220,7 +244,7 @@ export function ProductsPageContent() {
                   <ul className="capability-list">
                     <li>
                       <span className="capability-list-label">Oral Solid Dosage (OSD)</span>
-                      <span className="capability-list-value">2.2 billion</span>
+                      <span className="capability-list-value">220 million</span>
                     </li>
                     <li>
                       <span className="capability-list-label">Injections</span>
