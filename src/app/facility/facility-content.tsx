@@ -661,7 +661,7 @@ export function FacilityPageContent() {
               className="facility-qualityImageContent"
             />
             <div className="facility-qualityImageBadge">
-              <span>Right 1st Time</span>
+              <span>Right first Time</span>
             </div>
           </motion.div>
 

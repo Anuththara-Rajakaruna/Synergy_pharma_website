@@ -80,7 +80,7 @@ Before deploying, have accounts ready for:
 
 Other Node.js hosts work too (`npm ci && npm run build && npm run start`).
 Behind your own reverse proxy set `TRUSTED_IP_HEADER` (§4) and a body limit that
-matches the CV size (nginx: `client_max_body_size`), and call the maintenance
+matches the  size (nginx: `client_max_body_size`), and call the maintenance
 endpoint from an external scheduler (§8).
 
 ---

@@ -85,7 +85,7 @@ const compliancePrinciples = [
 ];
 
 const trainingItems = [
-  "Training the Trainers",
+  "Train the Trainers",
   "Continuous personnel certification programs",
   "Advanced analytical method validation training",
   "Data integrity and ethics workshops",

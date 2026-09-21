@@ -84,7 +84,7 @@ export default async function CareersPage() {
         <div className="careers-shell careers-talent-layout">
           <ScrollReveal className="careers-header careers-talent-copy">
             <p className="careers-eyebrow">Talent Pool</p>
-            <h2>Share your CV even if the right opening is not live yet.</h2>
+            <h2>Share your resume even if the right opening is not live yet.</h2>
             <p className="careers-subtitle">
               We&apos;re always interested in connecting with professionals who care about pharmaceutical
               quality, manufacturing excellence, and sustainable healthcare growth.
