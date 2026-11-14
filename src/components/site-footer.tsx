@@ -41,9 +41,9 @@ export function SiteFooter() {
           <address>
             Synergy Pharmaceuticals Corporation Pvt. Ltd.
             <br />
-            Bingiria BOI Export processing Zone,
+            Bingiriya BOI Export processing Zone,
             <br />
-            Bingiria,
+            Bingiriya,
             <br />
             Wathuwaththa,
             <br />
@@ -111,7 +111,7 @@ export function SiteFooter() {
         </div>
 
         <div className="footer-bottom">
-          <span>© {currentYear} Synergy Pharmaceutical Corporation Pvt. Ltd.</span>
+          <span>© {currentYear} Synergy Pharmaceuticals Corporation Pvt. Ltd.</span>
           <span className="footer-bottom-muted">All rights reserved.</span>
           <Link href="/privacy-policy" className="footer-bottom-muted hover:text-[#1075bd] transition-colors">
             Privacy Policy
